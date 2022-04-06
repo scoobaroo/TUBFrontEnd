@@ -1,0 +1,32 @@
+{
+  "name": "unblock-fe-app-react",
+  "version": "1.0.0",
+  "description": "react app - web3",
+  "main": "src/index.js",
+  "repository": "git@github.com:scoobaroo/TUBFrontEnd.git",
+  "author": "joortiz",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "webpack serve --hot --open",
+    "build": "webpack --config webpack.config.js --mode production"
+  },
+  "dependencies": {
+    "@adobe/react-spectrum": "^3.16.5",
+    "@babel/core": "^7.17.8",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-react": "^7.16.7",
+    "axios": "^0.26.1",
+    "babel-loader": "^8.2.4",
+    "css-loader": "^6.7.1",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.5.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router": "^6.3.0",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.71.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.8.1"
+  }
+}
