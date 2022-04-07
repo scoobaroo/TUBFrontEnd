@@ -1,17 +1,17 @@
 import React from 'react';
 import {render} from 'react-dom';
 import * as ReactDOMClient from 'react-dom/client';
+import Hamburger from 'hamburger-react'
+import App from './App';
+import Navbar from './components/Navbar';
 
 function AppWrapper() {
-    return (
-        <App/>
-    );
-}
-
-function App(){
-    return (
-        <div>App</div>
-    );
+  return (
+    <>
+      <Navbar />
+      <App/>
+    </>
+  );
 }
 
 const rootElement = document.getElementById("root");
