@@ -10,12 +10,11 @@
 }
 
 body {
-  height: 100vh;
   font-family: adobe-clean, Ubuntu, sans-serif;
 }
 
 #root {
-  height: 100%;
+  min-height: 100vh;
 }
 .App {
   display: flex;

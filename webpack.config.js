@@ -15,6 +15,14 @@ module.exports = {
             template: './dist/index.html'
         })
     ],
+    devServer: {
+      static: {
+        directory: path.join(__dirname, './dist'),
+      },
+      compress: true,
+      port: 9000,
+      historyApiFallback: true,
+    },
     resolve: {
         modules: [__dirname, 'src', 'node_modules'],
         extensions: ['*', '.js', '.jsx', '.tsx', '.ts'],
@@ -33,7 +41,7 @@ module.exports = {
             {
                 test: /\.png|svg|jpg|gif$/,
                 use: ["file-loader"],
-            }, 
+            },
         ]
     }
 }
