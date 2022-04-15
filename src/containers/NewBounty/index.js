@@ -141,8 +141,16 @@ function NewBountyBase() {
     setBountyAmount(bountyAmount);
   }
 
+  const cancel = async () => {
+    console.log("In Cancel");
+    console.log("provider =>", provider);
+    console.log("contract =>", contract);
+    let result = await contract.cancel();
+    console.log("cancel result =>", result);
+  }
+
   const increaseBounty = async () => {
-    let contract = new ethers.Contract(smartContractAddress, abi, provider.getSigner());
+    // let contract = new ethers.Contract(smartContractAddress, abi, provider.getSigner());
     contract.attach(provider.getSigner().getAddress());
     const options = {value: ethers.utils.parseEther(amount)}
     await contract.increaseBounty(options);
@@ -192,6 +200,7 @@ function NewBountyBase() {
         <span>Smart Contract Address: {smartContractAddress}</span>
         <Button onPress={async () => await getBounty()} variant="negative">Get Bounty</Button>
         <span>Bounty Amount: {bountyAmount != undefined? bountyAmount + "ETH" : ""}</span>
+        <Button onPress={async () => await cancel()} variant="negative">Cancel</Button>
     </BountyFormWrapper>
   );
 }
