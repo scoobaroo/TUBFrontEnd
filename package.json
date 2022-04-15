@@ -29,10 +29,7 @@
     "ethers": "^5.6.4",
     "file-loader": "^6.2.0",
     "firebase": "^7.8.2",
-<<<<<<< HEAD
     "fs": "^0.0.1-security",
-=======
->>>>>>> 100b7468dc51edb0902d269883bd03aab8483cd3
     "hamburger-react": "^2.5.0",
     "html-webpack-plugin": "^5.5.0",
     "metamask-react": "^2.3.0",
