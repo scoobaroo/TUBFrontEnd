@@ -191,7 +191,7 @@ function NewBountyBase() {
         <Button onPress={() => increaseBounty(parseInt(amount))} variant="cta">Increase Bounty</Button>
         <span>Smart Contract Address: {smartContractAddress}</span>
         <Button onPress={async () => await getBounty()} variant="negative">Get Bounty</Button>
-        <span>Bounty Amount: {bountyAmount}</span>
+        <span>Bounty Amount: {bountyAmount != undefined? bountyAmount + "ETH" : ""}</span>
     </BountyFormWrapper>
   );
 }
