@@ -3,12 +3,28 @@ import { withFirebase } from '../firebase';
 
 const AppContext = createContext([{}, () => {}]);
 
+const getThemeFromLocal = () => {
+  let theme = null;
+  if (window.localStorage) {
+    theme = window.localStorage.getItem('unblockTheme');
+  }
+  return theme ? theme : 'dark';
+}
+
+const getScaleFromLocal = () => {
+  let scale = null;
+  if (window.localStorage) {
+    scale = window.localStorage.getItem('unblockScale');
+  }
+  return scale ? scale : 'large';
+}
+
 const storeInitialState = {
   authUser: null,
   loading: false,
   loggedIn: false,
-  theme: 'light',
-  scale: 'large',
+  theme: getThemeFromLocal(),
+  scale: getScaleFromLocal(),
   accountId: null
 };
 
