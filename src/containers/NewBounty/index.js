@@ -141,12 +141,14 @@ function NewBountyBase({ firebase, navigate }) {
     const toppers = selectedTopics.map(x => x.topicId);
 
     //http://localhost:4000/users/${authUserId}
+    //http://localhost:4000/bounties/new
     axios.get(`http://localhost:4000/users/${authUserId}`)
       .then((response) => {
         if (response.data && response.data.value) {
           const { data: { value } } = response;
           const [result] = value;
           const blobject = {
+            name: 'default',
             categoryId: [categoryId],
             subCategoryId: [subCategoryId],
             description,
