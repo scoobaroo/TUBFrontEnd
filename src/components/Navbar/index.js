@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pivot as Hamburger } from 'hamburger-react';
 import styled from 'styled-components';
-import { ActionButton } from '@adobe/react-spectrum';
+import { ActionButton, Switch } from '@adobe/react-spectrum';
 import withAuthorization from '../../session/withAuthorization';
 import { withFirebase } from '../../firebase';
 import { compose } from 'recompose';
@@ -66,10 +66,12 @@ const HamburgerButton = ({ open, setOpen }) => (
 );
 
 const AuthedNav = ({ navigate, currentUser, firebase }) => {
-  console.log('currentUser', currentUser.uid);
+  // console.log('currentUser', currentUser.uid);
+  const [state] = React.useContext(AppContext);
+  const {toggleMode} = useUIControls();
   const handleSignOut = () => firebase.signOut();
   const handleNewBounty = () => navigate('/new-bounty');
-
+  console.log('state =>', state);
   return (
     <AuthedNavWrapper>
       <div className='_btn-authed'>
@@ -81,6 +83,10 @@ const AuthedNav = ({ navigate, currentUser, firebase }) => {
         <ActionButton isQuiet onPress={handleSignOut}>
           Sign Out
         </ActionButton>
+      </div>
+      <div className='_btn-authed'>
+        mode: {state.mode}
+        <Switch onChange={toggleMode} />
       </div>
     </AuthedNavWrapper>
   );
