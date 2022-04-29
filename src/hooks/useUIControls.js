@@ -30,8 +30,22 @@ export default function useUIControls() {
     }
   }
 
+  const toggleMode = () => {
+    const _map = { customer: 'provider', provider: 'customer' };
+    const mode = _map[state.mode];
+    setState((prevState) => ({
+      ...prevState,
+      mode
+    }));
+
+    if (window.localStorage) {
+      window.localStorage.setItem('unblockMode', mode);
+    }
+  }
+
   return {
     toggleTheme,
-    reSize
+    reSize,
+    toggleMode,
   }
 }

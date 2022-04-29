@@ -11,6 +11,15 @@ const getThemeFromLocal = () => {
   return theme ? theme : 'dark';
 }
 
+const getModeFromLocal = () => {
+  let mode = null;
+  if (window.localStorage) {
+    mode = window.localStorage.getItem('unblockMode');
+  }
+
+  return mode ? mode : 'customer'
+}
+
 const getScaleFromLocal = () => {
   let scale = null;
   if (window.localStorage) {
@@ -25,6 +34,7 @@ const storeInitialState = {
   loggedIn: false,
   theme: getThemeFromLocal(),
   scale: getScaleFromLocal(),
+  mode: getModeFromLocal(),
   accountId: null
 };
 
