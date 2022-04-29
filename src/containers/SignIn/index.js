@@ -5,11 +5,15 @@ import { compose } from 'recompose';
 import { withFirebase } from '../../firebase';
 import withRouter from '../../session/withRouter';
 import { initialState, passwordReggie, emailReggie } from './config';
+import appConfig from 'webpack-config-loader!../../app-config.js';
+import axios from 'axios';
+import useAccountId from '../../hooks/useAccountId';
 
 import FormContainer from '../../styled/FormContainer';
 
 const SignInFormBase = (props) => {
   const [state, setState] = React.useState({ ...initialState });
+  const {setAccountId} = useAccountId();
 
   const handleEmailChange = (val) => {
     const email = val;
@@ -31,9 +35,28 @@ const SignInFormBase = (props) => {
   const disable = () => setState(state => ({ ...state, disabled: true }));
   const validateField = (value, reggie) => reggie.test(String(value).toLowerCase());
 
+  const setLoggedUserId = (uuid) => {
+    axios.get(`${appConfig.apiBaseUrl}users/${uuid}`)
+      .then((response) => {
+        if (response.data && response.data.value) {
+          const { data: { value } } = response;
+          const [result] = value;
+          const accountId = result.accountid;
+          console.log('setting accountId =>', result.accountid);
+          setAccountId(accountId);
+          console.log('use this for next api call, blobject =>', result);
+        }
+      })
+      .catch((error) => {
+        console.log('there was error:', error);
+      });   
+  }
+
   const handleSignIn = () => {
     props.firebase.signUserIn(state.email, state.password)
-      .then(() => {
+      .then((data) => {
+        const { user: { uid } } = data;
+        setLoggedUserId(uid);
         props.navigate('/');
       })
       .catch((err) => {

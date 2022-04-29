@@ -28,6 +28,14 @@ const getScaleFromLocal = () => {
   return scale ? scale : 'large';
 }
 
+const getAccountId = () => {
+  let accountId;
+  if (window.localStorage) {
+    accountId = window.localStorage.getItem('accountId');
+  }
+  return accountId ? accountId : null;
+}
+
 const storeInitialState = {
   authUser: null,
   loading: false,
@@ -35,7 +43,7 @@ const storeInitialState = {
   theme: getThemeFromLocal(),
   scale: getScaleFromLocal(),
   mode: getModeFromLocal(),
-  accountId: null
+  accountId: getAccountId(),
 };
 
 const AppContextBase = props => {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { defaultTheme, Provider } from '@adobe/react-spectrum';
 import { BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import 'regenerator-runtime/runtime';
 import { AppContext, AppContextProvider } from './context';
 import Firebase, { FirebaseContext } from './firebase';
 import { MetaMaskProvider } from "metamask-react";

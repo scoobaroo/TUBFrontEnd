@@ -9,6 +9,10 @@ export default function useAccountId() {
       ...prevState,
       accountId: id
     }));
+
+    if (window.localStorage) {
+      window.localStorage.setItem('accountId', id);
+    }
   }
 
   return {
