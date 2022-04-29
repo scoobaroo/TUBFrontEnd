@@ -11,6 +11,7 @@ import {
 import {FcFullTrash} from 'react-icons/fc';
 import axios from 'axios';
 import styled from 'styled-components';
+import appConfig from 'webpack-config-loader!../../app-config.js';
 import withAuthorization from '../../session/withAuthorization';
 import { withFirebase } from '../../firebase';
 import { AppContext } from '../../context';
@@ -72,7 +73,7 @@ function NewBountyBase({ firebase, navigate }) {
   }, [subCategoryId]);
 
   React.useEffect(() => {
-    const categoriesUrl = `http://localhost:4000/categories`;
+    const categoriesUrl = `${appConfig.apiBaseUrl}categories`;
     let isSubsribed = true;
     if (isSubsribed) {
       axios.get(categoriesUrl)
@@ -142,7 +143,7 @@ function NewBountyBase({ firebase, navigate }) {
 
     //http://localhost:4000/users/${authUserId}
     //http://localhost:4000/bounties/new
-    axios.get(`http://localhost:4000/users/${authUserId}`)
+    axios.get(`${appConfig.apiBaseUrl}users/${authUserId}`)
       .then((response) => {
         if (response.data && response.data.value) {
           const { data: { value } } = response;

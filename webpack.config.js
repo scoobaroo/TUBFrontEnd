@@ -28,6 +28,12 @@ module.exports = {
         modules: [__dirname, 'src', 'node_modules'],
         extensions: ['*', '.js', '.jsx', '.tsx', '.ts'],
     },
+    loader: {
+        /*
+          This data is used by the webpack-config-loader
+         */
+        configEnvironment: 'development' // <-- Set this to what you want to use
+    },
     module: {
         rules: [
             {

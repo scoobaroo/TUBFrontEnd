@@ -2,6 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import { ProgressCircle, Well } from '@adobe/react-spectrum';
 import styled from 'styled-components';
+import appConfig from 'webpack-config-loader!../../app-config.js';
 import withAuthorization from '../../session/withAuthorization';
 import { withFirebase } from '../../firebase';
 import { compose } from 'recompose';
@@ -55,7 +56,7 @@ const BountiesBase = ({ firebase, navigate }) => {
   React.useEffect(() => {
     axios({
       method: 'get',
-      url: 'http://localhost:4000/bounties',
+      url: `${appConfig.apiBaseUrl}bounties`,
     })
     .then((response) => {
       if (response.status === 200) {

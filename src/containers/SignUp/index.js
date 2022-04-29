@@ -3,6 +3,7 @@ import axios from 'axios';
 import {Button, Checkbox, TextField} from '@adobe/react-spectrum';
 import {Link} from 'react-router-dom';
 import { compose } from 'recompose';
+import appConfig from 'webpack-config-loader!../../app-config.js';
 import { withFirebase } from '../../firebase';
 import useAccountId from '../../hooks/useAccountId';
 import withRouter from '../../session/withRouter';
@@ -60,7 +61,7 @@ const SignUpFormBase = props => {
   }
 
   const onSubmitNewUser = (email, uuid) => {
-    const url = `http://localhost:4000/users/new?Email=${email}&FirebaseUid=${uuid}`;
+    const url = `${appConfig.apiBaseUrl}users/new?Email=${email}&FirebaseUid=${uuid}`;
     axios.get(url)
       .then(({data}) => {
         const accountId = data.AccountId;
