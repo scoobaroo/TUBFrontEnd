@@ -70,13 +70,14 @@ const AuthedNav = ({ navigate, currentUser, firebase }) => {
   const { toggleMode } = useUIControls();
   const handleSignOut = () => firebase.signOut();
   const handleNewBounty = () => navigate("/new-bounty");
+  const handleMyBounty = () => navigate("/mybounties");
   console.log('state =>', state);
  
   return (
     <AuthedNavWrapper>
        <div className="_btn-authed">
-        <ActionButton isQuiet onPress={handleNewBounty}>
-          New Bounty
+        <ActionButton isQuiet onPress={handleMyBounty}>
+          MyBounties
         </ActionButton>
       </div>
       <div className="_btn-authed">

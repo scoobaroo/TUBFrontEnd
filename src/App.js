@@ -12,6 +12,8 @@ import Bounties from './containers/Bounties';
 import PasswordReset from './containers/PasswordReset';
 import NewBounty from './containers/NewBounty';
 import NavBar from './components/NavBar';
+import BountyDetails from './containers/BountyDetails';
+import MyBounties from './containers/MyBounties';
 import './clientlibs/css/App.css';
 
 function Wrapper() {
@@ -27,6 +29,8 @@ function Wrapper() {
           <Route path="/password-reset" element={<PasswordReset />} />
           <Route path="/bounties" element={<Bounties />} />
           <Route path="/new-bounty" element={<NewBounty />} />
+          <Route path="/bountydetails" element={<BountyDetails />} />
+          <Route path="/mybounties" element={<MyBounties />} />
         </Routes>
       </Router>
     </Provider>

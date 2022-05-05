@@ -26,6 +26,15 @@ import { fs } from "fs";
 import abi from "../../Bounty.json";
 import bytecode from "../../Bytecode.json";
 import { call } from "file-loader";
+import { Navigate } from "react-router-dom";
+
+const LoadingWrapper = styled.div`
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
 
 const BountyFormWrapper = styled.div`
   display: grid;
@@ -50,7 +59,7 @@ const initialState = {
   valid: false,
 };
 
-function NewBountyBase() {
+function NewBountyBase(props) {
   const [active, setActive] = React.useState();
   const [state, setState] = React.useState({ ...initialState });
   const [_state] = React.useContext(AppContext);
@@ -71,6 +80,8 @@ function NewBountyBase() {
   const [showError, setShowError] = React.useState(false);
   const [showBountyError, setShowBountyError] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
+  const [discription,setDiscription] = React.useState("");
+
 
   React.useEffect(() => {
     if (_state.authUser && _state.authUser.uid) {
@@ -149,12 +160,20 @@ function NewBountyBase() {
 
   const createNewBounty = async () => {
     try {
+      setState((prevState) => ({
+        ...prevState,
+        loading: true,
+      }));
       const result = await deployBounty();
       if (result) {
         handleSubmitNewBounty(result)
       }
     } catch (error) {
       console.log(error);
+      setState((prevState) => ({
+        ...prevState,
+        loading: false,
+      }));
       setShowBountyError(true);
     }
   };
@@ -199,9 +218,12 @@ function NewBountyBase() {
 
   if (state.loading) {
     return (
-      <div>
-        <ProgressCircle aria-label="Loading…" isIndeterminate />
-      </div>
+      <LoadingWrapper>
+        <div>
+          <ProgressCircle size="L" aria-label="Loading…" isIndeterminate />
+        </div>
+        <div>please wait...</div>
+      </LoadingWrapper>
     );
   }
 
@@ -226,27 +248,43 @@ function NewBountyBase() {
   };
 
   const handleSubmitNewBounty = (values) => {
+    console.log(values)
     const selectedTopicsList = selectedTopics.map((x) => x.topicId);
+    console.log(selectedTopicsList)
     const bountyObject = {
-      name: "default",
-      categoryId: [categoryId],
-      subCategoryId: [subCategoryId],
-      description: values,
-      requirements: requirements,
-      topicIds: [...new Set(selectedTopicsList)],
-      accountId: accountId,
+      Name: "default",
+      CategoryIds: [categoryId],
+      SubCategoryIds: [subCategoryId],
+      Description: discription,
+      Requirements: [requirements],
+      TopicIds: [...new Set(selectedTopicsList)],
+      AccountId: accountId,
+      SmartContractAddress: values.contractAddress,
+      BountyAmount:Number(initalAmount),
+      SubTopicIds: [],
+      CustomerId:accountId,
     };
     axios
       .post(`${appConfig.apiBaseUrl}bounties/new`, bountyObject)
       .then((response) => {
         if (response.data) {
-          console.log('Success');
+          console.log("response =>", response);
           setShowSuccess(true);
+          props.navigate("/bountydetails", {state: {BountyId: response.data.BountyId,SmartContractAddress:values.contractAddress}});
+          console.log('Success');
+          setState((prevState) => ({
+            ...prevState,
+            loading: false,
+          }));
         }
       })
       .catch((error) => {
         console.log("there was error:", error);
         setShowError(true);
+        setState((prevState) => ({
+          ...prevState,
+          loading: false,
+        }));
       });
   };
 
@@ -302,7 +340,7 @@ function NewBountyBase() {
       )}
       {state.selected && (
         <>
-          <TextField width="auto" label="Description" />
+          <TextField value={discription} onChange={setDiscription}  width="auto" label="Description" />
           <TextArea
             onChange={handleReqChange}
             width="auto"
