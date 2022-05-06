@@ -19,7 +19,7 @@ import './clientlibs/css/App.css';
 function Wrapper() {
   const [state] = React.useContext(AppContext);
   return (
-    <Provider height="100vh" theme={defaultTheme} colorScheme={state.theme} scale={state.scale}>
+    <Provider minHeight="100vh" theme={defaultTheme} colorScheme={state.theme} scale={state.scale}>
       <Router>
         <NavBar />
         <Routes>

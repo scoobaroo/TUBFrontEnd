@@ -47,17 +47,16 @@ const NavControls = styled.div`
     align-items: center;
   }
   ._btn-authed {
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    grid-columns-gap: 8px;
-    grid-row-gap: 8px;
-    align-content: center;
+    display: flex;
+    align-items: center;
+    color: #8a7e7e;
   }
 `;
 const AuthedNavWrapper = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-column-gap: 8px;
+  display: flex;
+  width:100%;
+  flex:1;
+
 `;
 
 const HamburgerButton = ({ open, setOpen }) => (
@@ -85,10 +84,6 @@ const AuthedNav = ({ navigate, currentUser, firebase }) => {
           Sign Out
         </ActionButton>
       </div>
-      <div className="_btn-authed">
-        mode: {state.mode}
-        <Switch onChange={toggleMode} />
-      </div>
       {state.mode === "customer" ? (
         <div className="_btn-authed">
           <ActionButton isQuiet onPress={handleNewBounty}>
@@ -96,6 +91,10 @@ const AuthedNav = ({ navigate, currentUser, firebase }) => {
           </ActionButton>
         </div>
       ) : null}
+       <div className="_btn-authed">
+       <Switch  onChange={toggleMode} /> 
+        {state.mode}
+     </div>
     </AuthedNavWrapper>
   );
 };

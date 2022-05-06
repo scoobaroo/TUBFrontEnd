@@ -270,7 +270,7 @@ function NewBountyBase(props) {
         if (response.data) {
           console.log("response =>", response);
           setShowSuccess(true);
-          props.navigate("/bountydetails", {state: {BountyId: response.data.BountyId,SmartContractAddress:values.contractAddress}});
+          props.navigate("/bountydetails", {state: {BountyId:response.data.BountyId,SmartContractAddress:values.contractAddress}});
           console.log('Success');
           setState((prevState) => ({
             ...prevState,

@@ -1,7 +1,8 @@
 import React from "react";
 import axios from "axios";
-import { ProgressCircle, Well } from "@adobe/react-spectrum";
+import { Button, ProgressCircle, Well } from "@adobe/react-spectrum";
 import styled from "styled-components";
+import { Navigate } from "react-router-dom";
 import appConfig from "webpack-config-loader!../../app-config.js";
 import withAuthorization from "../../session/withAuthorization";
 import { withFirebase } from "../../firebase";
@@ -34,11 +35,12 @@ const BountyGrid = styled.div`
   }
 `;
 
-const BountyCard = ({ bounty }) => {
+const BountyCard = ({ bounty, props }) => {
   return (
     <Well>
       <div>{bounty.cob_name}</div>
       <div>{bounty.cob_description || `No Description`}</div>
+      <Button onClick={() => goToBounty(bounty, props)} >View Bounty</Button>
     </Well>
   );
 };
@@ -49,7 +51,7 @@ const initialState = {
   error: null,
 };
 
-const BountiesBase = ({ firebase, navigate }) => {
+const BountiesBase = (props) => {
   const [state] = React.useContext(AppContext);
   const userId = localStorage.getItem("accountId");
   const [State, setState] = React.useState({ ...initialState });
@@ -116,6 +118,10 @@ const BountiesBase = ({ firebase, navigate }) => {
       });
   };
 
+  const goToBounty = (bounty) => {
+    props.navigate("/bountydetails", {state: {BountyId:bounty.cob_bountyid, SmartContractAddress:bounty.cob_smartcontractaddress}});
+  }
+
   // console.log('state from allBounties page', state);
   if (State.loading && !State.bounties) {
     return (
@@ -133,7 +139,12 @@ const BountiesBase = ({ firebase, navigate }) => {
       {State.allBounties && !State.loading && (
         <BountyGrid>
           {State.allBounties.map((bounty) => (
-            <BountyCard key={bounty.cob_bountyid} bounty={bounty} />
+            // <BountyCard key={bounty.cob_bountyid} bounty={bounty} props={props} />
+            <Well>
+              <div>{bounty.cob_name}</div>
+              <div>{bounty.cob_description || `No Description`}</div>
+              <Button onClick={() => goToBounty(bounty)} >View Bounty</Button>
+            </Well>
           ))}
         </BountyGrid>
       )}
