@@ -57,6 +57,7 @@ const SignInFormBase = (props) => {
       .then((data) => {
         const { user: { uid } } = data;
         setLoggedUserId(uid);
+        localStorage.setItem('firbaseUid', uid);
         props.navigate('/');
       })
       .catch((err) => {

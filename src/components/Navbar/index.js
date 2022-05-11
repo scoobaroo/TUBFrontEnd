@@ -8,7 +8,8 @@ import { compose } from "recompose";
 import withRouter from "../../session/withRouter";
 import useUIControls from "../../hooks/useUIControls";
 import { AppContext } from "../../context";
-import { GiSunrise, GiSunset, GiResize } from "react-icons/gi";
+import { GiSunrise, GiSunset, GiResize, } from "react-icons/gi";
+import { FaUserAlt } from "react-icons/fa";
 
 const NavBarWrapper = styled.nav`
   box-shadow: 0px 1px 8px 1px rgba(0, 0, 0, 0.2);
@@ -24,7 +25,7 @@ const NavMenuWrapper = styled.div`
 const NavMenu = ({ isLoggedIn }) => {
   return (
     <NavMenuWrapper>
-      {isLoggedIn ? 'logged in' : 'not logged in'}
+      {isLoggedIn ? "logged in" : "not logged in"}
     </NavMenuWrapper>
   );
 };
@@ -51,12 +52,15 @@ const NavControls = styled.div`
     align-items: center;
     color: #8a7e7e;
   }
+  ._userAvatar {
+    dipslay: flex;
+    justify-content: flex-end;
+  }
 `;
 const AuthedNavWrapper = styled.div`
   display: flex;
-  width:100%;
-  flex:1;
-
+  width: 100%;
+  flex: 1;
 `;
 
 const HamburgerButton = ({ open, setOpen }) => (
@@ -70,11 +74,12 @@ const AuthedNav = ({ navigate, currentUser, firebase }) => {
   const handleSignOut = () => firebase.signOut();
   const handleNewBounty = () => navigate("/new-bounty");
   const handleMyBounty = () => navigate("/mybounties");
-  console.log('state =>', state);
- 
+  const BountyHandler = () => navigate("/bounties");
+  console.log("state =>", state);
+
   return (
     <AuthedNavWrapper>
-       <div className="_btn-authed">
+      <div className="_btn-authed">
         <ActionButton isQuiet onPress={handleMyBounty}>
           MyBounties
         </ActionButton>
@@ -91,10 +96,17 @@ const AuthedNav = ({ navigate, currentUser, firebase }) => {
           </ActionButton>
         </div>
       ) : null}
-       <div className="_btn-authed">
-       <Switch  onChange={toggleMode} /> 
+      {state.mode === "provider" ? (
+        <div className="_btn-authed">
+          <ActionButton isQuiet onPress={BountyHandler}>
+            Bounties
+          </ActionButton>
+        </div>
+      ) : null}
+      <div className="_btn-authed">
+        <Switch onChange={toggleMode} />
         {state.mode}
-     </div>
+      </div>
     </AuthedNavWrapper>
   );
 };
@@ -126,6 +138,7 @@ const NavBarBase = ({ firebase, navigate }) => {
   const currentUser = firebase.auth?.currentUser;
   const isLoggedIn = !!currentUser;
   const { theme } = state;
+  const userProfileHandler = () => navigate("/userprofile");
   return (
     <>
       <NavBarWrapper>
@@ -152,6 +165,9 @@ const NavBarBase = ({ firebase, navigate }) => {
             </ActionButton>
             <ActionButton onPress={toggleTheme} isQuiet>
               {theme === "light" ? <GiSunset /> : <GiSunrise />}
+            </ActionButton>
+            <ActionButton onPress={userProfileHandler} isQuiet>
+              <FaUserAlt />
             </ActionButton>
           </ThemeButtonContainer>
         </NavControls>

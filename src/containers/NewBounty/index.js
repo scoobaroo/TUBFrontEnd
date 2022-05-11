@@ -9,7 +9,7 @@ import {
   Picker,
   AlertDialog,
   DialogTrigger,
-  ActionButton
+  ActionButton,
 } from "@adobe/react-spectrum";
 import { FcFullTrash } from "react-icons/fc";
 import axios from "axios";
@@ -80,8 +80,7 @@ function NewBountyBase(props) {
   const [showError, setShowError] = React.useState(false);
   const [showBountyError, setShowBountyError] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
-  const [discription,setDiscription] = React.useState("");
-
+  const [discription, setDiscription] = React.useState("");
 
   React.useEffect(() => {
     if (_state.authUser && _state.authUser.uid) {
@@ -155,7 +154,7 @@ function NewBountyBase(props) {
       .catch((error) => {
         console.log("there was an error:", error);
       })
-      .finally(() => { });
+      .finally(() => {});
   };
 
   const createNewBounty = async () => {
@@ -166,7 +165,7 @@ function NewBountyBase(props) {
       }));
       const result = await deployBounty();
       if (result) {
-        handleSubmitNewBounty(result)
+        handleSubmitNewBounty(result);
       }
     } catch (error) {
       console.log(error);
@@ -179,7 +178,6 @@ function NewBountyBase(props) {
   };
 
   const deployBounty = async () => {
-
     let accounts = await provider.send("eth_requestAccounts", []);
     console.log(accounts);
     const signer = await provider.getSigner();
@@ -213,7 +211,6 @@ function NewBountyBase(props) {
     console.log("result =>", result);
     console.log("result");
     return result;
-
   };
 
   if (state.loading) {
@@ -248,9 +245,10 @@ function NewBountyBase(props) {
   };
 
   const handleSubmitNewBounty = (values) => {
-    console.log(values)
+    const id = window.localStorage.getItem("accountId");
+    console.log(values);
     const selectedTopicsList = selectedTopics.map((x) => x.topicId);
-    console.log(selectedTopicsList)
+    console.log(selectedTopicsList);
     const bountyObject = {
       Name: "default",
       CategoryIds: [categoryId],
@@ -260,9 +258,9 @@ function NewBountyBase(props) {
       TopicIds: [...new Set(selectedTopicsList)],
       AccountId: accountId,
       SmartContractAddress: values.contractAddress,
-      BountyAmount:Number(initalAmount),
+      BountyAmount: Number(initalAmount),
       SubTopicIds: [],
-      CustomerId:accountId,
+      CustomerId: id,
     };
     axios
       .post(`${appConfig.apiBaseUrl}bounties/new`, bountyObject)
@@ -270,8 +268,13 @@ function NewBountyBase(props) {
         if (response.data) {
           console.log("response =>", response);
           setShowSuccess(true);
-          props.navigate("/bountydetails", {state: {BountyId:response.data.BountyId,SmartContractAddress:values.contractAddress}});
-          console.log('Success');
+          props.navigate("/bountydetails", {
+            state: {
+              BountyId: response.data.BountyId,
+              SmartContractAddress: values.contractAddress,
+            },
+          });
+          console.log("Success");
           setState((prevState) => ({
             ...prevState,
             loading: false,
@@ -340,7 +343,12 @@ function NewBountyBase(props) {
       )}
       {state.selected && (
         <>
-          <TextField value={discription} onChange={setDiscription}  width="auto" label="Description" />
+          <TextField
+            value={discription}
+            onChange={setDiscription}
+            width="auto"
+            label="Description"
+          />
           <TextArea
             onChange={handleReqChange}
             width="auto"
@@ -350,7 +358,10 @@ function NewBountyBase(props) {
           <TextField value={initalAmount} onChange={initialAmountOnChange}>
             Initial Amount
           </TextField>
-          <Button onPress={async () => await createNewBounty()} variant="primary">
+          <Button
+            onPress={async () => await createNewBounty()}
+            variant="primary"
+          >
             Create Bounty
           </Button>
         </>
@@ -361,9 +372,9 @@ function NewBountyBase(props) {
           title="Failed"
           variant="error"
           primaryActionLabel="OK"
-          onPrimaryAction={() => setShowError(false)}>
-          Failed saving the bounty.
-          Please try again later.
+          onPrimaryAction={() => setShowError(false)}
+        >
+          Failed saving the bounty. Please try again later.
         </AlertDialog>
       </DialogTrigger>
       <DialogTrigger isOpen={showBountyError}>
@@ -372,9 +383,9 @@ function NewBountyBase(props) {
           title="Failed"
           variant="error"
           primaryActionLabel="OK"
-          onPrimaryAction={() => setShowBountyError(false)}>
-          Insufficient fund for intrisinc transaction.
-          Please try later.
+          onPrimaryAction={() => setShowBountyError(false)}
+        >
+          Insufficient fund for intrisinc transaction. Please try later.
         </AlertDialog>
       </DialogTrigger>
       <DialogTrigger isOpen={showSuccess}>
@@ -383,7 +394,8 @@ function NewBountyBase(props) {
           title="Bounty Saved"
           variant="information"
           primaryActionLabel="OK"
-          onPrimaryAction={() => setShowSuccess(false)}>
+          onPrimaryAction={() => setShowSuccess(false)}
+        >
           Bounty saved successfully.
         </AlertDialog>
       </DialogTrigger>

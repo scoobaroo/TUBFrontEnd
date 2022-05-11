@@ -14,6 +14,7 @@ import NewBounty from './containers/NewBounty';
 import NavBar from './components/NavBar';
 import BountyDetails from './containers/BountyDetails';
 import MyBounties from './containers/MyBounties';
+import UserProfile from './containers/UserProfile';
 import './clientlibs/css/App.css';
 
 function Wrapper() {
@@ -31,6 +32,7 @@ function Wrapper() {
           <Route path="/new-bounty" element={<NewBounty />} />
           <Route path="/bountydetails" element={<BountyDetails />} />
           <Route path="/mybounties" element={<MyBounties />} />
+          <Route path="/userprofile" element={<UserProfile />} />
         </Routes>
       </Router>
     </Provider>
