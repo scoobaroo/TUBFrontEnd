@@ -84,11 +84,6 @@ const AuthedNav = ({ navigate, currentUser, firebase }) => {
           MyBounties
         </ActionButton>
       </div>
-      <div className="_btn-authed">
-        <ActionButton isQuiet onPress={handleSignOut}>
-          Sign Out
-        </ActionButton>
-      </div>
       {state.mode === "customer" ? (
         <div className="_btn-authed">
           <ActionButton isQuiet onPress={handleNewBounty}>
@@ -102,7 +97,12 @@ const AuthedNav = ({ navigate, currentUser, firebase }) => {
             Bounties
           </ActionButton>
         </div>
-      ) : null}
+      ) : null}      
+      <div className="_btn-authed">
+        <ActionButton isQuiet onPress={handleSignOut}>
+          Sign Out
+        </ActionButton>
+      </div>
       <div className="_btn-authed">
         <Switch onChange={toggleMode} />
         {state.mode}

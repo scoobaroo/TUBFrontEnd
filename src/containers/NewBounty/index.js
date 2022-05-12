@@ -21,6 +21,7 @@ import { AppContext } from "../../context";
 import { compose } from "recompose";
 import withRouter from "../../session/withRouter";
 import { ethers, getDefaultProvider, utils } from "ethers";
+
 import { fs } from "fs";
 
 import abi from "../../Bounty.json";
@@ -135,26 +136,36 @@ function NewBountyBase(props) {
   ];
 
   const getCategories = () => {
-    const categoriesUrl = `${appConfig.apiBaseUrl}categories`;
-    axios
-      .get(categoriesUrl)
-      .then(({ status, data }) => {
-        if (status === 200) {
-          const categories = [...new Set(data)];
-          const loading = false;
-          setState((prevState) => ({
-            ...prevState,
-            categories,
-            loading,
-          }));
+    console.log(_state.categorys, "category value is there");
+    if (_state.categorys) {
+      console.log("categories are already loaded");
+      setState((prevState) => ({
+        ...prevState,
+        loading: false,
+        categories: _state.categorys,
+      }));
+    } else {
+      const categoriesUrl = `${appConfig.apiBaseUrl}categories`;
+      axios
+        .get(categoriesUrl)
+        .then(({ status, data }) => {
+          if (status === 200) {
+            const categories = [...new Set(data)];
+            const loading = false;
+            setState((prevState) => ({
+              ...prevState,
+              categories,
+              loading,
+            }));
 
-          console.log("categories =>", categories);
-        }
-      })
-      .catch((error) => {
-        console.log("there was an error:", error);
-      })
-      .finally(() => {});
+            console.log("categories =>", categories);
+          }
+        })
+        .catch((error) => {
+          console.log("there was an error:", error);
+        })
+        .finally(() => {});
+    }
   };
 
   const createNewBounty = async () => {

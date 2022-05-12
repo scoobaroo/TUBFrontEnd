@@ -53,7 +53,6 @@ const initialState = {
 
 const BountiesBase = (props) => {
   const [state] = React.useContext(AppContext);
-  const userId = localStorage.getItem("accountId");
   const [State, setState] = React.useState({ ...initialState });
   React.useEffect(() => {
     setState((prevState) => ({
@@ -69,7 +68,7 @@ const BountiesBase = (props) => {
   }, [state.mode]);
 
   const getProviderBounties = () => {
-    axios.get(`${appConfig.apiBaseUrl}users/${userId}/providerbounties`)
+    axios.get(`${appConfig.apiBaseUrl}users/${state.accountId}/providerbounties`)
       .then((response) => {
         console.log("response", response);
         if (response.status === 200) {
@@ -95,7 +94,7 @@ const BountiesBase = (props) => {
 
   const getCustomerBounties = () => {
     axios
-      .get(`${appConfig.apiBaseUrl}users/${userId}/customerbounties`)
+      .get(`${appConfig.apiBaseUrl}users/${state.accountId}/customerbounties`)
       .then((response) => {
         if (response.status === 200) {
           const {

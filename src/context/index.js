@@ -36,6 +36,16 @@ const getAccountId = () => {
   return accountId ? accountId : null;
 }
 
+const getCategorys = () => {
+  let categorys;
+  let NewCategorys
+  if (window.localStorage) {
+    categorys = window.localStorage.getItem('categorys');
+    NewCategorys = JSON.parse(categorys);
+  }
+  return NewCategorys ? NewCategorys : null;
+}
+
 const storeInitialState = {
   authUser: null,
   loading: false,
@@ -44,6 +54,7 @@ const storeInitialState = {
   scale: getScaleFromLocal(),
   mode: getModeFromLocal(),
   accountId: getAccountId(),
+  categorys: getCategorys(),
 };
 
 const AppContextBase = props => {

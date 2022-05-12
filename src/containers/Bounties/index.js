@@ -15,7 +15,7 @@ import { withFirebase } from "../../firebase";
 import { compose } from "recompose";
 import { ethers, getDefaultProvider, utils } from "ethers";
 import withRouter from "../../session/withRouter";
-
+import { AppContext } from "../../context";
 const LoadingWrapper = styled.div`
   min-height: 50vh;
   display: flex;
@@ -94,7 +94,6 @@ const initialState = {
 const FilterinitialState = {
   categories: null,
   loading: true,
-  selected: null,
 };
 
 const BountiesBase = ({ firebase, navigate }) => {
@@ -104,10 +103,12 @@ const BountiesBase = ({ firebase, navigate }) => {
   });
   const [categoryId, setCategoryId] = React.useState();
   const [subCategoryId, setSubCategoryId] = React.useState();
+  const [subCategories, setSubCategories] = React.useState([]);
   const [topics, setTopics] = React.useState([]);
   const [searchFlag, setSearchFlag] = React.useState(false);
   const [loader, setLoader] = React.useState(false);
   const [filerDataConditon, setFilerDataCondition] = React.useState(false);
+  const [_state] = React.useContext(AppContext);
   React.useEffect(() => {
     axios({
       method: "get",
@@ -133,29 +134,24 @@ const BountiesBase = ({ firebase, navigate }) => {
           loading: false,
           error,
         }));
-      });
-  }, []);
-
-  React.useEffect(() => {
+      });      
     getCategories();
   }, []);
 
   React.useEffect(() => {
-    if (filterState.categories) {
+    if (filterState.categories && categoryId) {
+      setLoader(true);
       console.log("categories");
       const [selected] = filterState.categories.filter(
         (x) => x.categoryId === categoryId
       );
-      setfilterState((prevState) => ({
-        ...prevState,
-        selected,
-      }));
+      setSubCategories(selected?.subCategories);
     }
   }, [categoryId]);
 
   React.useEffect(() => {
-    if (subCategoryId && filterState.selected.subCategories) {
-      const [results] = filterState.selected.subCategories.filter(
+    if (subCategoryId && subCategories) {
+      const [results] = subCategories.filter(
         (x) => x.subCategoryId === subCategoryId
       );
       setTopics(results.topics);
@@ -164,7 +160,7 @@ const BountiesBase = ({ firebase, navigate }) => {
   }, [subCategoryId]);
 
   const CategoryFilterHandler = (value) => {
-    setLoader(true);
+    setCategoryId(value);
     axios
       .get(`${appConfig.apiBaseUrl}bounties/search/?CategoryId=${value}`)
       .then((response) => {
@@ -232,26 +228,34 @@ const BountiesBase = ({ firebase, navigate }) => {
   };
 
   const getCategories = () => {
-    const categoriesUrl = `${appConfig.apiBaseUrl}categories`;
-    axios
-      .get(categoriesUrl)
-      .then(({ status, data }) => {
-        if (status === 200) {
-          const categories = [...new Set(data)];
-          const loading = false;
-          setfilterState((prevState) => ({
-            ...prevState,
-            categories,
-            loading,
-          }));
+    if (_state.categorys) {
+      setfilterState((prevState) => ({
+        ...prevState,
+        categories: _state.categorys,
+        loading: false,
+      }));
+    } else {
+      const categoriesUrl = `${appConfig.apiBaseUrl}categories`;
+      axios
+        .get(categoriesUrl)
+        .then(({ status, data }) => {
+          if (status === 200) {
+            const categories = [...new Set(data)];
+            const loading = false;
+            setfilterState((prevState) => ({
+              ...prevState,
+              categories,
+              loading,
+            }));
 
-          console.log("categories =>", categories);
-        }
-      })
-      .catch((error) => {
-        console.log("there was an error:", error);
-      })
-      .finally(() => {});
+            console.log("categories =>", categories);
+          }
+        })
+        .catch((error) => {
+          console.log("there was an error:", error);
+        })
+        .finally(() => {});
+    }
   };
   if (state.loading && !state.allBountiesl) {
     return (
@@ -266,7 +270,6 @@ const BountiesBase = ({ firebase, navigate }) => {
 
   return (
     <div>
-      {state.allBounties && !state.loading && (
         <>
           <FilterGrid>
             <FilterItemWrapper>
@@ -276,9 +279,7 @@ const BountiesBase = ({ firebase, navigate }) => {
               {filterState.categories && (
                 <ComboBox
                   label="Category"
-                  onSelectionChange={(value) => {
-                    return setCategoryId(value), CategoryFilterHandler(value);
-                  }}
+                  onSelectionChange={(value) => CategoryFilterHandler(value)}
                   items={filterState.categories}
                 >
                   {(item) => (
@@ -287,12 +288,12 @@ const BountiesBase = ({ firebase, navigate }) => {
                 </ComboBox>
               )}
             </FilterItemWrapper>
-            {!!filterState.selected &&
-              filterState.selected.subCategories.length > 0 && (
+            {subCategories &&
+              subCategories?.length > 0 && (
                 <FilterItemWrapper>
                   <ComboBox
                     label="Sub Category"
-                    items={filterState.selected.subCategories}
+                    items={subCategories}
                     onSelectionChange={(value) => {
                       return (
                         setSubCategoryId(value), subCategoryFilterHandler(value)
@@ -347,7 +348,6 @@ const BountiesBase = ({ firebase, navigate }) => {
             </BountyGrid>
           ) : null}
         </>
-      )}
     </div>
   );
 };
