@@ -7,6 +7,7 @@ import {
   Flex,
   ComboBox,
   Item,
+  Button,
 } from "@adobe/react-spectrum";
 import styled from "styled-components";
 import appConfig from "webpack-config-loader!../../app-config.js";
@@ -80,15 +81,15 @@ const BountyCard = ({ bounty }) => {
     <Well>
       <div>{bounty.cob_name}</div>
       <div>{bounty.cob_description || `No Description`}</div>
+      <Button onClick={() => goToBounty(bounty)} >View Bounty</Button>
     </Well>
   );
 };
 
 const initialState = {
-  allBounties: null,
+  bounties: null,
   loading: true,
   error: null,
-  filterBounties: null,
 };
 
 const FilterinitialState = {
@@ -110,31 +111,7 @@ const BountiesBase = ({ firebase, navigate }) => {
   const [filerDataConditon, setFilerDataCondition] = React.useState(false);
   const [_state] = React.useContext(AppContext);
   React.useEffect(() => {
-    axios({
-      method: "get",
-      url: `${appConfig.apiBaseUrl}bounties`,
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          console.log(response.data, "its first response");
-          const {
-            data: { value },
-          } = response;
-          const allBounties = [...new Set(value)];
-          setState((prevState) => ({
-            ...prevState,
-            allBounties,
-            loading: false,
-          }));
-        }
-      })
-      .catch((error) => {
-        setState((prevState) => ({
-          ...prevState,
-          loading: false,
-          error,
-        }));
-      });      
+    loadAllBounties();
     getCategories();
   }, []);
 
@@ -159,6 +136,38 @@ const BountiesBase = ({ firebase, navigate }) => {
     }
   }, [subCategoryId]);
 
+  const loadAllBounties = () => {
+    axios({
+      method: "get",
+      url: `${appConfig.apiBaseUrl}bounties`,
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          console.log(response.data, "its first response");
+          const {
+            data: { value },
+          } = response;
+          const bounties = [...new Set(value)];
+          setState((prevState) => ({
+            ...prevState,
+            bounties,
+            loading: false,
+          }));
+        }
+      })
+      .catch((error) => {
+        setState((prevState) => ({
+          ...prevState,
+          loading: false,
+          error,
+        }));
+      });
+  };
+
+  const goToBounty = (bounty) => {
+    navigate("/bountydetails", { state: { BountyId: bounty.cob_bountyid, SmartContractAddress: bounty.cob_smartcontractaddress } });
+  }
+
   const CategoryFilterHandler = (value) => {
     setCategoryId(value);
     axios
@@ -177,10 +186,10 @@ const BountiesBase = ({ firebase, navigate }) => {
             data: { value },
           } = response;
 
-          const filterBounties = [...new Set(value)];
+          const bounties = [...new Set(value)];
           setState((prevState) => ({
             ...prevState,
-            filterBounties,
+            bounties,
             loading: false,
           }));
           setLoader(false);
@@ -212,10 +221,10 @@ const BountiesBase = ({ firebase, navigate }) => {
             data: { value },
           } = response;
 
-          const filterBounties = [...new Set(value)];
+          const bounties = [...new Set(value)];
           setState((prevState) => ({
             ...prevState,
-            filterBounties,
+            bounties,
             loading: false,
           }));
         }
@@ -254,10 +263,10 @@ const BountiesBase = ({ firebase, navigate }) => {
         .catch((error) => {
           console.log("there was an error:", error);
         })
-        .finally(() => {});
+        .finally(() => { });
     }
   };
-  if (state.loading && !state.allBountiesl) {
+  if (state.loading && !state.bounties) {
     return (
       <LoadingWrapper>
         <div>
@@ -270,84 +279,84 @@ const BountiesBase = ({ firebase, navigate }) => {
 
   return (
     <div>
-        <>
-          <FilterGrid>
-            <FilterItemWrapper>
-              <SearchField label="Search" />
-            </FilterItemWrapper>
-            <FilterItemWrapper>
-              {filterState.categories && (
+      <>
+        <FilterGrid>
+          <FilterItemWrapper>
+            <SearchField label="Search" />
+          </FilterItemWrapper>
+          <FilterItemWrapper>
+            {filterState.categories && (
+              <ComboBox
+                label="Category"
+                onSelectionChange={(value) => CategoryFilterHandler(value)}
+                items={filterState.categories}
+              >
+                {(item) => (
+                  <Item key={item.categoryId}>{item.categoryName}</Item>
+                )}
+              </ComboBox>
+            )}
+          </FilterItemWrapper>
+          {subCategories &&
+            subCategories?.length > 0 && (
+              <FilterItemWrapper>
                 <ComboBox
-                  label="Category"
-                  onSelectionChange={(value) => CategoryFilterHandler(value)}
-                  items={filterState.categories}
+                  label="Sub Category"
+                  items={subCategories}
+                  onSelectionChange={(value) => {
+                    return (
+                      setSubCategoryId(value), subCategoryFilterHandler(value)
+                    );
+                  }}
                 >
                   {(item) => (
-                    <Item key={item.categoryId}>{item.categoryName}</Item>
+                    <Item key={item.subCategoryId}>
+                      {item.subCategoryName}
+                    </Item>
                   )}
-                </ComboBox>
-              )}
-            </FilterItemWrapper>
-            {subCategories &&
-              subCategories?.length > 0 && (
-                <FilterItemWrapper>
-                  <ComboBox
-                    label="Sub Category"
-                    items={subCategories}
-                    onSelectionChange={(value) => {
-                      return (
-                        setSubCategoryId(value), subCategoryFilterHandler(value)
-                      );
-                    }}
-                  >
-                    {(item) => (
-                      <Item key={item.subCategoryId}>
-                        {item.subCategoryName}
-                      </Item>
-                    )}
-                  </ComboBox>
-                </FilterItemWrapper>
-              )}
-            {!!topics?.length && (
-              <FilterItemWrapper>
-                <ComboBox label="Topics" items={topics}>
-                  <Item key="red panda">Topics</Item>
-                  {(item) => <Item key={item.topicId}>{item.topicName}</Item>}
                 </ComboBox>
               </FilterItemWrapper>
             )}
-          </FilterGrid>
-          {loader && (
-            <NewloadingWrapper>
-              <LoadingWrapper>
-                <div>
-                  <ProgressCircle
-                    size="L"
-                    aria-label="Loading…"
-                    isIndeterminate
-                  />
-                </div>
-                <div>please wait...</div>
-              </LoadingWrapper>
-            </NewloadingWrapper>
+          {!!topics?.length && (
+            <FilterItemWrapper>
+              <ComboBox label="Topics" items={topics}>
+                <Item key="red panda">Topics</Item>
+                {(item) => <Item key={item.topicId}>{item.topicName}</Item>}
+              </ComboBox>
+            </FilterItemWrapper>
           )}
+        </FilterGrid>
+        {loader && (
+          <NewloadingWrapper>
+            <LoadingWrapper>
+              <div>
+                <ProgressCircle
+                  size="L"
+                  aria-label="Loading…"
+                  isIndeterminate
+                />
+              </div>
+              <div>please wait...</div>
+            </LoadingWrapper>
+          </NewloadingWrapper>
+        )}
 
-          {!loader ? (
-            <BountyGrid>
-              {filerDataConditon ? (
-                <NoData>No Match Found</NoData>
-              ) : searchFlag ? (
-                state.filterBounties.map((bounty) => (
-                  <BountyCard key={bounty.cob_bountyid} bounty={bounty} />
-                ))
-              ) : (
-                state.allBounties.map((bounty) => (
-                  <BountyCard key={bounty.cob_bountyid} bounty={bounty} />
-                ))
-              )}
-            </BountyGrid>
-          ) : null}
-        </>
+        {!loader ? (
+          <BountyGrid>
+            {filerDataConditon ? (
+              <NoData>No Match Found</NoData>
+            ) : (
+              state.bounties.map((bounty) => (
+                <Well>
+                  <div>{bounty.cob_name}</div>
+                  <div>{bounty.cob_description || `No Description`}</div>
+                  <Button onClick={() => goToBounty(bounty)} >View Bounty</Button>
+                </Well>
+              ))
+            )}
+          </BountyGrid>
+        ) : null}
+      </>
     </div>
   );
 };

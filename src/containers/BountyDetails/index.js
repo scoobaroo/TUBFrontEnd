@@ -15,6 +15,7 @@ import styled from "styled-components";
 import React from "react";
 import axios from "axios";
 import abi from "../../Bounty.json";
+import { AppContext } from "../../context";
 
 const BountyWrapper = styled.div`
   display: grid;
@@ -76,6 +77,7 @@ const BountyDetails = () => {
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [showError, setShowError] = React.useState(false);
   const [message, setMessage] = React.useState({ ...intialMessage });
+  const [globalState] = React.useContext(AppContext);
 
   React.useEffect(() => {
     setBountyDetails((prevState) => ({
@@ -90,8 +92,8 @@ const BountyDetails = () => {
     setProvider(provider);
   }, []);
 
-  const loadBountyDetails = () => {
-    axios
+  const loadBountyDetails = async () => {
+    await axios
       .get(`${appConfig.apiBaseUrl}bounties/${bountyId}`)
       .then((response) => {
         console.log("bounty response=>");
@@ -104,6 +106,7 @@ const BountyDetails = () => {
           bountyStatus: response.data.BountyStatus,
           smartContractAddress: response.data.SmartContractAddress,
           topics: response.data.Topics,
+          customerId: response.data.CustomerId.Id,
           loading: false,
         }));
       })
@@ -283,46 +286,55 @@ const BountyDetails = () => {
             : {bountyDetails.bountyStatus}
           </Heading>
         </ItemWrapper>
-        <ItemWrapper>
-          <TextField
-            label="Amount to Increase"
-            value={amount}
-            onChange={amountOnChange}
-          >
-            Amount to Increase
-          </TextField>
-          <Button
-            marginTop={30}
-            marginStart={12}
-            onPress={() => increaseBounty(parseInt(amount))}
-            variant="cta"
-          >
-            Increase Bounty
-          </Button>
-        </ItemWrapper>
-        <ButtonWrapper>
-          <Button onPress={() => setShowModal(true)} variant="negative">
-            Cancel
-          </Button>
-          <Button onPress={getBoundyHandler} variant="negative">
-            Get Bounty
-          </Button>
-          {/* <span>
+
+        {bountyDetails.customerId == globalState.accountId &&
+        globalState.mode !== "provider" ? (
+          <>
+            <ItemWrapper>
+              <TextField
+                label="Amount to Increase"
+                value={amount}
+                onChange={amountOnChange}
+              >
+                Amount to Increase
+              </TextField>
+              <Button
+                marginTop={30}
+                marginStart={12}
+                onPress={() => increaseBounty(parseInt(amount))}
+                variant="cta"
+              >
+                Increase Bounty
+              </Button>
+            </ItemWrapper>
+            <ButtonWrapper>
+              <Button onPress={() => setShowModal(true)} variant="negative">
+                Cancel
+              </Button>
+              <Button onPress={getBoundyHandler} variant="negative">
+                Get Bounty
+              </Button>
+              {/* <span>
             Bounty Amount:{" "}
             {bountyAmount != undefined ? bountyAmount + "ETH" : ""}
           </span> */}
-          <Button onPress={async () => await getStatus()} variant="negative">
-            Get Status
-          </Button>
-          {/* <span>{active ? "Active" : "Inactive"}</span> */}
-          <a
-            style={{ textDecoration: "none" }}
-            href={`https://rinkeby.etherscan.io/address/${bountyDetails.smartContractAddress}`}
-            target="_blank"
-          >
-            <Button variant="negative">View on blockchain explorer</Button>
-          </a>
-        </ButtonWrapper>
+              <Button
+                onPress={async () => await getStatus()}
+                variant="negative"
+              >
+                Get Status
+              </Button>
+              {/* <span>{active ? "Active" : "Inactive"}</span> */}
+              <a
+                style={{ textDecoration: "none" }}
+                href={`https://rinkeby.etherscan.io/address/${bountyDetails.smartContractAddress}`}
+                target="_blank"
+              >
+                <Button variant="negative">View on blockchain explorer</Button>
+              </a>
+            </ButtonWrapper>
+          </>
+        ) : null}
       </BountyDeteilsWrapper>
       <DialogTrigger isOpen={showModal}>
         <></>

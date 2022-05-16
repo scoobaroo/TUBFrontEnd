@@ -7,9 +7,13 @@ import { withFirebase } from "../../firebase";
 import { compose } from "recompose";
 import withRouter from "../../session/withRouter";
 import useUIControls from "../../hooks/useUIControls";
+import useAccountId from "../../hooks/useAccountId";
 import { AppContext } from "../../context";
-import { GiSunrise, GiSunset, GiResize, } from "react-icons/gi";
+import { GiSunrise, GiSunset, GiResize } from "react-icons/gi";
+import { AiOutlineLogin, AiOutlineLogout } from "react-icons/ai";
 import { FaUserAlt } from "react-icons/fa";
+import axios from "axios";
+import ImageIcon from "../ImageIcon";
 
 const NavBarWrapper = styled.nav`
   box-shadow: 0px 1px 8px 1px rgba(0, 0, 0, 0.2);
@@ -63,6 +67,17 @@ const AuthedNavWrapper = styled.div`
   flex: 1;
 `;
 
+const ImageWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  overflow: hidden;
+`;
+
 const HamburgerButton = ({ open, setOpen }) => (
   <Hamburger toggled={open} toggle={setOpen} />
 );
@@ -70,8 +85,12 @@ const HamburgerButton = ({ open, setOpen }) => (
 const AuthedNav = ({ navigate, currentUser, firebase }) => {
   // console.log('currentUser', currentUser.uid);
   const [state] = React.useContext(AppContext);
+  const { setAccountId } = useAccountId();
   const { toggleMode } = useUIControls();
-  const handleSignOut = () => firebase.signOut();
+  const handleSignOut = () => { 
+    firebase.signOut();
+    setAccountId(null);
+  }
   const handleNewBounty = () => navigate("/new-bounty");
   const handleMyBounty = () => navigate("/mybounties");
   const BountyHandler = () => navigate("/bounties");
@@ -97,7 +116,7 @@ const AuthedNav = ({ navigate, currentUser, firebase }) => {
             Bounties
           </ActionButton>
         </div>
-      ) : null}      
+      ) : null}
       <div className="_btn-authed">
         <ActionButton isQuiet onPress={handleSignOut}>
           Sign Out
@@ -139,6 +158,8 @@ const NavBarBase = ({ firebase, navigate }) => {
   const isLoggedIn = !!currentUser;
   const { theme } = state;
   const userProfileHandler = () => navigate("/userprofile");
+  const handleSignIn = () => navigate("/sign-in");
+
   return (
     <>
       <NavBarWrapper>
@@ -166,9 +187,17 @@ const NavBarBase = ({ firebase, navigate }) => {
             <ActionButton onPress={toggleTheme} isQuiet>
               {theme === "light" ? <GiSunset /> : <GiSunrise />}
             </ActionButton>
-            <ActionButton onPress={userProfileHandler} isQuiet>
-              <FaUserAlt />
-            </ActionButton>
+
+            {
+              !state.accountId ?
+                <ActionButton onPress={handleSignIn} isQuiet>
+                  <AiOutlineLogin />
+                </ActionButton>
+                :
+                <ActionButton onPress={userProfileHandler} isQuiet>
+                  <ImageIcon />
+                </ActionButton>
+            }
           </ThemeButtonContainer>
         </NavControls>
         {open && <NavMenu isLoggedIn={isLoggedIn} />}

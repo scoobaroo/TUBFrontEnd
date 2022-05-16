@@ -51,7 +51,7 @@ const initialState = {
   error: null,
 };
 
-const BountiesBase = (props) => {
+const BountiesBase = ({ firebase, navigate }) => {
   const [state] = React.useContext(AppContext);
   const [State, setState] = React.useState({ ...initialState });
   React.useEffect(() => {
@@ -118,7 +118,7 @@ const BountiesBase = (props) => {
   };
 
   const goToBounty = (bounty) => {
-    props.navigate("/bountydetails", {state: {BountyId:bounty.cob_bountyid, SmartContractAddress:bounty.cob_smartcontractaddress}});
+    navigate("/bountydetails", {state: {BountyId:bounty.cob_bountyid, SmartContractAddress:bounty.cob_smartcontractaddress}});
   }
 
   // console.log('state from allBounties page', state);
