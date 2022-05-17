@@ -5,9 +5,20 @@ import {
   Button,
   TextField,
   Heading,
+  Well,
   DialogTrigger,
   AlertDialog,
   ProgressCircle,
+  TabList,
+  Tabs,
+  Item,
+  TabPanels,
+  TableView,
+  TableBody,
+  TableHeader,
+  Column,
+  Row,
+  Cell,
 } from "@adobe/react-spectrum";
 import appConfig from "webpack-config-loader!../../app-config.js";
 import axios from "axios";
@@ -245,6 +256,8 @@ const UserProfileEdit = () => {
 
     const userEdit = `${appConfig.apiBaseUrl}users/${globalState.accountId}/edit`;
     const userProfile = {
+      FirstName: state.first_name,
+      LastName: state.last_name,
       GithubUrl: state.gitHubUrl,
       LinkedInUrl: state.linkedInUrl,
       Telephone1: state.telephone,
@@ -370,6 +383,40 @@ const UserProfileEdit = () => {
           email={email}
         />
       )}
+      <Well margin="15px">
+        <Tabs marginBottom="20px" aria-label="History of Ancient Rome">
+          <TabList>
+            <Item key="Edu">Educations</Item>
+            <Item key="Cert">Certifications</Item>
+          </TabList>
+          <TabPanels>
+            <Item key="Edu">
+              <TableView>
+                <TableHeader>
+                  <Column>Label</Column>
+                  <Column>Type</Column>
+                  <Column align="end">Year</Column>
+                </TableHeader>
+                <TableBody>
+                  <Row>
+                    <Cell>B.Tech Computer Science &amp; Engineering</Cell>
+                    <Cell>Graduation</Cell>
+                    <Cell>2009</Cell>
+                  </Row>
+                  <Row>
+                    <Cell>M.Tech Software Development</Cell>
+                    <Cell>Post Graduation</Cell>
+                    <Cell>2011</Cell>
+                  </Row>
+                </TableBody>
+              </TableView>
+            </Item>
+            <Item key="Cert">
+              Certificate Grid
+            </Item>
+          </TabPanels>
+        </Tabs>
+      </Well>
       <DialogTrigger isOpen={showSuccess}>
         <></>
         <AlertDialog

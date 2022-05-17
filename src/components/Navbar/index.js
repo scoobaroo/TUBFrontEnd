@@ -1,7 +1,7 @@
 import React from "react";
 import { Pivot as Hamburger } from "hamburger-react";
 import styled from "styled-components";
-import { ActionButton, Switch } from "@adobe/react-spectrum";
+import { ActionButton, Switch,Button } from "@adobe/react-spectrum";
 import withAuthorization from "../../session/withAuthorization";
 import { withFirebase } from "../../firebase";
 import { compose } from "recompose";
@@ -78,6 +78,8 @@ const ImageWrapper = styled.div`
   overflow: hidden;
 `;
 
+
+
 const HamburgerButton = ({ open, setOpen }) => (
   <Hamburger toggled={open} toggle={setOpen} />
 );
@@ -85,47 +87,42 @@ const HamburgerButton = ({ open, setOpen }) => (
 const AuthedNav = ({ navigate, currentUser, firebase }) => {
   // console.log('currentUser', currentUser.uid);
   const [state] = React.useContext(AppContext);
-  const { setAccountId } = useAccountId();
   const { toggleMode } = useUIControls();
-  const handleSignOut = () => { 
-    firebase.signOut();
-    setAccountId(null);
-  }
-  const handleNewBounty = () => navigate("/new-bounty");
-  const handleMyBounty = () => navigate("/mybounties");
+  const handleMyCreatedBounty = () => navigate("/mybounties");
   const BountyHandler = () => navigate("/bounties");
+  const BountyImWorkedOnHandler = () => navigate("/bountyworkedon");
   console.log("state =>", state);
 
   return (
     <AuthedNavWrapper>
-      <div className="_btn-authed">
+      {/* <div className="_btn-authed">
         <ActionButton isQuiet onPress={handleMyBounty}>
           MyBounties
         </ActionButton>
-      </div>
-      {state.mode === "customer" ? (
-        <div className="_btn-authed">
-          <ActionButton isQuiet onPress={handleNewBounty}>
-            Create New Bounty
-          </ActionButton>
-        </div>
-      ) : null}
-      {state.mode === "provider" ? (
-        <div className="_btn-authed">
-          <ActionButton isQuiet onPress={BountyHandler}>
-            Bounties
-          </ActionButton>
-        </div>
-      ) : null}
+      </div> */}
+
       <div className="_btn-authed">
-        <ActionButton isQuiet onPress={handleSignOut}>
-          Sign Out
+        <ActionButton isQuiet onPress={BountyHandler}>
+          All Bounties
         </ActionButton>
       </div>
+
       <div className="_btn-authed">
+        <ActionButton isQuiet onPress={handleMyCreatedBounty}>
+          My Created Bounties
+        </ActionButton>
+      </div>
+
+      <div className="_btn-authed">
+        <ActionButton isQuiet onPress={BountyImWorkedOnHandler}>
+          Bounties I'm Working On
+        </ActionButton>
+      </div>
+
+      {/* <div className="_btn-authed">
         <Switch onChange={toggleMode} />
         {state.mode}
-      </div>
+      </div> */}
     </AuthedNavWrapper>
   );
 };
@@ -154,11 +151,17 @@ const NavBarBase = ({ firebase, navigate }) => {
   const [state] = React.useContext(AppContext);
   const [open, setOpen] = React.useState(false);
   const { toggleTheme, reSize } = useUIControls();
+  const { setAccountId } = useAccountId();
   const currentUser = firebase.auth?.currentUser;
   const isLoggedIn = !!currentUser;
   const { theme } = state;
   const userProfileHandler = () => navigate("/userprofile");
   const handleSignIn = () => navigate("/sign-in");
+  const handleSignOut = () => {
+    firebase.signOut();
+    setAccountId(null);
+  };
+  const handleNewBounty = () => navigate("/new-bounty");
 
   return (
     <>
@@ -181,23 +184,31 @@ const NavBarBase = ({ firebase, navigate }) => {
             </div>
           </NavMenuWrapper>
           <ThemeButtonContainer>
+            <Button marginEnd={2} fo onPress={handleNewBounty}>
+              Create New Bounty
+            </Button>
+            
             <ActionButton onPress={reSize} isQuiet>
               <GiResize />
             </ActionButton>
             <ActionButton onPress={toggleTheme} isQuiet>
               {theme === "light" ? <GiSunset /> : <GiSunrise />}
             </ActionButton>
+            {state.accountId != null ? (
+              <ActionButton isQuiet onPress={handleSignOut}>
+                Sign Out
+              </ActionButton>
+            ) : null}
 
-            {
-              !state.accountId ?
-                <ActionButton onPress={handleSignIn} isQuiet>
-                  <AiOutlineLogin />
-                </ActionButton>
-                :
-                <ActionButton onPress={userProfileHandler} isQuiet>
-                  <ImageIcon />
-                </ActionButton>
-            }
+            {!state.accountId ? (
+              <ActionButton onPress={handleSignIn} isQuiet>
+                <AiOutlineLogin />
+              </ActionButton>
+            ) : (
+              <ActionButton onPress={userProfileHandler} isQuiet>
+                <ImageIcon />
+              </ActionButton>
+            )}
           </ThemeButtonContainer>
         </NavControls>
         {open && <NavMenu isLoggedIn={isLoggedIn} />}

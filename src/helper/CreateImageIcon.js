@@ -21,7 +21,6 @@ const getInitials = (name) => {
 
     return initials.toUpperCase();
 };
-
 export const createImageFromInitials = (size, name, color) => {
     if (name == null) return;
     name = getInitials(name)

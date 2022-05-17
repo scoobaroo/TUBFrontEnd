@@ -13,7 +13,8 @@ import PasswordReset from './containers/PasswordReset';
 import NewBounty from './containers/NewBounty';
 import NavBar from './components/NavBar';
 import BountyDetails from './containers/BountyDetails';
-import MyBounties from './containers/MyBounties';
+import MyCreatedBounties from './containers/MyCreatedBounties';
+import BountyImWorkedOn from './containers/BountyImWorkedOn';
 import UserProfile from './containers/UserProfile';
 import './clientlibs/css/App.css';
 
@@ -31,8 +32,9 @@ function Wrapper() {
           <Route path="/bounties" element={<Bounties />} />
           <Route path="/new-bounty" element={<NewBounty />} />
           <Route path="/bountydetails" element={<BountyDetails />} />
-          <Route path="/mybounties" element={<MyBounties />} />
+          <Route path="/mybounties" element={<MyCreatedBounties />} />
           <Route path="/userprofile" element={<UserProfile />} />
+          <Route path="/bountyworkedon" element={<BountyImWorkedOn />} />
         </Routes>
       </Router>
     </Provider>
