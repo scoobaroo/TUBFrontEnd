@@ -5,7 +5,6 @@ import 'regenerator-runtime/runtime';
 import { AppContext, AppContextProvider } from './context';
 import Firebase, { FirebaseContext } from './firebase';
 import { MetaMaskProvider } from "metamask-react";
-import Home from './containers/Home';
 import SignUp from './containers/SignUp';
 import SignIn from './containers/SignIn';
 import Bounties from './containers/Bounties';

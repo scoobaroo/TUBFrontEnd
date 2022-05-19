@@ -32,7 +32,7 @@ function MetaMask() {
   return null;
 }
 
-const HomeBase = ({ firebase }) => {
+const ConnectionBase = ({ firebase }) => {
   return (
     <div>
       <MetaMask />
@@ -40,8 +40,8 @@ const HomeBase = ({ firebase }) => {
   )
 }
 
-const Home = compose(withRouter, withFirebase)(HomeBase);
+const Connection = compose(withRouter, withFirebase)(ConnectionBase);
 
 const condition = authUser => !!authUser;
 
-export default withAuthorization(condition)(Home);
+export default withAuthorization(condition)(Connection);

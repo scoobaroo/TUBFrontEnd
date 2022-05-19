@@ -14,7 +14,7 @@ import { AiOutlineLogin, AiOutlineLogout } from "react-icons/ai";
 import { FaUserAlt } from "react-icons/fa";
 import axios from "axios";
 import ImageIcon from "../ImageIcon";
-import Home from "../../containers/Home";
+import Connection from "../chain-connection";
 
 const NavBarWrapper = styled.nav`
   box-shadow: 0px 1px 8px 1px rgba(0, 0, 0, 0.2);
@@ -208,7 +208,7 @@ const NavBarBase = ({ firebase, navigate }) => {
           </NavMenuWrapper>
           <ThemeButtonContainer>
             <ConnectedButton  >
-              <Home />
+              <Connection />
             </ConnectedButton>
             <Button marginEnd={2} fo onPress={handleNewBounty}>
               Create New Bounty
