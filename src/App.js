@@ -25,7 +25,7 @@ function Wrapper() {
       <Router>
         <NavBar />
         <Routes>
-          <Route exact path="/" element={<Home />} />
+          <Route exact path="/" />
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/password-reset" element={<PasswordReset />} />

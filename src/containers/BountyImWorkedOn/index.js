@@ -79,7 +79,6 @@ const BountiesBase = ({ firebase, navigate }) => {
       });
   };
 
-
   const goToBounty = (bounty) => {
     navigate("/bountydetails", { state: { BountyId: bounty.cob_bountyid, SmartContractAddress: bounty.cob_smartcontractaddress } });
   }
@@ -97,7 +96,7 @@ const BountiesBase = ({ firebase, navigate }) => {
   }
   return (
     <div>
-      <h2>{(state.mode == "provider") ? 'Provider Bounties' : 'Customer Bounties'}</h2>
+      <h2>Provider Bounties</h2>
       {State.allBounties && !State.loading && (
         <BountyGrid>
           {State.allBounties.map((bounty) => (

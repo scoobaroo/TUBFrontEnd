@@ -3,6 +3,7 @@ import "./userProfile.css";
 import styled from "styled-components";
 import {
   Button,
+  Text,
   TextField,
   Heading,
   Well,
@@ -19,7 +20,16 @@ import {
   Column,
   Row,
   Cell,
+  ActionButton,
+  Dialog,
+  Flex,
+  Divider,
+  Link,
+  Content,
+  Form,
+  ButtonGroup,
 } from "@adobe/react-spectrum";
+import { FaPlus } from "react-icons/fa";
 import appConfig from "webpack-config-loader!../../app-config.js";
 import axios from "axios";
 import { withFirebase } from "../../firebase";
@@ -58,6 +68,17 @@ const InputFieldWrapper = styled.div`
 const CardWrapper = styled.div`
   display: flex;
   justify-content: center;
+`;
+
+const ButtonWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+`;
+
+const ModalWrapper = styled.div`
+  margin-top : 12px;
+  margin-bottom : 12px;
 `;
 
 const Profile = ({
@@ -121,6 +142,84 @@ const Profile = ({
   </CardWrapper>
 );
 
+const Modal = ({
+  onSetEducationType,
+  onSetName,
+  register,
+  modal,
+  openModal,
+  closeModal,
+}) => (
+  <ModalWrapper>
+    <DialogTrigger isOpen={modal}>
+      <ButtonWrapper>
+        <ActionButton onPress={openModal}><FaPlus /></ActionButton>
+      </ButtonWrapper>
+      <Dialog>
+        <Heading>
+          <Flex alignItems="center" gap="size-100">
+            <Text>Educations</Text>
+          </Flex>
+        </Heading>
+        <Divider />
+        <Content>
+          <Form>
+            <TextField onChange={onSetName} label="Label Or Name" autoFocus />
+            <TextField onChange={onSetEducationType} label="Education Type" />
+          </Form>
+        </Content>
+        <ButtonGroup>
+          <Button variant="secondary" onPress={closeModal}>
+            Cancel
+          </Button>
+          <Button variant="cta" onPress={register}>
+            Save
+          </Button>
+        </ButtonGroup>
+      </Dialog>
+    </DialogTrigger>
+  </ModalWrapper>
+);
+
+const CertificationModal = ({
+  onSetEducationType,
+  onSetlabel,
+  onSetName,
+  register,
+  modal,
+  openModal,
+  closeModal,
+}) => (
+  <DialogTrigger isOpen={modal}>
+    <ButtonWrapper>
+      <ActionButton marginY={'5px'} onPress={openModal}><FaPlus /></ActionButton>
+    </ButtonWrapper>
+    <Dialog>
+      <Heading>
+        <Flex alignItems="center" gap="size-100">
+          <Text>Certifications</Text>
+        </Flex>
+      </Heading>
+      <Divider />
+      <Content>
+        <Form>
+          <TextField onChange={onSetlabel} label="Label Or Name" autoFocus />
+          <TextField onChange={onSetEducationType} label="Education Type" />
+          <TextField onChange={onSetName} label="Name" />
+        </Form>
+      </Content>
+      <ButtonGroup>
+        <Button variant="secondary" onPress={closeModal}>
+          Cancel
+        </Button>
+        <Button variant="cta" onPress={register}>
+          Save
+        </Button>
+      </ButtonGroup>
+    </Dialog>
+  </DialogTrigger>
+);
+
 const Edit = ({ onSubmit, children }) => (
   <CardWrapper>
     <div className="card">
@@ -137,25 +236,53 @@ const Edit = ({ onSubmit, children }) => (
   </CardWrapper>
 );
 
+
+
 const UserProfileEdit = () => {
   const InitialState = {
-    file: "",
-    imagePreviewUrl:
-      "https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true",
-    gitHubUrl: "",
-    linkedInUrl: "",
-    telephone: "",
-    active: "profile",
-    email: "",
-    first_name: "",
-    last_name: "",
+    file: '',
+    imagePreviewUrl: 'https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true',
+    gitHubUrl: '',
+    linkedInUrl: '',
+    telephone: '',
+    active: 'profile',
+    email: '',
+    first_name: '',
+    last_name: '',
+    educationDetails: [],
+    certifications: [],
   };
 
+  const InitialEducationState = {
+    Name: "",
+    EducationType: "",
+  };
+
+  const InitialCertificationState = {
+    Nameorlabel: "",
+    EducationType: "",
+    Name: "",
+  };
+
+  const InitalMessage = {
+    EducationType: false,
+    Certification: false,
+  };
+
+
+  const [message, setMessage] = React.useState({ ...InitalMessage });
   const [globalState] = React.useContext(AppContext);
   const [state, setState] = React.useState({ ...InitialState });
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [showBountyError, setShowBountyError] = React.useState(false);
   const [loader, setLoader] = React.useState(false);
+  const [educationDetails, setEducationDetails] = React.useState({
+    ...InitialEducationState,
+  });
+  const [certificationDetails, setCertificationDetails] = React.useState({
+    ...InitialCertificationState,
+  });
+  const [showModal, setShowModal] = React.useState(false);
 
   React.useEffect(() => {
     loadProfileDetails();
@@ -165,6 +292,7 @@ const UserProfileEdit = () => {
     axios
       .get(`${appConfig.apiBaseUrl}users/accountId/${globalState.accountId}`)
       .then((res) => {
+        console.log(res.data);
         let imageUrl;
         if (res.data.cob_profilepicture !== "") {
           const string2 = res.data.cob_profilepicture;
@@ -174,7 +302,6 @@ const UserProfileEdit = () => {
           imageUrl =
             "https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true";
         }
-
         setState((prevState) => ({
           ...prevState,
           gitHubUrl: res.data.cob_githuburl,
@@ -184,6 +311,8 @@ const UserProfileEdit = () => {
           email: res.data.emailaddress1,
           first_name: res.data.cob_firstname,
           last_name: res.data.cob_lastname,
+          educationDetails: res.data.cob_Education_providerid_Account,
+          certifications: res.data.cob_Certification_providerid_Account,
         }));
       })
       .catch((err) => {
@@ -267,6 +396,11 @@ const UserProfileEdit = () => {
     axios
       .patch(userEdit, userProfile)
       .then((res) => {
+        setMessage((prevState) => ({
+          ...prevState,
+          EducationType: false,
+          Certification: false,
+        }));
         console.log(res);
         setLoader(false);
         setShowSuccess(true);
@@ -306,6 +440,106 @@ const UserProfileEdit = () => {
       </LoadingWrapper>
     );
   }
+  const openModal = () => {
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
+  const setEducationName = (e) => {
+    setEducationDetails((prevState) => ({
+      ...prevState,
+      Name: e,
+    }));
+  };
+
+  const setEducationtype = (e) => {
+    setEducationDetails((prevState) => ({
+      ...prevState,
+      EducationType: e,
+    }));
+  };
+
+  const setCertificationNameorLabel = (e) => {
+    setCertificationDetails((prevState) => ({
+      ...prevState,
+      Nameorlabel: e,
+    }));
+  };
+
+  const setCertificationType = (e) => {
+    setCertificationDetails((prevState) => ({
+      ...prevState,
+      EducationType: e,
+    }));
+  };
+
+  const SetcetificationName = (e) => {
+    setCertificationDetails((prevState) => ({
+      ...prevState,
+      Name: e,
+    }));
+  };
+
+  const formRegister = () => {
+    console.log(educationDetails);
+    setLoader(true);
+    axios
+      .post(
+        `${appConfig.apiBaseUrl}users/${globalState.accountId}/educations/new`,
+        educationDetails
+      )
+      .then((res) => {
+        setLoader(false);
+        setMessage((prevState) => ({
+          ...prevState,
+          EducationType: true,
+          Certification: false,
+        }));
+        setShowSuccess(true);
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+        setShowBountyError(true);
+      });
+    setShowModal(false);
+  };
+
+  const formRegisterCertification = () => {
+    console.log(certificationDetails);
+    setLoader(true);
+    axios
+      .post(
+        `${appConfig.apiBaseUrl}users/${globalState.accountId}/certifications/new`,
+        certificationDetails
+      )
+      .then((res) => {
+        console.log(res);
+        setMessage((prevState) => ({
+          ...prevState,
+          Certification: true,
+          EducationType: false,
+        }));
+        setLoader(false);
+        setShowSuccess(true);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoader(false);
+        setShowBountyError(true);
+      });
+    setShowModal(false);
+  };
+
+  const FormVAlidation = (e) => {
+    setEducationDetails((prevState) => ({
+      ...prevState,
+      Name: e
+    }));
+  };
 
   return (
     <>
@@ -384,35 +618,67 @@ const UserProfileEdit = () => {
         />
       )}
       <Well margin="15px">
-        <Tabs marginBottom="20px" aria-label="History of Ancient Rome">
+        <Tabs marginBottom="20px" aria-label="Education and Certifications">
           <TabList>
             <Item key="Edu">Educations</Item>
             <Item key="Cert">Certifications</Item>
           </TabList>
+
           <TabPanels>
             <Item key="Edu">
+              <Modal
+                onSetName={setEducationName}
+                onSetEducationType={setEducationtype}
+                register={formRegister}
+                modal={showModal}
+                openModal={openModal}
+                closeModal={closeModal}
+              />
               <TableView>
                 <TableHeader>
-                  <Column>Label</Column>
-                  <Column>Type</Column>
-                  <Column align="end">Year</Column>
+                  <Column>Label or Name</Column>
+                  <Column align="end">Type</Column>
                 </TableHeader>
                 <TableBody>
-                  <Row>
-                    <Cell>B.Tech Computer Science &amp; Engineering</Cell>
-                    <Cell>Graduation</Cell>
-                    <Cell>2009</Cell>
-                  </Row>
-                  <Row>
-                    <Cell>M.Tech Software Development</Cell>
-                    <Cell>Post Graduation</Cell>
-                    <Cell>2011</Cell>
-                  </Row>
+                  {
+                    state.educationDetails.map(item => (
+                      <Row>
+                        <Cell>{item.cob_name}</Cell>
+                        <Cell>{item.cob_educationtype}</Cell>
+                      </Row>
+                    ))
+                  }
                 </TableBody>
               </TableView>
             </Item>
             <Item key="Cert">
-              Certificate Grid
+              <CertificationModal
+                onSetlabel={setCertificationNameorLabel}
+                onSetEducationType={setCertificationType}
+                onSetName={SetcetificationName}
+                register={formRegisterCertification}
+                modal={showModal}
+                openModal={openModal}
+                closeModal={closeModal}
+              />
+              <TableView>
+                <TableHeader>
+                  <Column>Label</Column>
+                  <Column>Name</Column>
+                  <Column align="end">Type</Column>
+                </TableHeader>
+                <TableBody>
+                  {
+                    state.certifications.map(item => (
+                      <Row>
+                        <Cell>{item.cob_name}</Cell>
+                        <Cell>{ }</Cell>
+                        <Cell>{ }</Cell>
+                      </Row>
+                    ))
+                  }
+                </TableBody>
+              </TableView>
             </Item>
           </TabPanels>
         </Tabs>
@@ -425,7 +691,9 @@ const UserProfileEdit = () => {
           primaryActionLabel="OK"
           onPrimaryAction={() => setShowSuccess(false)}
         >
-          Profile saved successfully.
+          {message.EducationType ? ("Education Added Successfully") : message.Certification ? ("Certification Added Successfully")
+            : ("Profile saved successfully.")}
+
         </AlertDialog>
       </DialogTrigger>
       <DialogTrigger isOpen={showBountyError}>

@@ -96,17 +96,17 @@ const BountiesBase = ({ firebase, navigate }) => {
   }
   return (
     <div>
-      <h2>{(state.mode == "provider") ? 'Provider Bounties' : 'Customer Bounties'}</h2>
+      <h2>Customer Bounties</h2>
       {State.allBounties && !State.loading && (
         <BountyGrid>
           {State.allBounties.map((bounty) => (
-            // <BountyCard key={bounty.cob_bountyid} bounty={bounty} props={props} />
-            <Well>
-              <div>{bounty.cob_name}</div>
-              <div>{bounty.cob_description || `No Description`}</div>
-              <Button onClick={() => goToBounty(bounty)} >View Bounty</Button>
-            </Well>
-          ))}
+            bounty._cob_customerid_value == state.accountId && (
+              <Well key={bounty.cob_bountyid}>
+                <div>{bounty.cob_name}</div>
+                <div>{bounty.cob_description || `No Description`}</div>
+                <Button onClick={() => goToBounty(bounty)} >View Bounty</Button>
+              </Well>
+            )))}
         </BountyGrid>
       )}
       {State.loading && (

@@ -1,7 +1,7 @@
 import React from "react";
 import { Pivot as Hamburger } from "hamburger-react";
 import styled from "styled-components";
-import { ActionButton, Switch,Button } from "@adobe/react-spectrum";
+import { ActionButton, Switch, Button } from "@adobe/react-spectrum";
 import withAuthorization from "../../session/withAuthorization";
 import { withFirebase } from "../../firebase";
 import { compose } from "recompose";
@@ -14,13 +14,17 @@ import { AiOutlineLogin, AiOutlineLogout } from "react-icons/ai";
 import { FaUserAlt } from "react-icons/fa";
 import axios from "axios";
 import ImageIcon from "../ImageIcon";
+import Home from "../../containers/Home";
 
 const NavBarWrapper = styled.nav`
   box-shadow: 0px 1px 8px 1px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
 `;
-const ThemeButtonContainer = styled.div``;
+const ThemeButtonContainer = styled.div`
+display: flex;
+align-items: center;
+`;
 const NavMenuWrapper = styled.div`
   display: flex;
   align-items: center;
@@ -76,6 +80,25 @@ const ImageWrapper = styled.div`
   border-radius: 50%;
   background-color: #ffffff;
   overflow: hidden;
+`;
+
+const ConnectedButton = styled.button`
+border: none;
+background: none;
+padding: 0 17px;
+margin-right: 10px;
+line-height: 40px;
+border-radius: 30px;
+cursor: pointer;
+&:hover {
+  background: #333333;
+}
+& button {
+  line-height: 40px;
+  background: none;
+  box-shadow: none;
+    border: none;
+}
 `;
 
 
@@ -184,10 +207,13 @@ const NavBarBase = ({ firebase, navigate }) => {
             </div>
           </NavMenuWrapper>
           <ThemeButtonContainer>
+            <ConnectedButton  >
+              <Home />
+            </ConnectedButton>
             <Button marginEnd={2} fo onPress={handleNewBounty}>
               Create New Bounty
             </Button>
-            
+
             <ActionButton onPress={reSize} isQuiet>
               <GiResize />
             </ActionButton>
