@@ -192,7 +192,7 @@ const CertificationModal = ({
 }) => (
   <DialogTrigger isOpen={modal}>
     <ButtonWrapper>
-      <ActionButton marginY={'5px'} onPress={openModal}><FaPlus /></ActionButton>
+      <ActionButton marginY={'12px'} onPress={openModal}><FaPlus /></ActionButton>
     </ButtonWrapper>
     <Dialog>
       <Heading>
@@ -483,7 +483,7 @@ const UserProfileEdit = () => {
     }));
   };
 
-  const formRegister = () => {
+  const formRegisterEducation = () => {
     console.log(educationDetails);
     setLoader(true);
     axios
@@ -499,6 +499,7 @@ const UserProfileEdit = () => {
           Certification: false,
         }));
         setShowSuccess(true);
+        loadProfileDetails();
         console.log(res);
       })
       .catch((err) => {
@@ -525,6 +526,7 @@ const UserProfileEdit = () => {
         }));
         setLoader(false);
         setShowSuccess(true);
+        loadProfileDetails();
       })
       .catch((err) => {
         console.log(err);
@@ -629,7 +631,7 @@ const UserProfileEdit = () => {
               <Modal
                 onSetName={setEducationName}
                 onSetEducationType={setEducationtype}
-                register={formRegister}
+                register={formRegisterEducation}
                 modal={showModal}
                 openModal={openModal}
                 closeModal={closeModal}
