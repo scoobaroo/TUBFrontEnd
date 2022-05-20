@@ -5,7 +5,7 @@ import { AppContext } from "../../context";
 import {
   createImageFromInitials,
   getRandomColor,
-} from "../../helper/CreateImageIcon";
+} from "../../helper/create-image-icon";
 import appConfig from "webpack-config-loader!../../app-config.js";
 
 const ImageWrapper = styled.div`
