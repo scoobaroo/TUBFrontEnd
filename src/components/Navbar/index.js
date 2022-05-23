@@ -220,13 +220,13 @@ const NavBarBase = ({ firebase, navigate }) => {
             <ActionButton onPress={toggleTheme} isQuiet>
               {theme === "light" ? <GiSunset /> : <GiSunrise />}
             </ActionButton>
-            {state.accountId != null ? (
+            {state.accountId !== null? (
               <ActionButton isQuiet onPress={handleSignOut}>
                 Sign Out
               </ActionButton>
             ) : null}
 
-            {!state.accountId ? (
+            {state.accountId === null ? (
               <ActionButton onPress={handleSignIn} isQuiet>
                 <AiOutlineLogin />
               </ActionButton>

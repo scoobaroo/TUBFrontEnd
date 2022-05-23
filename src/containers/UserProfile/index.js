@@ -74,11 +74,12 @@ const ButtonWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  margin: 3px;
 `;
 
 const ModalWrapper = styled.div`
-  margin-top : 12px;
-  margin-bottom : 12px;
+  margin-top: 12px;
+  margin-bottom: 12px;
 `;
 
 const Profile = ({
@@ -122,6 +123,11 @@ const Profile = ({
           <Heading marginBottom="10">
             <span style={{ color: "#766e6e" }}>LinekdIn url: </span>
             {linkedInUrl}
+            {/* <Link>
+              <a href={`${linkedInUrl}`} target="_blank">
+                url
+              </a>
+            </Link> */}
           </Heading>
 
           <Heading marginBottom="10">
@@ -153,7 +159,9 @@ const Modal = ({
   <ModalWrapper>
     <DialogTrigger isOpen={modal}>
       <ButtonWrapper>
-        <ActionButton onPress={openModal}><FaPlus /></ActionButton>
+        <ActionButton onPress={openModal}>
+          <FaPlus />
+        </ActionButton>
       </ButtonWrapper>
       <Dialog>
         <Heading>
@@ -192,7 +200,9 @@ const CertificationModal = ({
 }) => (
   <DialogTrigger isOpen={modal}>
     <ButtonWrapper>
-      <ActionButton marginY={'12px'} onPress={openModal}><FaPlus /></ActionButton>
+      <ActionButton marginY={"12px"} onPress={openModal}>
+        <FaPlus />
+      </ActionButton>
     </ButtonWrapper>
     <Dialog>
       <Heading>
@@ -220,35 +230,41 @@ const CertificationModal = ({
   </DialogTrigger>
 );
 
-const Edit = ({ onSubmit, children }) => (
+const Edit = ({ onSubmit, children ,EditCancel}) => (
   <CardWrapper>
     <div className="card">
       <h1>User Profile</h1>
       <form onSubmit={onSubmit}>
         {children}
         <div className="edit_profile">
-          <Button type="submit" variant="cta" marginTop={"15px"}>
-            save
-          </Button>
+          <ButtonWrapper>
+            <Button onPress={EditCancel}  variant="cta" marginTop={"15px"}>
+              Cancel
+            </Button>
+          </ButtonWrapper>
+          <ButtonWrapper>
+            <Button type="submit" variant="cta" marginTop={"15px"}>
+              save
+            </Button>
+          </ButtonWrapper>
         </div>
       </form>
     </div>
   </CardWrapper>
 );
 
-
-
 const UserProfileEdit = () => {
   const InitialState = {
-    file: '',
-    imagePreviewUrl: 'https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true',
-    gitHubUrl: '',
-    linkedInUrl: '',
-    telephone: '',
-    active: 'profile',
-    email: '',
-    first_name: '',
-    last_name: '',
+    file: "",
+    imagePreviewUrl:
+      "https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true",
+    gitHubUrl: "",
+    linkedInUrl: "",
+    telephone: "",
+    active: "profile",
+    email: "",
+    first_name: "",
+    last_name: "",
     educationDetails: [],
     certifications: [],
   };
@@ -268,7 +284,6 @@ const UserProfileEdit = () => {
     EducationType: false,
     Certification: false,
   };
-
 
   const [message, setMessage] = React.useState({ ...InitalMessage });
   const [globalState] = React.useContext(AppContext);
@@ -539,14 +554,19 @@ const UserProfileEdit = () => {
   const FormVAlidation = (e) => {
     setEducationDetails((prevState) => ({
       ...prevState,
-      Name: e
+      Name: e,
     }));
   };
+  const EditCancel = () => {
+    setState((prevState) => ({
+      ...prevState,
+      active: "profile",
+    }))}
 
   return (
     <>
       {active === "edit" ? (
-        <Edit onSubmit={handleSubmit}>
+        <Edit onSubmit={handleSubmit} EditCancel ={EditCancel}>
           <ImgUpload onChange={photoUpload} src={imagePreviewUrl} />
           <div className="item_wrapper">
             <InputFieldWrapper>
@@ -642,14 +662,12 @@ const UserProfileEdit = () => {
                   <Column align="end">Type</Column>
                 </TableHeader>
                 <TableBody>
-                  {
-                    state.educationDetails.map(item => (
-                      <Row>
-                        <Cell>{item.cob_name}</Cell>
-                        <Cell>{item.cob_educationtype}</Cell>
-                      </Row>
-                    ))
-                  }
+                  {state.educationDetails.map((item) => (
+                    <Row>
+                      <Cell>{item.cob_name}</Cell>
+                      <Cell>{item.cob_educationtype}</Cell>
+                    </Row>
+                  ))}
                 </TableBody>
               </TableView>
             </Item>
@@ -670,15 +688,13 @@ const UserProfileEdit = () => {
                   <Column align="end">Type</Column>
                 </TableHeader>
                 <TableBody>
-                  {
-                    state.certifications.map(item => (
-                      <Row>
-                        <Cell>{item.cob_name}</Cell>
-                        <Cell>{ }</Cell>
-                        <Cell>{ }</Cell>
-                      </Row>
-                    ))
-                  }
+                  {state.certifications.map((item) => (
+                    <Row>
+                      <Cell>{item.cob_name}</Cell>
+                      <Cell>{}</Cell>
+                      <Cell>{}</Cell>
+                    </Row>
+                  ))}
                 </TableBody>
               </TableView>
             </Item>
@@ -693,9 +709,11 @@ const UserProfileEdit = () => {
           primaryActionLabel="OK"
           onPrimaryAction={() => setShowSuccess(false)}
         >
-          {message.EducationType ? ("Education Added Successfully") : message.Certification ? ("Certification Added Successfully")
-            : ("Profile saved successfully.")}
-
+          {message.EducationType
+            ? "Education Added Successfully"
+            : message.Certification
+            ? "Certification Added Successfully"
+            : "Profile saved successfully."}
         </AlertDialog>
       </DialogTrigger>
       <DialogTrigger isOpen={showBountyError}>

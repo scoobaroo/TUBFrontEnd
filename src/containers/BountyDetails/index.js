@@ -287,7 +287,15 @@ const BountyDetails = () => {
           </Heading>
         </ItemWrapper>
 
-        {bountyDetails.customerId == globalState.accountId &&
+        <a
+          style={{ textDecoration: "none" }}
+          href={`https://rinkeby.etherscan.io/address/${bountyDetails.smartContractAddress}`}
+          target="_blank"
+        >
+          <Button variant="negative">View on blockchain explorer</Button>
+        </a>
+
+        {bountyDetails.customerId !== globalState.accountId &&
         globalState.mode !== "provider" ? (
           <>
             <ItemWrapper>
@@ -325,13 +333,6 @@ const BountyDetails = () => {
                 Get Status
               </Button>
               {/* <span>{active ? "Active" : "Inactive"}</span> */}
-              <a
-                style={{ textDecoration: "none" }}
-                href={`https://rinkeby.etherscan.io/address/${bountyDetails.smartContractAddress}`}
-                target="_blank"
-              >
-                <Button variant="negative">View on blockchain explorer</Button>
-              </a>
             </ButtonWrapper>
           </>
         ) : null}

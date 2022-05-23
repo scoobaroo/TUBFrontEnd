@@ -23,8 +23,10 @@
       projectId: "unblock-auth-dev",
       storageBucket: "unblock-auth-dev.appspot.com",
       messagingSenderId: "46308360656",
-      appId: "1:46308360656:web:6d17f886725fef944ab9d5"
+      appId: "1:46308360656:web:6d17f886725fef944ab9d5",
     },
+
+    timeOutDelay: 3600, // in seconds
   },
   production: {
     apiBaseUrl: 'http://localhost:4000/',
@@ -37,6 +39,8 @@
       messagingSenderId: "46308360656",
       appId: "1:46308360656:web:6d17f886725fef944ab9d5"
     },
+
+    timeOutDelay: 3600, // in seconds
   },
 };
 

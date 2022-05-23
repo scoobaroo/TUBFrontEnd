@@ -46,6 +46,16 @@ const getCategorys = () => {
   return NewCategorys ? NewCategorys : null;
 }
 
+const getEducationType = () => {
+  let educationType;
+  let NewEducationType  
+  if (window.localStorage) {
+    educationType = window.localStorage.getItem('educationType');
+    NewEducationType = JSON.parse(educationType);
+  }
+  return NewEducationType ? NewEducationType : null;
+}
+
 const storeInitialState = {
   authUser: null,
   loading: false,
@@ -55,6 +65,7 @@ const storeInitialState = {
   mode: getModeFromLocal(),
   accountId: getAccountId(),
   categorys: getCategorys(),
+  EducationType: getEducationType(),
 };
 
 const AppContextBase = props => {

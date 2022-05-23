@@ -11,11 +11,14 @@ import useAccountId from "../../hooks/useAccountId";
 import useCategory from "../../hooks/useCategory";
 
 import FormContainer from "../../styled/FormContainer";
+import useEducationType from "../../hooks/useEducationType";
 
 const SignInFormBase = (props) => {
   const [state, setState] = React.useState({ ...initialState });
   const { setAccountId } = useAccountId();
   const { setCategory } = useCategory();
+  const {setEducationType} = useEducationType()
+
 
   const handleEmailChange = (val) => {
     const email = val;
@@ -50,6 +53,7 @@ const SignInFormBase = (props) => {
           console.log("setting accountId =>", result.accountid);
           setAccountId(accountId);
           setCategory();
+          setEducationType();
           console.log("use this for next api call, blobject =>", result);
         }
       })

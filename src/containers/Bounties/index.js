@@ -17,6 +17,7 @@ import { compose } from "recompose";
 import { ethers, getDefaultProvider, utils } from "ethers";
 import withRouter from "../../session/withRouter";
 import { AppContext } from "../../context";
+import useAccountId from "../../hooks/useAccountId";
 const LoadingWrapper = styled.div`
   min-height: 50vh;
   display: flex;
@@ -110,6 +111,7 @@ const BountiesBase = ({ firebase, navigate }) => {
   const [loader, setLoader] = React.useState(false);
   const [filerDataConditon, setFilerDataCondition] = React.useState(false);
   const [_state] = React.useContext(AppContext);
+
   React.useEffect(() => {
     loadAllBounties();
     getCategories();

@@ -20,7 +20,7 @@ function MetaMask() {
 
   if (status === "initializing") return <div>Synchronisation with MetaMask ongoing...</div>
 
-  if (status === "unavailable") return <div>MetaMask not available :</div>
+  if (status === "unavailable") return <div>MetaMask not available</div>
 
   if (status === "notConnected") return <button onClick={connect}>Connect to MetaMask</button>
 
@@ -32,7 +32,8 @@ function MetaMask() {
   return null;
 }
 
-const ConnectionBase = ({ firebase }) => {
+const ConnectionBase = ({ firebase ,navigate}) => {  
+
   return (
     <div>
       <MetaMask />
