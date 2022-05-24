@@ -258,7 +258,7 @@ function NewBountyBase(props) {
   const handleSubmitNewBounty = (values) => {
     const id = window.localStorage.getItem("accountId");
     console.log(values);
-    const selectedTopicsList = selectedTopics.map((x) => x.topicId);
+    const selectedTopicsList = selectedTopics?.map((x) => x.topicId);
     console.log(selectedTopicsList);
     const bountyObject = {
       Name: "default",
@@ -341,7 +341,7 @@ function NewBountyBase(props) {
       )}
       {!!selectedTopics && !!selectedTopics.length && (
         <TopicsWrapper>
-          {selectedTopics.map((item, idx) => (
+          {selectedTopics?.map((item, idx) => (
             <div key={idx}>
               <Button onPress={() => handleDeleteTopic(item.topicId)}>
                 <span>{item.topicName}</span>

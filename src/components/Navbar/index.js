@@ -14,31 +14,40 @@ import { AiOutlineLogin, AiOutlineLogout } from "react-icons/ai";
 import { FaUserAlt } from "react-icons/fa";
 import axios from "axios";
 import ImageIcon from "../ImageIcon";
-import Connection from "../chain-connection";
+import Connection from "../ChainConnection/index";
+
 
 const NavBarWrapper = styled.nav`
   box-shadow: 0px 1px 8px 1px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
+  padding: 7px 0;
 `;
 const ThemeButtonContainer = styled.div`
-display: flex;
-align-items: center;
+  display: flex;
+  align-items: center;
 `;
 const NavMenuWrapper = styled.div`
   display: flex;
   align-items: center;
+  & .create-new-bounty-mobile {
+    display: none;
+    @media (max-width: 576px) {
+      display: block;
+      margin: 0 14px;
+    }
+  }
+  @media (max-width: 1200px) {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 `;
 
-const NavMenu = ({ isLoggedIn }) => {
-  return (
-    <NavMenuWrapper>
-      {isLoggedIn ? "logged in" : "not logged in"}
-    </NavMenuWrapper>
-  );
-};
 const Flexer = styled.div`
   display: flex;
+  @media (max-width: 1200px) {
+    display: none;
+  }
 `;
 
 const NavControls = styled.div`
@@ -69,8 +78,16 @@ const AuthedNavWrapper = styled.div`
   display: flex;
   width: 100%;
   flex: 1;
+  @media (max-width: 1200px) {
+    display: none;
+  }
 `;
 
+const CreateNewBounty = styled.div`
+  @media (max-width: 576px) {
+    display: none;
+  }
+`;
 const ImageWrapper = styled.div`
   display: flex;
   align-items: center;
@@ -83,25 +100,105 @@ const ImageWrapper = styled.div`
 `;
 
 const ConnectedButton = styled.button`
-border: none;
-background: none;
-padding: 0 17px;
-margin-right: 10px;
-line-height: 40px;
-border-radius: 30px;
-cursor: pointer;
-&:hover {
-  background: #333333;
-}
-& button {
-  line-height: 40px;
+  border: none;
   background: none;
-  box-shadow: none;
+  padding: 0 17px;
+  margin-right: 10px;
+  line-height: 40px;
+  border-radius: 30px;
+  cursor: pointer;
+  @media (max-width: 576px) {
+    padding: 0 7px;
+    margin-right: 0;
+    line-height: 20px;
+  }
+  &:hover {
+    background: #333333;
+  }
+  & button {
+    line-height: 40px;
+    background: none;
+    box-shadow: none;
     border: none;
-}
+    @media (max-width: 576px) {
+      line-height: 18px;
+    }
+  }
 `;
 
+const HamburgerWrapper = styled.div`
+  display: none;
+  @media (max-width: 1200px) {
+    display: block;
+  }
+`;
+const SigninButton = styled.div`
+  display: flex;
+  & button {
+    & span {
+      @media (max-width: 576px) {
+        padding: 0 !important;
+        margin-right: 7px;
+        font-size: 14px;
+      }
+    }
+  }
+`;
 
+const NavMenu = ({
+  isLoggedIn,
+  handleMyCreatedBounty,
+  BountyHandler,
+  BountyImWorkedOnHandler,
+  handleNewBounty,
+  goToSignInPage,
+  goToSignUpPage,
+}) => {
+  return (
+    <NavMenuWrapper>
+      {isLoggedIn ? (
+        <>
+          <div className="_btn-authed">
+            <ActionButton onPress={BountyHandler} isQuiet>
+              All Bounties
+            </ActionButton>
+          </div>
+
+          <div className="_btn-authed">
+            <ActionButton onPress={handleMyCreatedBounty} isQuiet>
+              My Created Bounties
+            </ActionButton>
+          </div>
+
+          <div className="_btn-authed">
+            <ActionButton onPress={BountyImWorkedOnHandler} isQuiet>
+              Bounties I'm Working On
+            </ActionButton>
+          </div>
+          {}
+          <div className="_btn-authed create-new-bounty-mobile">
+            <Button onPress={handleNewBounty} marginEnd={2} fo>
+              Create New Bounty
+            </Button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="_btn">
+            <ActionButton isQuiet onPress={goToSignUpPage}>
+              Sign-up
+            </ActionButton>
+          </div>
+          <div className="_btn">
+            <ActionButton isQuiet onPress={goToSignInPage}>
+              Sign-in
+            </ActionButton>
+          </div>
+        </>
+      )}
+    </NavMenuWrapper>
+  );
+};
 
 const HamburgerButton = ({ open, setOpen }) => (
   <Hamburger toggled={open} toggle={setOpen} />
@@ -182,18 +279,37 @@ const NavBarBase = ({ firebase, navigate }) => {
   const handleSignIn = () => navigate("/sign-in");
   const handleSignOut = () => {
     firebase.signOut();
-    setAccountId(null);
+    setAccountId("");
   };
-  const handleNewBounty = () => navigate("/new-bounty");
+  const handleNewBounty = () => {
+    setOpen(!open);
+    navigate("/new-bounty");
+  };
 
+  const handleMyCreatedBounty = () => {
+    navigate("/mybounties");
+    setOpen(!open);
+  };
+  const BountyHandler = () => {
+    setOpen(!open);
+    navigate("/bounties");
+  };
+  const BountyImWorkedOnHandler = () => {
+    setOpen(!open);
+    navigate("/bountyworkedon");
+  };
+
+  const goToSignInPage = () => navigate("/sign-in");
+  const goToSignUpPage = () => navigate("/sign-up");
+  console.log(state.accountId);
   return (
     <>
       <NavBarWrapper>
         <NavControls>
           <NavMenuWrapper>
-            <div>
+            <HamburgerWrapper>
               <HamburgerButton open={open} setOpen={setOpen} />
-            </div>
+            </HamburgerWrapper>
             <div>
               {currentUser ? (
                 <AuthedNav
@@ -207,37 +323,51 @@ const NavBarBase = ({ firebase, navigate }) => {
             </div>
           </NavMenuWrapper>
           <ThemeButtonContainer>
-            <ConnectedButton  >
+            <ConnectedButton>
               <Connection />
             </ConnectedButton>
-            <Button marginEnd={2} fo onPress={handleNewBounty}>
-              Create New Bounty
-            </Button>
-
+            {state.accountId  &&   <CreateNewBounty>
+              <Button marginEnd={2} fo onPress={handleNewBounty}>
+                Create New Bounty
+              </Button>
+            </CreateNewBounty>}
+           
             <ActionButton onPress={reSize} isQuiet>
               <GiResize />
             </ActionButton>
             <ActionButton onPress={toggleTheme} isQuiet>
               {theme === "light" ? <GiSunset /> : <GiSunrise />}
             </ActionButton>
-            {state.accountId !== null? (
-              <ActionButton isQuiet onPress={handleSignOut}>
-                Sign Out
-              </ActionButton>
-            ) : null}
+            <SigninButton>
+              {state.accountId ? (
+                <ActionButton isQuiet onPress={handleSignOut}>
+                  Sign Out
+                </ActionButton>
+              ) : null}
 
-            {state.accountId === null ? (
-              <ActionButton onPress={handleSignIn} isQuiet>
-                <AiOutlineLogin />
-              </ActionButton>
-            ) : (
-              <ActionButton onPress={userProfileHandler} isQuiet>
-                <ImageIcon />
-              </ActionButton>
-            )}
+              {!state.accountId ? (
+                <ActionButton onPress={handleSignIn} isQuiet>
+                  <AiOutlineLogin />
+                </ActionButton>
+              ) : (
+                <ActionButton onPress={userProfileHandler} isQuiet>
+                  <ImageIcon />
+                </ActionButton>
+              )}
+            </SigninButton>
           </ThemeButtonContainer>
         </NavControls>
-        {open && <NavMenu isLoggedIn={isLoggedIn} />}
+        {open && (
+          <NavMenu
+            isLoggedIn={isLoggedIn}
+            handleMyCreatedBounty={handleMyCreatedBounty}
+            BountyHandler={BountyHandler}
+            BountyImWorkedOnHandler={BountyImWorkedOnHandler}
+            handleNewBounty={handleNewBounty}
+            goToSignInPage={goToSignInPage}
+            goToSignUpPage={goToSignUpPage}
+          />
+        )}
       </NavBarWrapper>
     </>
   );

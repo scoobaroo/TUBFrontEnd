@@ -3,22 +3,26 @@ import { AppContext } from "../context";
 import axios from "axios";
 import appConfig from "../././app-config";
 
-export default function setEducationType () {
+const useEducaitonType = ()=> {
   const [state, setState] = React.useContext(AppContext);
 
   const setEducationType = () => {
     const educationurl = `${appConfig.development.apiBaseUrl}entityDefinitions/cob_education/optionsets`;
     axios
       .get(educationurl)
-      .then(({ status, data }) => {
-        if (status === 200 && window.localStorage) {
-          const EducationType = [...new Set(data)];
-          console.log("categories =>", categories);
-          window.localStorage.setItem("educationType", JSON.stringify(EducationType));
+      .then((response) => {
+        let  NewEducationType
+        if (response.status === 200 && window.localStorage) {
+          const EducationType = [...new Set(response.data.value)];
+          EducationType.forEach((education) => {
+          NewEducationType =  education.OptionSet.Options
+          });
+  
+          window.localStorage.setItem("educationType", JSON.stringify(NewEducationType));
 
           setState((prevState) => ({
             ...prevState,
-            EducationType: EducationType,
+            EducationType: NewEducationType,
           }));
         }
       })
@@ -32,3 +36,5 @@ export default function setEducationType () {
     setEducationType,
   };
 }
+
+export default useEducaitonType;

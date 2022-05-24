@@ -85,3 +85,8 @@ img {
   justify-content: flex-end;
   width: 440px;
 }
+@media (max-width: 576px) {
+  .item_wrapper {
+    width: 100%;
+  }
+}

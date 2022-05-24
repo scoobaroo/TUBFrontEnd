@@ -262,7 +262,7 @@ const BountyDetails = () => {
               Topics
             </span>
             :{" "}
-            {bountyDetails.topics.map(
+            {bountyDetails.topics?.map(
               (topic, key) =>
                 `${topic.topicName}${
                   key !== bountyDetails.topics.length - 1 ? "," : ""

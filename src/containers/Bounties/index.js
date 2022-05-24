@@ -40,12 +40,15 @@ const BountyGrid = styled.div`
   grid-column-gap: 8px;
   grid-row-gap: 8px;
 
-  @media (max-width: 750px) {
+  @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  @media (max-width: 500px) {
+  @media (max-width: 576px) {
     grid-template-columns: repeat(1, 1fr);
+  }
+  & .bounty-name{
+    word-break: break-all;
   }
 `;
 
@@ -55,6 +58,12 @@ const FilterGrid = styled.div`
   align-items: center;
   margin-bottom: 16px;
   margin-top: 16px;
+  @media (max-width: 1200px) {
+    flex-wrap: wrap;
+  }
+  @media (max-width: 576px) {
+    flex-direction: column;
+  }
 `;
 
 const NewloadingWrapper = styled.div`
@@ -75,14 +84,30 @@ const NoData = styled.div`
 
 const FilterItemWrapper = styled.div`
   margin: 20px;
+  @media (max-width: 1200px) {
+    width: 31%;
+    margin: 5px 10px;
+  }
+  @media (max-width: 992px) {
+    width: 47%;
+  }
+  @media (max-width: 576px) {
+    width: 94%;
+  }
+  & > div {
+    @media (max-width: 1200px) {
+      width: 100% !important;
+    }
+  }
 `;
+
 
 const BountyCard = ({ bounty }) => {
   return (
     <Well>
       <div>{bounty.cob_name}</div>
       <div>{bounty.cob_description || `No Description`}</div>
-      <Button onClick={() => goToBounty(bounty)} >View Bounty</Button>
+      <Button onClick={() => goToBounty(bounty)}>View Bounty</Button>
     </Well>
   );
 };
@@ -167,8 +192,13 @@ const BountiesBase = ({ firebase, navigate }) => {
   };
 
   const goToBounty = (bounty) => {
-    navigate("/bountydetails", { state: { BountyId: bounty.cob_bountyid, SmartContractAddress: bounty.cob_smartcontractaddress } });
-  }
+    navigate("/bountydetails", {
+      state: {
+        BountyId: bounty.cob_bountyid,
+        SmartContractAddress: bounty.cob_smartcontractaddress,
+      },
+    });
+  };
 
   const CategoryFilterHandler = (value) => {
     setCategoryId(value);
@@ -265,7 +295,7 @@ const BountiesBase = ({ firebase, navigate }) => {
         .catch((error) => {
           console.log("there was an error:", error);
         })
-        .finally(() => { });
+        .finally(() => {});
     }
   };
   if (state.loading && !state.bounties) {
@@ -299,26 +329,21 @@ const BountiesBase = ({ firebase, navigate }) => {
               </ComboBox>
             )}
           </FilterItemWrapper>
-          {subCategories &&
-            subCategories?.length > 0 && (
-              <FilterItemWrapper>
-                <ComboBox
-                  label="Sub Category"
-                  items={subCategories}
-                  onSelectionChange={(value) => {
-                    return (
-                      setSubCategoryId(value), subCategoryFilterHandler(value)
-                    );
-                  }}
-                >
-                  {(item) => (
-                    <Item key={item.subCategoryId}>
-                      {item.subCategoryName}
-                    </Item>
-                  )}
-                </ComboBox>
-              </FilterItemWrapper>
-            )}
+          {subCategories && subCategories?.length > 0 && (
+            <FilterItemWrapper>
+              <ComboBox
+                label="Sub Category"
+                items={subCategories}
+                onSelectionChange={(value) => {
+                  setSubCategoryId(value), subCategoryFilterHandler(value);
+                }}
+              >
+                {(item) => (
+                  <Item key={item.subCategoryId}>{item.subCategoryName}</Item>
+                )}
+              </ComboBox>
+            </FilterItemWrapper>
+          )}
           {!!topics?.length && (
             <FilterItemWrapper>
               <ComboBox label="Topics" items={topics}>
@@ -348,11 +373,14 @@ const BountiesBase = ({ firebase, navigate }) => {
             {filerDataConditon ? (
               <NoData>No Match Found</NoData>
             ) : (
-              state.bounties.map((bounty) => (
+              state.bounties?.map((bounty) => (
                 <Well>
-                  <div>{bounty.cob_name}</div>
-                  <div>{bounty.cob_description || `No Description`}</div>
-                  <Button onClick={() => goToBounty(bounty)} >View Bounty</Button>
+                  <div className="bounty-name">{bounty.cob_name}</div>
+
+                  <div  className="bounty-name">{bounty.cob_description || `No Description`}</div>
+                  <Button onClick={() => goToBounty(bounty)}>
+                    View Bounty
+                  </Button>
                 </Well>
               ))
             )}

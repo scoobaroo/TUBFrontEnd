@@ -28,6 +28,7 @@ import {
   Content,
   Form,
   ButtonGroup,
+  ComboBox
 } from "@adobe/react-spectrum";
 import { FaPlus } from "react-icons/fa";
 import appConfig from "webpack-config-loader!../../app-config.js";
@@ -62,12 +63,29 @@ const LoadingWrapper = styled.div`
 `;
 
 const InputFieldWrapper = styled.div`
-  margin: 5px;
+  margin: 0 5px;
+  & h3 {
+    & div {
+      @media (max-width: 576px) {
+        width: 100%;
+      }
+    }
+  }
 `;
 
 const CardWrapper = styled.div`
   display: flex;
   justify-content: center;
+  @media (max-width: 576px) {
+    padding: 0 15px;
+    max-width: 100%;
+  }
+  & .card,
+  & .edit_profile {
+    @media (max-width: 576px) {
+      width: 100%;
+    }
+  }
 `;
 
 const ButtonWrapper = styled.div`
@@ -155,6 +173,7 @@ const Modal = ({
   modal,
   openModal,
   closeModal,
+  EducationType,
 }) => (
   <ModalWrapper>
     <DialogTrigger isOpen={modal}>
@@ -173,7 +192,9 @@ const Modal = ({
         <Content>
           <Form>
             <TextField onChange={onSetName} label="Label Or Name" autoFocus />
-            <TextField onChange={onSetEducationType} label="Education Type" />
+            <ComboBox onSelectionChange={onSetEducationType} label="Education Type" items={EducationType}>
+              {(item) => <Item key={item.Label}>{item.Label}</Item>}
+            </ComboBox>
           </Form>
         </Content>
         <ButtonGroup>
@@ -230,7 +251,7 @@ const CertificationModal = ({
   </DialogTrigger>
 );
 
-const Edit = ({ onSubmit, children ,EditCancel}) => (
+const Edit = ({ onSubmit, children, EditCancel }) => (
   <CardWrapper>
     <div className="card">
       <h1>User Profile</h1>
@@ -238,7 +259,7 @@ const Edit = ({ onSubmit, children ,EditCancel}) => (
         {children}
         <div className="edit_profile">
           <ButtonWrapper>
-            <Button onPress={EditCancel}  variant="cta" marginTop={"15px"}>
+            <Button onPress={EditCancel} variant="cta" marginTop={"15px"}>
               Cancel
             </Button>
           </ButtonWrapper>
@@ -290,6 +311,7 @@ const UserProfileEdit = () => {
   const [state, setState] = React.useState({ ...InitialState });
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [showBountyError, setShowBountyError] = React.useState(false);
+  const [educationType, setEducationType] = React.useState();
   const [loader, setLoader] = React.useState(false);
   const [educationDetails, setEducationDetails] = React.useState({
     ...InitialEducationState,
@@ -303,11 +325,16 @@ const UserProfileEdit = () => {
     loadProfileDetails();
   }, []);
 
+  React.useEffect(() => {
+    const value = globalState.EducationType;
+    setEducationType(value?.map((item) => item.Label.UserLocalizedLabel));
+  }, []);
+
+
   const loadProfileDetails = () => {
     axios
       .get(`${appConfig.apiBaseUrl}users/accountId/${globalState.accountId}`)
       .then((res) => {
-        console.log(res.data);
         let imageUrl;
         if (res.data.cob_profilepicture !== "") {
           const string2 = res.data.cob_profilepicture;
@@ -340,7 +367,6 @@ const UserProfileEdit = () => {
     const reader = new FileReader();
     const file = e.target.files[0];
     reader.onloadend = () => {
-      console.log("RESULT", reader.result);
       const strImage = reader.result.replace(/^data:image\/[a-z]+;base64,/, "");
       setState((prevState) => ({
         ...prevState,
@@ -499,7 +525,6 @@ const UserProfileEdit = () => {
   };
 
   const formRegisterEducation = () => {
-    console.log(educationDetails);
     setLoader(true);
     axios
       .post(
@@ -525,7 +550,6 @@ const UserProfileEdit = () => {
   };
 
   const formRegisterCertification = () => {
-    console.log(certificationDetails);
     setLoader(true);
     axios
       .post(
@@ -561,12 +585,13 @@ const UserProfileEdit = () => {
     setState((prevState) => ({
       ...prevState,
       active: "profile",
-    }))}
+    }));
+  };
 
   return (
     <>
       {active === "edit" ? (
-        <Edit onSubmit={handleSubmit} EditCancel ={EditCancel}>
+        <Edit onSubmit={handleSubmit} EditCancel={EditCancel}>
           <ImgUpload onChange={photoUpload} src={imagePreviewUrl} />
           <div className="item_wrapper">
             <InputFieldWrapper>
@@ -655,6 +680,7 @@ const UserProfileEdit = () => {
                 modal={showModal}
                 openModal={openModal}
                 closeModal={closeModal}
+                EducationType={educationType}
               />
               <TableView>
                 <TableHeader>
@@ -662,10 +688,11 @@ const UserProfileEdit = () => {
                   <Column align="end">Type</Column>
                 </TableHeader>
                 <TableBody>
-                  {state.educationDetails.map((item) => (
+                  {state.educationDetails?.map((item) => (
                     <Row>
                       <Cell>{item.cob_name}</Cell>
-                      <Cell>{item.cob_educationtype}</Cell>
+                      <Cell>{item['cob_educationtype@OData.Community.Display.V1.FormattedValue']}</Cell>
+                      
                     </Row>
                   ))}
                 </TableBody>
@@ -688,7 +715,7 @@ const UserProfileEdit = () => {
                   <Column align="end">Type</Column>
                 </TableHeader>
                 <TableBody>
-                  {state.certifications.map((item) => (
+                  {state.certifications?.map((item) => (
                     <Row>
                       <Cell>{item.cob_name}</Cell>
                       <Cell>{}</Cell>

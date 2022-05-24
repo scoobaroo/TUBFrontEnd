@@ -56,6 +56,16 @@ const getEducationType = () => {
   return NewEducationType ? NewEducationType : null;
 }
 
+const getCeritficationType = () => {
+  let ceritficationType;
+  let NewCeritficationType
+  if (window.localStorage) {
+    ceritficationType = window.localStorage.getItem('certificaitonType');
+    NewCeritficationType = JSON.parse(ceritficationType);
+  }
+  return NewCeritficationType ? NewCeritficationType : null;
+}
+
 const storeInitialState = {
   authUser: null,
   loading: false,
@@ -66,6 +76,7 @@ const storeInitialState = {
   accountId: getAccountId(),
   categorys: getCategorys(),
   EducationType: getEducationType(),
+  CertificationType: getCeritficationType(),
 };
 
 const AppContextBase = props => {

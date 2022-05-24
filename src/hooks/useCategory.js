@@ -3,7 +3,7 @@ import { AppContext } from "../context";
 import axios from "axios";
 import appConfig from "../././app-config";
 
-export default function useCategory() {
+const  useCategory = () => {
   const [state, setState] = React.useContext(AppContext);
 
   const setCategory = () => {
@@ -32,3 +32,5 @@ export default function useCategory() {
     setCategory,
   };
 }
+
+export default useCategory;

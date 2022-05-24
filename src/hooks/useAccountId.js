@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppContext } from '../context';
 
-export default function useAccountId() {
+const  useAccountId = () => {
   const [state, setState] = React.useContext(AppContext);
 
   const setAccountId = (id) => {
@@ -19,3 +19,5 @@ export default function useAccountId() {
     setAccountId
   }
 }
+
+export default useAccountId;

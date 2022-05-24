@@ -26,11 +26,11 @@ const BountyGrid = styled.div`
   grid-column-gap: 8px;
   grid-row-gap: 8px;
 
-  @media (max-width: 750px) {
+  @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  @media (max-width: 500px) {
+  @media (max-width: 576px) {
     grid-template-columns: repeat(1, 1fr);
   }
 `;
@@ -99,7 +99,7 @@ const BountiesBase = ({ firebase, navigate }) => {
       <h2>Customer Bounties</h2>
       {State.allBounties && !State.loading && (
         <BountyGrid>
-          {State.allBounties.map((bounty) => (
+          {State.allBounties?.map((bounty) => (
             bounty._cob_customerid_value == state.accountId && (
               <Well key={bounty.cob_bountyid}>
                 <div>{bounty.cob_name}</div>

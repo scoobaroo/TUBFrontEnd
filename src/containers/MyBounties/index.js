@@ -137,7 +137,7 @@ const BountiesBase = ({ firebase, navigate }) => {
       <h2>{(state.mode == "provider") ? 'Provider Bounties' : 'Customer Bounties'}</h2>
       {State.allBounties && !State.loading && (
         <BountyGrid>
-          {State.allBounties.map((bounty) => (
+          {State.allBounties?.map((bounty) => (
             // <BountyCard key={bounty.cob_bountyid} bounty={bounty} props={props} />
             <Well>
               <div>{bounty.cob_name}</div>

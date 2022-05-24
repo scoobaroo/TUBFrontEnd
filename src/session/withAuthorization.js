@@ -35,9 +35,9 @@ const withAuthorization = (condition) => (Component) => {
     };
 
     React.useEffect(() => {
-      if (isTimeout === true && _state.accountId !== "null") {
+      if (isTimeout === true && _state.accountId !== "") {
         console.log("isTimeout", isTimeout);
-        setAccountId(null);
+        setAccountId("");
         props.firebase.signOut();
         props.navigate("/sign-in");
         setShowModal(true);
