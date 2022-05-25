@@ -35,7 +35,7 @@ const withAuthorization = (condition) => (Component) => {
     };
 
     React.useEffect(() => {
-      if (isTimeout === true && _state.accountId !== "") {
+      if (isTimeout == true && _state.accountId) {
         console.log("isTimeout", isTimeout);
         setAccountId("");
         props.firebase.signOut();

@@ -16,7 +16,6 @@ import axios from "axios";
 import ImageIcon from "../ImageIcon";
 import Connection from "../ChainConnection/index";
 
-
 const NavBarWrapper = styled.nav`
   box-shadow: 0px 1px 8px 1px rgba(0, 0, 0, 0.2);
   display: flex;
@@ -35,6 +34,12 @@ const NavMenuWrapper = styled.div`
     @media (max-width: 576px) {
       display: block;
       margin: 0 14px;
+    }
+  }
+
+  & ._btn_diplay {
+    @media (min-width: 1200px) {
+      display: none;
     }
   }
   @media (max-width: 1200px) {
@@ -158,19 +163,19 @@ const NavMenu = ({
     <NavMenuWrapper>
       {isLoggedIn ? (
         <>
-          <div className="_btn-authed">
+          <div className="_btn-authed _btn_diplay">
             <ActionButton onPress={BountyHandler} isQuiet>
               All Bounties
             </ActionButton>
           </div>
 
-          <div className="_btn-authed">
+          <div className="_btn-authed  _btn_diplay">
             <ActionButton onPress={handleMyCreatedBounty} isQuiet>
               My Created Bounties
             </ActionButton>
           </div>
 
-          <div className="_btn-authed">
+          <div className="_btn-authed  _btn_diplay">
             <ActionButton onPress={BountyImWorkedOnHandler} isQuiet>
               Bounties I'm Working On
             </ActionButton>
@@ -184,12 +189,12 @@ const NavMenu = ({
         </>
       ) : (
         <>
-          <div className="_btn">
+          <div className="_btn  _btn_diplay">
             <ActionButton isQuiet onPress={goToSignUpPage}>
               Sign-up
             </ActionButton>
           </div>
-          <div className="_btn">
+          <div className="_btn  _btn_diplay">
             <ActionButton isQuiet onPress={goToSignInPage}>
               Sign-in
             </ActionButton>
@@ -299,8 +304,14 @@ const NavBarBase = ({ firebase, navigate }) => {
     navigate("/bountyworkedon");
   };
 
-  const goToSignInPage = () => navigate("/sign-in");
-  const goToSignUpPage = () => navigate("/sign-up");
+  const goToSignInPage = () => {
+    setOpen(!open);
+    navigate("/sign-in");
+  };
+  const goToSignUpPage = () => {
+    setOpen(!open);
+    navigate("/sign-up");
+  };
   console.log(state.accountId);
   return (
     <>
@@ -326,12 +337,14 @@ const NavBarBase = ({ firebase, navigate }) => {
             <ConnectedButton>
               <Connection />
             </ConnectedButton>
-            {state.accountId  &&   <CreateNewBounty>
-              <Button marginEnd={2} fo onPress={handleNewBounty}>
-                Create New Bounty
-              </Button>
-            </CreateNewBounty>}
-           
+            {state.accountId && (
+              <CreateNewBounty>
+                <Button marginEnd={2} fo onPress={handleNewBounty}>
+                  Create New Bounty
+                </Button>
+              </CreateNewBounty>
+            )}
+
             <ActionButton onPress={reSize} isQuiet>
               <GiResize />
             </ActionButton>

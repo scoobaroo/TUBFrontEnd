@@ -24,6 +24,16 @@ const Network = [
     hex: "0x2a",
     name: "Kovan Test Network",
   },
+  {
+    id: 6,
+    hex: "0x38",
+    name: "Binance Smart Chain",
+  },
+  {
+    id: 7,
+    hex: "0x61",
+    name: "BSC Test-net",
+  },
 ];
 
 export default Network;

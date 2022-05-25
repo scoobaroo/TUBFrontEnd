@@ -8,7 +8,7 @@ const useLogout = () => {
     React.useEffect(() => {
 
     const timer = new IdleTimer({
-      timeout: appConfig.timeOutDelay, //expire after 10 seconds
+      timeout: appConfig.timeOutDelay,
       onTimeout: () => {
         setIsTimeout(true);
       },
