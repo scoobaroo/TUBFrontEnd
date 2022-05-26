@@ -19,19 +19,26 @@ const ButtonWrapper = styled.div`
   flex-shrink: 0;
 `;
 
-function MetaMask() {
+const MetaMask = () => {
   console.log("MetaMask", Network);
   const { status, connect, account, chainId, ethereum } = useMetaMask();
   const [network, setNetwork] = React.useState();
 
+  window.ethereum.on("chainChanged", (chainId) => {
+    console.log("chainChanged", chainId);
+    const network = Network.find(chain => chain.hex === chainId);
+    if (network) {
+      setNetwork(network.name);
+    }
+  });
+
   React.useEffect(() => {
     if (status === "connected") {
-    Network.forEach((network) => {
-      if (network.hex === chainId) {
+      const network = Network.find(chain => chain.hex === chainId);
+      if (network) {
         setNetwork(network.name);
       }
-    });
-  }
+    }
   }, [status]);
 
   if (status === "initializing")
@@ -55,7 +62,7 @@ function MetaMask() {
     );
 
   return null;
-}
+};
 
 const ConnectionBase = ({ firebase, navigate }) => {
   return (

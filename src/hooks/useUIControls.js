@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppContext } from '../context';
 
-export default function useUIControls() {
+const  useUIControls = () =>  {
   const [state, setState] = React.useContext(AppContext);
 
   const toggleTheme = () => {
@@ -49,3 +49,5 @@ export default function useUIControls() {
     toggleMode,
   }
 }
+
+export default useUIControls;

@@ -347,7 +347,6 @@ const BountiesBase = ({ firebase, navigate }) => {
           {!!topics?.length && (
             <FilterItemWrapper>
               <ComboBox label="Topics" items={topics}>
-                <Item key="red panda">Topics</Item>
                 {(item) => <Item key={item.topicId}>{item.topicName}</Item>}
               </ComboBox>
             </FilterItemWrapper>

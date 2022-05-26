@@ -16,7 +16,7 @@ const withAuthorization = (condition) => (Component) => {
     const isTimeout = useLogout();
     const [showModal, setShowModal] = React.useState(false);
 
-    const Time = appConfig.timeOutDelay / 60
+    const Time = appConfig.timeOutDelay / 60;
 
     let listener;
     React.useEffect(() => {
@@ -54,7 +54,7 @@ const withAuthorization = (condition) => (Component) => {
             primaryActionLabel="OK"
             onPrimaryAction={() => setShowModal(false)}
           >
-           {`you have been logged out due to ${Time} minutes of inactivity.`} 
+            {`you have been logged out due to ${Time} minutes of inactivity.`}
           </AlertDialog>
         </DialogTrigger>
       </>

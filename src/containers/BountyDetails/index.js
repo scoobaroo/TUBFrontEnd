@@ -21,6 +21,8 @@ import axios from "axios";
 import abi from "../../Bounty.json";
 import { AppContext } from "../../context";
 import { BlobServiceClient } from "@azure/storage-blob";
+import { FaFileAlt }  from "react-icons/fa";
+
 
 const BountyWrapper = styled.div`
   display: grid;
@@ -53,6 +55,35 @@ const LoadingWrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
+`;
+
+const FileWrapper = styled.div`
+display: flex;
+flex-wrap: wrap;
+margin-top:15px;
+& > div {
+  display: flex;
+    align-items: center;
+    padding: 5px 15px;
+    background: #2b2b2b;
+    border-radius: 25px;
+    margin: 0 12px 12px 0;
+    color:#fff;
+    &:hover{
+      background: #515151;
+    }
+    & svg{
+      margin-right:7px;
+    }
+    & a{
+      color:#fff;
+      text-decoration:none;
+      &:hover{
+        color:#fff;
+        text-decoration:none;
+      }
+    }
+}
 `;
 
 const BountyDetails = () => {
@@ -89,11 +120,17 @@ const BountyDetails = () => {
   const [ImageBloburls, setImageBloburls] = React.useState([]);
   const inputFileRef = React.useRef(null);
   const [imageLoader, setImageLoader] = React.useState(false);
-  const sasToken =
-    "?sv=2020-08-04&ss=bfqt&srt=co&sp=rwdlacupitfx&se=2022-07-23T18:17:05Z&st=2022-05-23T10:17:05Z&spr=https&sig=3iY8kxXesIg7siSjHsub6c%2BkdK%2BNZRchJC80G5AKKlw%3D";
-  const storageAccountName = "cs210032001e644aa1d";
+  const sasToken = appConfig.azure.sasToken;
+  const storageAccountName = appConfig.azure.storageAccountName;
   const containerName = `bounty-${bountyId}`;
   const [showurl, setShowurl] = React.useState(false);
+
+  // get BlobService = notice `?` is pulled out of sasToken - if created in Azure portal
+  const blobService = new BlobServiceClient(
+    `https://${storageAccountName}.blob.core.windows.net/?${sasToken}`
+  );
+  // get Container - full public read access
+  const containerClient = blobService.getContainerClient(containerName);
 
   React.useEffect(() => {
     setBountyDetails((prevState) => ({
@@ -106,14 +143,13 @@ const BountyDetails = () => {
   React.useEffect(() => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     setProvider(provider);
+    getBlobsInContainer(containerClient);
   }, []);
 
   const loadBountyDetails = async () => {
     await axios
       .get(`${appConfig.apiBaseUrl}bounties/${bountyId}`)
       .then((response) => {
-        console.log("bounty response=>");
-        console.log(response.data);
         setBountyDetails((prevState) => ({
           ...prevState,
           categoryName: response.data?.CategoryId?.categoryName,
@@ -158,13 +194,9 @@ const BountyDetails = () => {
     contract.attach(provider.getSigner().getAddress());
     const options = { value: ethers.utils.parseEther(amount) };
     await contract.increaseBounty(options);
-    console.log(amount);
   };
 
   const getBounty = async () => {
-    console.log("In getBounty");
-    console.log("provider =>", provider);
-    console.log("contract =>", contract);
     let contract = new ethers.Contract(
       bountyDetails.smartContractAddress,
       abi,
@@ -173,29 +205,21 @@ const BountyDetails = () => {
     // contract.connect(provider.getSigner());
     let bountyAmount = await contract.getBounty();
     let amount = parseInt(bountyAmount._hex, 16).toString();
-    console.log("amount =>", amount);
-    console.log("typeof amont:" + typeof amount);
-    console.log("bountyAmount =>", ethers.utils.formatEther(amount));
     bountyAmount = ethers.utils.formatEther(amount);
     setBountyAmount(bountyAmount);
   };
 
   const cancel = async () => {
     setShowModal(false);
-    console.log("In Cancel");
     let contract = new ethers.Contract(
       bountyDetails.smartContractAddress,
       abi,
       provider.getSigner()
     );
-    console.log("provider =>", provider);
-    console.log("contract =>", contract);
     let result = await contract.cancel();
-    console.log("cancel result =>", result);
   };
 
   const getStatus = async () => {
-    console.log("In getStatus");
     let contract = new ethers.Contract(
       bountyDetails.smartContractAddress,
       abi,
@@ -217,7 +241,6 @@ const BountyDetails = () => {
         getBounty: false,
         image: false,
       }));
-      console.log("cancel success");
     } catch (error) {
       setShowError(true);
       setMessage((prevState) => ({
@@ -226,8 +249,6 @@ const BountyDetails = () => {
         getBounty: false,
         image: false,
       }));
-      console.log(error);
-      console.log("cancel error");
     }
   };
 
@@ -241,7 +262,6 @@ const BountyDetails = () => {
         cancel: false,
         image: false,
       }));
-      console.log("getBounty success");
     } catch (error) {
       setShowError(true);
       setMessage((prevState) => ({
@@ -269,15 +289,6 @@ const BountyDetails = () => {
   const uploadFileToBlob = async (file) => {
     if (!file) return [];
 
-    // get BlobService = notice `?` is pulled out of sasToken - if created in Azure portal
-    const blobService = new BlobServiceClient(
-      `https://${storageAccountName}.blob.core.windows.net/?${sasToken}`
-    );
-    // get Container - full public read access
-    // const containerClient = blobService.getContainerClient(containerName);
-
-    // get Container - full public read access
-    const containerClient = blobService.getContainerClient(containerName);
     await containerClient.createIfNotExists({
       access: "container",
     });
@@ -302,7 +313,6 @@ const BountyDetails = () => {
 
     // set mimetype as determined from browser with file upload control
     const options = { blobHTTPHeaders: { blobContentType: file.type } };
-    console.log("options =>", options);
 
     // upload file
     await blobClient.uploadBrowserData(file, options);
@@ -320,7 +330,6 @@ const BountyDetails = () => {
     }
     setShowurl(true);
     setImageBloburls(returnedBlobUrls);
-    console.log(returnedBlobUrls);
     return returnedBlobUrls;
   };
 
@@ -448,23 +457,23 @@ const BountyDetails = () => {
 
       <div>
         <h2>#Related Files</h2>
+        <FileWrapper>
         {showurl
           ? ImageBloburls.map((blob, key) => (
               <ItemWrapper>
-                <Heading>
-                  {/* <span style={{ width: "150px", display: "inline-block" }}>
-                    {blob.name}
-                  </span>
-                  :{" "} */}
+              
+                <FaFileAlt/>
                   <Link>
+                
                     <a href={`${blob.url}`} target="_blank">
                       {blob.name}
                     </a>
                   </Link>
-                </Heading>
+             
               </ItemWrapper>
             ))
           : null}
+          </FileWrapper>
       </div>
 
       <DialogTrigger isOpen={showModal}>

@@ -15,7 +15,7 @@
  */
  module.exports = {
   development: {
-    apiBaseUrl: 'http://localhost:4000/',
+    apiBaseUrl: "http://localhost:4000/",
     
     firebaseConfig: {
       apiKey: "AIzaSyDIVIi2WFVoVUh2S9oDAuMfwki-jqfD3SA",
@@ -27,9 +27,14 @@
     },
 
     timeOutDelay: 3600, // in seconds
+
+    azure: {
+      sasToken: "?sv=2020-08-04&ss=bfqt&srt=co&sp=rwdlacupitfx&se=2022-07-23T18:17:05Z&st=2022-05-23T10:17:05Z&spr=https&sig=3iY8kxXesIg7siSjHsub6c%2BkdK%2BNZRchJC80G5AKKlw%3D",
+      storageAccountName: "cs210032001e644aa1d",
+    },
   },
   production: {
-    apiBaseUrl: 'http://localhost:4000/',
+    apiBaseUrl: "http://localhost:4000/",
 
     firebaseConfig: {
       apiKey: "AIzaSyDIVIi2WFVoVUh2S9oDAuMfwki-jqfD3SA",
@@ -37,10 +42,15 @@
       projectId: "unblock-auth-dev",
       storageBucket: "unblock-auth-dev.appspot.com",
       messagingSenderId: "46308360656",
-      appId: "1:46308360656:web:6d17f886725fef944ab9d5"
+      appId: "1:46308360656:web:6d17f886725fef944ab9d5",
     },
 
     timeOutDelay: 3600, // in seconds
+    
+    azure: {
+      sasToken: "?sv=2020-08-04&ss=bfqt&srt=co&sp=rwdlacupitfx&se=2022-07-23T18:17:05Z&st=2022-05-23T10:17:05Z&spr=https&sig=3iY8kxXesIg7siSjHsub6c%2BkdK%2BNZRchJC80G5AKKlw%3D",
+      storageAccountName: "cs210032001e644aa1d",
+    },
   },
 };
 

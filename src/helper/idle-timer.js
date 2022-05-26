@@ -55,7 +55,6 @@ class IdleTimer {
   }
 
   cleanUp() {
-    localStorage.removeItem("_expiredTime");
     clearInterval(this.interval);
     window.removeEventListener("mousemove", this.eventHandler);
     window.removeEventListener("scroll", this.eventHandler);
