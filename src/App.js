@@ -21,6 +21,7 @@ import BountyDetails from "./containers/BountyDetails";
 import MyCreatedBounties from "./containers/MyCreatedBounties";
 import BountyImWorkedOn from "./containers/BountyImWorkedOn";
 import UserProfile from "./containers/UserProfile";
+import RequestToWorkProfile from "./containers/RequestToWorkProfile";
 import "./clientlibs/css/App.css";
 
 function Wrapper() {
@@ -33,10 +34,10 @@ function Wrapper() {
       colorScheme={state.theme}
       scale={state.scale}
     >
-      <Router>
+      <Router >
         <NavBar />
         <Routes>
-          <Route exact path="/" />
+          <Route  exact path="/" />
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/password-reset" element={<PasswordReset />} />
@@ -46,6 +47,7 @@ function Wrapper() {
           <Route path="/mybounties" element={<MyCreatedBounties />} />
           <Route path="/userprofile" element={<UserProfile />} />
           <Route path="/bountyworkedon" element={<BountyImWorkedOn />} />
+          <Route path="/requesttoworkprofile" element={<RequestToWorkProfile />} />
         </Routes>
       </Router>
     </Provider>

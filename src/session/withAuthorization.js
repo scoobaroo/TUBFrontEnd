@@ -4,16 +4,15 @@ import { compose } from "recompose";
 import { withFirebase } from "../firebase";
 import withRouter from "./withRouter";
 import { AppContext } from "../context";
-import useLogout from "../hooks/useLogout";
 import useAccountId from "../hooks/useAccountId";
 import { DialogTrigger, AlertDialog } from "@adobe/react-spectrum";
 import appConfig from "webpack-config-loader!../app-config.js";
+import { useIdleTimer } from "react-idle-timer";
 
 const withAuthorization = (condition) => (Component) => {
   const WithAuthorization = (props) => {
     const { setAccountId } = useAccountId();
     const [_state] = React.useContext(AppContext);
-    const isTimeout = useLogout();
     const [showModal, setShowModal] = React.useState(false);
 
     const Time = appConfig.timeOutDelay / 60;
@@ -34,22 +33,28 @@ const withAuthorization = (condition) => (Component) => {
       <Modal />;
     };
 
-    React.useEffect(() => {
-      if (isTimeout == true && _state.accountId) {
-        console.log("isTimeout", isTimeout);
-        setAccountId("");
-        props.firebase.signOut();
-        props.navigate("/sign-in");
+    const onIdle = () => {
+      if(_state.accountId) {
         setShowModal(true);
+      setAccountId("");
+      props.firebase.signOut();
+      props.navigate("/sign-in");
       }
-    }, [isTimeout]);
+    };
+
+    const IdleTimer = useIdleTimer({
+      timeout: appConfig.timeOutDelay * 1000,
+      onIdle: onIdle,
+    });
+
+  
     return (
       <>
         <Component {...props} />
         <DialogTrigger isOpen={showModal}>
           <></>
           <AlertDialog
-            title="Success"
+            title="Session Timeout"
             variant="information"
             primaryActionLabel="OK"
             onPrimaryAction={() => setShowModal(false)}

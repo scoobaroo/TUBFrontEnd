@@ -13,6 +13,13 @@ import {
   Content,
   ButtonGroup,
   Link,
+  Flex,
+  Form,
+  Text,
+  TextArea,
+  ComboBox,
+  Item,
+  Footer,
 } from "@adobe/react-spectrum";
 import { ethers, getDefaultProvider, utils } from "ethers";
 import styled from "styled-components";
@@ -21,8 +28,8 @@ import axios from "axios";
 import abi from "../../Bounty.json";
 import { AppContext } from "../../context";
 import { BlobServiceClient } from "@azure/storage-blob";
-import { FaFileAlt }  from "react-icons/fa";
-
+import { FaFileAlt } from "react-icons/fa";
+import { useMetaMask } from "metamask-react";
 
 const BountyWrapper = styled.div`
   display: grid;
@@ -58,33 +65,105 @@ const LoadingWrapper = styled.div`
 `;
 
 const FileWrapper = styled.div`
-display: flex;
-flex-wrap: wrap;
-margin-top:15px;
-& > div {
   display: flex;
+  flex-wrap: wrap;
+  margin-top: 15px;
+  & > div {
+    display: flex;
     align-items: center;
     padding: 5px 15px;
     background: #2b2b2b;
     border-radius: 25px;
     margin: 0 12px 12px 0;
-    color:#fff;
-    &:hover{
+    color: #fff;
+    &:hover {
       background: #515151;
     }
-    & svg{
-      margin-right:7px;
+    & svg {
+      margin-right: 7px;
     }
-    & a{
-      color:#fff;
-      text-decoration:none;
-      &:hover{
-        color:#fff;
-        text-decoration:none;
+    & a {
+      color: #fff;
+      text-decoration: none;
+      &:hover {
+        color: #fff;
+        text-decoration: none;
       }
     }
-}
+  }
 `;
+
+const ModalWrapper = styled.div`
+  margin-top: 12px;
+  margin-bottom: 12px;
+`;
+
+const Modal = ({
+  onTypeHandler,
+  onMessageHandler,
+  register,
+  modal,
+  closeModal,
+  types,
+}) => (
+  <ModalWrapper>
+    <DialogTrigger isOpen={modal}>
+      <ButtonWrapper>
+        {/* <ActionButton onPress={openModal}>
+          <FaPlus />
+        </ActionButton> */}
+      </ButtonWrapper>
+      <Dialog>
+        <Heading>
+          <Flex alignItems="center" gap="size-100">
+            <Text>Request To Work</Text>
+          </Flex>
+        </Heading>
+        <Divider />
+        <Content>
+          <Form>
+            <TextArea
+              label="Message"
+              name="message"
+              onChange={onMessageHandler}
+            />
+            <ComboBox
+              onSelectionChange={onTypeHandler}
+              label="Type"
+              items={types}
+            >
+              {(item) => <Item key={item.Label}>{item.Label}</Item>}
+            </ComboBox>
+          </Form>
+        </Content>
+        <ButtonGroup>
+          <Button variant="secondary" onPress={closeModal}>
+            Cancel
+          </Button>
+          <Button variant="cta" onPress={register}>
+            Save
+          </Button>
+        </ButtonGroup>
+        <Divider />
+        <Footer>
+          <Flex alignItems="center" gap="size-100">
+            <p
+              style={{
+                fontStyle: "italic",
+                fontWeight: "lighter",
+                fontSize: "80%",
+              }}
+            >
+              * Please make sure wallet address matches the chain the bounty was
+              created on. This wallet address is used for your payment, and if
+              it is incorrect will result in irrecoverable loss of funds.
+            </p>
+          </Flex>
+        </Footer>
+      </Dialog>
+    </DialogTrigger>
+  </ModalWrapper>
+);
 
 const BountyDetails = () => {
   const instialState = {
@@ -102,11 +181,22 @@ const BountyDetails = () => {
     cancel: false,
     getBounty: false,
     image: false,
+    requestWork: false,
   };
+
+  const requestToWorkState = {
+    ERC20Chain: "",
+    Message: "",
+    BountyId: "",
+    ProviderId: "",
+    WalletAddress: "",
+  };
+
   const location = useLocation();
   const bountyId = location.state.BountyId;
 
   const [bountyDetails, setBountyDetails] = React.useState({ ...instialState });
+  const [loader, setLoader] = React.useState(false);
   const [amount, setAmount] = React.useState();
   const [bountyAmount, setBountyAmount] = React.useState();
   const [active, setActive] = React.useState();
@@ -124,6 +214,12 @@ const BountyDetails = () => {
   const storageAccountName = appConfig.azure.storageAccountName;
   const containerName = `bounty-${bountyId}`;
   const [showurl, setShowurl] = React.useState(false);
+  const [types, setTypes] = React.useState();
+  const [showModalTwo, setShowModalTwo] = React.useState(false);
+  const [requestToWorkHandler, setRequestToWorkHandler] = React.useState({
+    ...requestToWorkState,
+  });
+  const { account, ethereum } = useMetaMask();
 
   // get BlobService = notice `?` is pulled out of sasToken - if created in Azure portal
   const blobService = new BlobServiceClient(
@@ -144,6 +240,11 @@ const BountyDetails = () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     setProvider(provider);
     getBlobsInContainer(containerClient);
+  }, []);
+
+  React.useEffect(() => {
+    const value = globalState.RequestWork;
+    setTypes(value?.map((item) => item.Label.UserLocalizedLabel));
   }, []);
 
   const loadBountyDetails = async () => {
@@ -240,6 +341,7 @@ const BountyDetails = () => {
         cancel: true,
         getBounty: false,
         image: false,
+        requestWork: false,
       }));
     } catch (error) {
       setShowError(true);
@@ -248,6 +350,7 @@ const BountyDetails = () => {
         cancel: true,
         getBounty: false,
         image: false,
+        requestWork: false,
       }));
     }
   };
@@ -261,6 +364,7 @@ const BountyDetails = () => {
         getBounty: true,
         cancel: false,
         image: false,
+        requestWork: false,
       }));
     } catch (error) {
       setShowError(true);
@@ -269,6 +373,7 @@ const BountyDetails = () => {
         getBounty: true,
         cancel: false,
         image: false,
+        requestWork: false,
       }));
       console.log(error);
     }
@@ -333,7 +438,70 @@ const BountyDetails = () => {
     return returnedBlobUrls;
   };
 
-  if (bountyDetails.loading) {
+  const openModal = () => {
+    setShowModalTwo(true);
+  };
+
+  const closeModal = () => {
+    setShowModalTwo(false);
+  };
+
+  const requestToWorkSubmit = async () => {
+    setLoader(true);
+    console.log(requestToWorkHandler);
+    axios
+      .post(`${appConfig.apiBaseUrl}requestToWorks/new`, requestToWorkHandler)
+      .then((response) => {
+        console.log(response);
+        setShowModalTwo(false);
+        setShowSuccess(true);
+        setLoader(false);
+        setMessage((prevState) => ({
+          ...prevState,
+          getBounty: false,
+          cancel: false,
+          image: false,
+          requestWork: true,
+        }));
+      })
+      .catch((error) => {
+        console.log(error);
+        setShowError(true);
+        setLoader(false);
+        setMessage((prevState) => ({
+          ...prevState,
+          getBounty: false,
+          cancel: false,
+          image: false,
+          requestWork: true,
+        }));
+      });
+  };
+
+  const onMessageHandler = (message) => {
+    setRequestToWorkHandler((prevState) => ({
+      ...prevState,
+      Message: message,
+    }));
+  };
+
+  const onTypeHandler = (type) => {
+    console.log(type);
+    const data = globalState.RequestWork;
+    let id;
+    data.filter((item) =>
+      item.Label.UserLocalizedLabel.Label === type ? (id = item.Value) : null
+    );
+    setRequestToWorkHandler((prevState) => ({
+      ...prevState,
+      ERC20Chain: id,
+      BountyId: bountyId,
+      ProviderId: globalState.accountId,
+      WalletAddress: account,
+    }));
+  };
+
+  if (bountyDetails.loading || loader) {
     return (
       <LoadingWrapper>
         <div>
@@ -403,6 +571,22 @@ const BountyDetails = () => {
           <Button variant="negative">View on blockchain explorer</Button>
         </a>
 
+        {bountyDetails.customerId !== globalState.accountId && (
+          <>
+            <Button onPress={openModal} variant="negative">
+              Request To Work
+            </Button>
+            <Modal
+              modal={showModalTwo}
+              register={requestToWorkSubmit}
+              closeModal={closeModal}
+              onMessageHandler={onMessageHandler}
+              types={types}
+              onTypeHandler={onTypeHandler}
+            />
+          </>
+        )}
+
         {bountyDetails.customerId == globalState.accountId ? (
           <>
             <ItemWrapper>
@@ -458,22 +642,19 @@ const BountyDetails = () => {
       <div>
         <h2>#Related Files</h2>
         <FileWrapper>
-        {showurl
-          ? ImageBloburls.map((blob, key) => (
-              <ItemWrapper>
-              
-                <FaFileAlt/>
+          {showurl
+            ? ImageBloburls.map((blob, key) => (
+                <ItemWrapper>
+                  <FaFileAlt />
                   <Link>
-                
                     <a href={`${blob.url}`} target="_blank">
                       {blob.name}
                     </a>
                   </Link>
-             
-              </ItemWrapper>
-            ))
-          : null}
-          </FileWrapper>
+                </ItemWrapper>
+              ))
+            : null}
+        </FileWrapper>
       </div>
 
       <DialogTrigger isOpen={showModal}>
@@ -498,6 +679,8 @@ const BountyDetails = () => {
               ? "Cancel Success"
               : message.image
               ? "success"
+              : message.requestWork
+              ? "Success"
               : "Get Bounty Success"
           }
           variant="information"
@@ -508,6 +691,8 @@ const BountyDetails = () => {
             ? "Bounty cancelled successfully"
             : message.image
             ? "image uploaded successfully"
+            : message.requestWork
+            ? "Request to Work submitted successfully"
             : "Bounty got successfully"}
         </AlertDialog>
       </DialogTrigger>
@@ -519,7 +704,7 @@ const BountyDetails = () => {
           primaryActionLabel="OK"
           onPrimaryAction={() => setShowError(false)}
         >
-          {message.getBounty ? "Bounty not found" : "Failed to cancel bounty."}
+          {message.getBounty ? "Bounty not found" : message.requestWork ? "Failed to submit request" : "Failed to cancel bounty."}
         </AlertDialog>
       </DialogTrigger>
     </BountyWrapper>

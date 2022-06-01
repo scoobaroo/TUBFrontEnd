@@ -47,7 +47,7 @@ const BountyGrid = styled.div`
   @media (max-width: 576px) {
     grid-template-columns: repeat(1, 1fr);
   }
-  & .bounty-name{
+  & .bounty-name {
     word-break: break-all;
   }
 `;
@@ -101,7 +101,6 @@ const FilterItemWrapper = styled.div`
   }
 `;
 
-
 const BountyCard = ({ bounty }) => {
   return (
     <Well>
@@ -112,10 +111,25 @@ const BountyCard = ({ bounty }) => {
   );
 };
 
+const BountyList = ({ filter, BountyDetails }) => {
+  return filter.map((bounty) => (
+    <Well>
+      <div className="bounty-name">{bounty.cob_name}</div>
+
+      <div className="bounty-name">
+        {bounty.cob_description || `No Description`}
+      </div>
+      <Button onClick={() => BountyDetails(bounty)}>View Bounty</Button>
+    </Well>
+  ));
+};
+
 const initialState = {
   bounties: null,
   loading: true,
   error: null,
+  filterTopics: null,
+  topicCondition: false,
 };
 
 const FilterinitialState = {
@@ -145,11 +159,10 @@ const BountiesBase = ({ firebase, navigate }) => {
   React.useEffect(() => {
     if (filterState.categories && categoryId) {
       setLoader(true);
-      console.log("categories");
       const [selected] = filterState.categories.filter(
         (x) => x.categoryId === categoryId
       );
-      setSubCategories(selected?.subCategories);
+      setSubCategories(selected.subCategories);
     }
   }, [categoryId]);
 
@@ -159,7 +172,6 @@ const BountiesBase = ({ firebase, navigate }) => {
         (x) => x.subCategoryId === subCategoryId
       );
       setTopics(results.topics);
-      console.log(results, "results");
     }
   }, [subCategoryId]);
 
@@ -170,7 +182,6 @@ const BountiesBase = ({ firebase, navigate }) => {
     })
       .then((response) => {
         if (response.status === 200) {
-          console.log(response.data, "its first response");
           const {
             data: { value },
           } = response;
@@ -223,6 +234,7 @@ const BountiesBase = ({ firebase, navigate }) => {
             ...prevState,
             bounties,
             loading: false,
+            topicCondition: false,
           }));
           setLoader(false);
         }
@@ -235,6 +247,7 @@ const BountiesBase = ({ firebase, navigate }) => {
 
   const subCategoryFilterHandler = (value) => {
     setLoader(true);
+    setSubCategoryId(value);
     axios
       .get(
         `${appConfig.apiBaseUrl}bounties/search/?CategoryId=${categoryId}&SubCategoryId=${value}`
@@ -248,7 +261,6 @@ const BountiesBase = ({ firebase, navigate }) => {
           } else {
             setFilerDataCondition(false);
           }
-          console.log(response.data, "response.data");
           const {
             data: { value },
           } = response;
@@ -258,6 +270,7 @@ const BountiesBase = ({ firebase, navigate }) => {
             ...prevState,
             bounties,
             loading: false,
+            topicCondition: false,
           }));
         }
         setLoader(false);
@@ -266,6 +279,36 @@ const BountiesBase = ({ firebase, navigate }) => {
         setSearchFlag(false);
         console.log(error, "error");
       });
+  };
+
+  const topicFilterHandler = (value) => {
+    setLoader(true);
+    let topics;
+    let topicId;
+    let condition = false;
+    state.bounties?.map((bounty) => {
+      topics = bounty.cob_cob_topic_cob_bounty;
+      topics.map((topic) => {
+        topicId = topic.cob_topicid;
+      });
+      if (topicId == value) {
+        condition = true;
+        setState((prevState) => ({
+          ...prevState,
+          filterTopics: [bounty],
+          loading: false,
+          topicCondition: true,
+        }));
+      }
+    });
+
+    if (condition === false) {
+      setFilerDataCondition(true);
+      setLoader(false);
+    } else {
+      setFilerDataCondition(false);
+      setLoader(false);
+    }
   };
 
   const getCategories = () => {
@@ -309,9 +352,10 @@ const BountiesBase = ({ firebase, navigate }) => {
     );
   }
 
+  
+
   return (
     <div>
-      <>
         <FilterGrid>
           <FilterItemWrapper>
             <SearchField label="Search" />
@@ -333,10 +377,8 @@ const BountiesBase = ({ firebase, navigate }) => {
             <FilterItemWrapper>
               <ComboBox
                 label="Sub Category"
+                onSelectionChange={(value) => subCategoryFilterHandler(value)}
                 items={subCategories}
-                onSelectionChange={(value) => {
-                  setSubCategoryId(value), subCategoryFilterHandler(value);
-                }}
               >
                 {(item) => (
                   <Item key={item.subCategoryId}>{item.subCategoryName}</Item>
@@ -346,7 +388,13 @@ const BountiesBase = ({ firebase, navigate }) => {
           )}
           {!!topics?.length && (
             <FilterItemWrapper>
-              <ComboBox label="Topics" items={topics}>
+              <ComboBox
+                label="Topics"
+                items={topics}
+                onSelectionChange={(value) => {
+                  topicFilterHandler(value);
+                }}
+              >
                 {(item) => <Item key={item.topicId}>{item.topicName}</Item>}
               </ComboBox>
             </FilterItemWrapper>
@@ -371,21 +419,16 @@ const BountiesBase = ({ firebase, navigate }) => {
           <BountyGrid>
             {filerDataConditon ? (
               <NoData>No Match Found</NoData>
+            ) : state.topicCondition ? (
+              <BountyList
+                filter={state.filterTopics}
+                BountyDetails={goToBounty}
+              />
             ) : (
-              state.bounties?.map((bounty) => (
-                <Well>
-                  <div className="bounty-name">{bounty.cob_name}</div>
-
-                  <div  className="bounty-name">{bounty.cob_description || `No Description`}</div>
-                  <Button onClick={() => goToBounty(bounty)}>
-                    View Bounty
-                  </Button>
-                </Well>
-              ))
+              <BountyList filter={state.bounties} BountyDetails={goToBounty} />
             )}
           </BountyGrid>
         ) : null}
-      </>
     </div>
   );
 };

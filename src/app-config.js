@@ -26,7 +26,7 @@
       appId: "1:46308360656:web:6d17f886725fef944ab9d5",
     },
 
-    timeOutDelay: 3600, // in seconds
+    timeOutDelay: 1800, // in seconds
 
     azure: {
       sasToken: "?sv=2020-08-04&ss=bfqt&srt=co&sp=rwdlacupitfx&se=2022-07-23T18:17:05Z&st=2022-05-23T10:17:05Z&spr=https&sig=3iY8kxXesIg7siSjHsub6c%2BkdK%2BNZRchJC80G5AKKlw%3D",

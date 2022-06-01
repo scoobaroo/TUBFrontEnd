@@ -56,6 +56,16 @@ const getEducationType = () => {
   return NewEducationType ? NewEducationType : null;
 }
 
+const getRequestWork = () => {
+  let requestWork;  
+  let NewRequestWork
+  if (window.localStorage) {
+    requestWork = window.localStorage.getItem('requestWork');
+    NewRequestWork = JSON.parse(requestWork);
+  }
+  return NewRequestWork ? NewRequestWork : null;
+}
+
 const getCeritficationType = () => {
   let ceritficationType;
   let NewCeritficationType
@@ -77,6 +87,7 @@ const storeInitialState = {
   categorys: getCategorys(),
   EducationType: getEducationType(),
   CertificationType: getCeritficationType(),
+  RequestWork:getRequestWork(),
 };
 
 const AppContextBase = props => {

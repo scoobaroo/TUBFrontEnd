@@ -12,6 +12,7 @@ import useCategory from "../../hooks/useCategory";
 import FormContainer from "../../styled/FormContainer";
 import useEducationType from "../../hooks/useEducationType";
 import useCertificationType from '../../hooks/useCertificationType'
+import useRequestWork from "../../hooks/useRequestWork";
 
 
 const SignInFormBase = (props) => {
@@ -20,6 +21,7 @@ const SignInFormBase = (props) => {
   const { setCategory } = useCategory();
   const {setEducationType} = useEducationType()
   const {setCertificationType} =  useCertificationType()
+  const {setRequestWork} = useRequestWork()
 
 
   const handleEmailChange = (val) => {
@@ -57,6 +59,7 @@ const SignInFormBase = (props) => {
           setCategory();
           setEducationType();
           setCertificationType();
+          setRequestWork();
           console.log("use this for next api call, blobject =>", result);
         }
       })
