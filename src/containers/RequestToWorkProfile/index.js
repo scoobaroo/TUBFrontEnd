@@ -97,8 +97,7 @@ const userDetails = {
   certification: [],
 };
 
-const ProfileView = ({}) => {
-  const location = useLocation();
+const ProfileView = (porps) => {
   const [user, setUser] = React.useState({ ...userDetails });
 
   React.useEffect(() => {
@@ -108,15 +107,15 @@ const ProfileView = ({}) => {
   const getAccontDetails = () => {
     setUser((prevState) => ({
       ...prevState,
-      first_name: location.state.firstName,
-      last_name: location.state.lastName,
-      email: location.state.Email,
-      profilePicture: location.state.Url,
-      linkedIn: location.state.linkedIn,
-      github: location.state.Github,
-      telephone: location.state.Telephone,
-      education: location.state.Education,
-      certification: location.state.Certification,
+      first_name: porps.location.state.firstName,
+      last_name: porps.location.state.lastName,
+      email: porps.location.state.Email,
+      profilePicture: porps.location.state.Url,
+      linkedIn: porps.location.state.linkedIn,
+      github: porps.location.state.Github,
+      telephone: porps.location.state.Telephone,
+      education: porps.location.state.Education,
+      certification: porps.location.state.Certification,
     }));
   };
 

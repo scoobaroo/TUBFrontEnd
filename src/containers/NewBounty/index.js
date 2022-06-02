@@ -24,8 +24,8 @@ import { ethers, getDefaultProvider, utils } from "ethers";
 
 import { fs } from "fs";
 
-import abi from "../../Bounty.json";
-import bytecode from "../../Bytecode.json";
+import abi from "../../abi/Bounty.json";
+import bytecode from "../../abi/Bytecode.json"
 import { call } from "file-loader";
 import { Navigate } from "react-router-dom";
 

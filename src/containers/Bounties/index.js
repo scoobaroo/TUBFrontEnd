@@ -181,6 +181,7 @@ const BountiesBase = ({ firebase, navigate }) => {
       url: `${appConfig.apiBaseUrl}bounties`,
     })
       .then((response) => {
+        console.log("bounties",response.data);
         if (response.status === 200) {
           const {
             data: { value },

@@ -25,9 +25,12 @@ import { ethers, getDefaultProvider, utils } from "ethers";
 import styled from "styled-components";
 import React from "react";
 import axios from "axios";
-import abi from "../../Bounty.json";
+import abi from "../../abi/Bounty.json";
 import { AppContext } from "../../context";
-import { BlobServiceClient } from "@azure/storage-blob";
+import {
+  BlobServiceClient,
+  ContainerSASPermissions,
+} from "@azure/storage-blob";
 import { FaFileAlt } from "react-icons/fa";
 import { useMetaMask } from "metamask-react";
 
@@ -99,12 +102,15 @@ const ModalWrapper = styled.div`
 `;
 
 const Modal = ({
-  onTypeHandler,
   onMessageHandler,
   register,
   modal,
   closeModal,
   types,
+  metaMaskAddresHandler,
+  value,
+  addressEditHandler,
+  type,
 }) => (
   <ModalWrapper>
     <DialogTrigger isOpen={modal}>
@@ -128,12 +134,22 @@ const Modal = ({
               onChange={onMessageHandler}
             />
             <ComboBox
-              onSelectionChange={onTypeHandler}
               label="Type"
-              items={types}
+              isReadOnly={true}
+              inputValue={type}
             >
-              {(item) => <Item key={item.Label}>{item.Label}</Item>}
             </ComboBox>
+            <TextField
+              onChange={addressEditHandler}
+              value={value}
+              label="Aaccount Address"
+              name="amount"
+            />
+            <ButtonGroup>
+              <Button variant="secondary" onPress={metaMaskAddresHandler}>
+                Populate Aaccount Address
+              </Button>
+            </ButtonGroup>
           </Form>
         </Content>
         <ButtonGroup>
@@ -240,6 +256,10 @@ const BountyDetails = () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     setProvider(provider);
     getBlobsInContainer(containerClient);
+    setRequestToWorkHandler((prevState) => ({
+      ...prevState,
+      ERC20Chain: "COB_erc20",
+    }));
   }, []);
 
   React.useEffect(() => {
@@ -482,22 +502,26 @@ const BountyDetails = () => {
     setRequestToWorkHandler((prevState) => ({
       ...prevState,
       Message: message,
+      BountyId: bountyId,
+      ProviderId: globalState.accountId,
+      ERC20Chain: "COB_erc20",
     }));
   };
 
-  const onTypeHandler = (type) => {
-    console.log(type);
-    const data = globalState.RequestWork;
-    let id;
-    data.filter((item) =>
-      item.Label.UserLocalizedLabel.Label === type ? (id = item.Value) : null
-    );
+
+
+  const metaMaskAddresHandler = () => {
     setRequestToWorkHandler((prevState) => ({
       ...prevState,
-      ERC20Chain: id,
-      BountyId: bountyId,
-      ProviderId: globalState.accountId,
       WalletAddress: account,
+      ERC20Chain: "COB_erc20",
+    }));
+  };
+  const addressEditHandler = (e) => {
+    setRequestToWorkHandler((prevState) => ({
+      ...prevState,
+      WalletAddress: e,
+      ERC20Chain: "COB_erc20",
     }));
   };
 
@@ -582,7 +606,10 @@ const BountyDetails = () => {
               closeModal={closeModal}
               onMessageHandler={onMessageHandler}
               types={types}
-              onTypeHandler={onTypeHandler}
+              metaMaskAddresHandler={metaMaskAddresHandler}
+              value={requestToWorkHandler.WalletAddress}
+              addressEditHandler={addressEditHandler}
+              type={requestToWorkHandler.ERC20Chain}
             />
           </>
         )}
@@ -704,7 +731,11 @@ const BountyDetails = () => {
           primaryActionLabel="OK"
           onPrimaryAction={() => setShowError(false)}
         >
-          {message.getBounty ? "Bounty not found" : message.requestWork ? "Failed to submit request" : "Failed to cancel bounty."}
+          {message.getBounty
+            ? "Bounty not found"
+            : message.requestWork
+            ? "Failed to submit request"
+            : "Failed to cancel bounty."}
         </AlertDialog>
       </DialogTrigger>
     </BountyWrapper>

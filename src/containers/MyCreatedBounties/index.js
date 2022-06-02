@@ -1,6 +1,13 @@
 import React from "react";
 import axios from "axios";
-import { Button, ProgressCircle, Well, Heading } from "@adobe/react-spectrum";
+import {
+  Button,
+  ProgressCircle,
+  Well,
+  Heading,
+  DialogTrigger,
+  AlertDialog,
+} from "@adobe/react-spectrum";
 import styled from "styled-components";
 import { Navigate } from "react-router-dom";
 import appConfig from "webpack-config-loader!../../app-config.js";
@@ -11,6 +18,7 @@ import withRouter from "../../session/withRouter";
 import { AppContext } from "../../context";
 import { stat } from "fs";
 import { VoidSigner } from "ethers";
+import { AiFillStar } from "react-icons/ai";
 
 const LoadingWrapper = styled.div`
   min-height: 50vh;
@@ -94,6 +102,20 @@ const ButtonWrapper = styled.div`
   }
 `;
 
+const SelectedButton = styled.div`
+  border-radius: 7px;
+  background: #4d4c4c;
+  padding: 10px;
+  width: 120px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  & svg {
+    margin-right: 5px;
+  }
+`;
+
 const initialState = {
   allBounties: null,
   loading: true,
@@ -113,16 +135,20 @@ const requestToworkDetails = {
   telephone: "",
   education: [],
   certification: [],
+  cob_providerId: "",
+  cob_providerId2: "",
 };
 
 const BountiesBase = ({ firebase, navigate }) => {
   const [state] = React.useContext(AppContext);
   const [State, setState] = React.useState({ ...initialState });
   const [profile, setProfile] = React.useState(false);
+  const [rwrkId, setRwrkId] = React.useState(null);
+  const [requestworkloader, setRequestWorkLoader] = React.useState(false);
+  const [showModal, setShowModal] = React.useState(false);
   const [requestToWork, setRequestToWork] = React.useState([
     { ...requestToworkDetails },
   ]);
-  const [providerAccountId, setProviderAccountId] = React.useState(null);
   const [loader, setLoader] = React.useState(0);
   React.useEffect(() => {
     setState((prevState) => ({
@@ -139,12 +165,15 @@ const BountiesBase = ({ firebase, navigate }) => {
   }, [State.allBounties]);
 
   const getCustomerBounties = async () => {
+    setRequestWorkLoader(true);
     await axios
       .get(
         `${appConfig.apiBaseUrl}requestToWorks/customerid/${state.accountId}/`
       )
       .then((response) => {
+        console.log("response", response);
         if (response.status === 200) {
+          setRequestWorkLoader(false);
           const {
             data: { value },
           } = response;
@@ -157,6 +186,7 @@ const BountiesBase = ({ firebase, navigate }) => {
         }
       })
       .catch((error) => {
+        setRequestWorkLoader(false);
         setState((prevState) => ({
           ...prevState,
           loading: false,
@@ -184,6 +214,7 @@ const BountiesBase = ({ firebase, navigate }) => {
           axios
             .get(`${appConfig.apiBaseUrl}users/accountId/${providerId}`)
             .then((response) => {
+              console.log("my create bouties", response);
               setLoader(loader - 1);
               if (response.status === 200) {
                 setRequestToWork((prevState) => [
@@ -199,9 +230,12 @@ const BountiesBase = ({ firebase, navigate }) => {
                     linkedIn: response.data.cob_linkedinurl,
                     github: response.data.cob_githuburl,
                     telephone: response.data.telephone1,
+                    requestToWorkdId: value.cob_requesttoworkid,
                     certification:
                       response.data.cob_Certification_providerid_Account,
                     education: response.data.cob_Education_providerid_Account,
+                    cob_providerId: bounty._cob_providerid_value,
+                    cob_providerId2: value._cob_providerid_value,
                   },
                 ]);
               }
@@ -241,6 +275,26 @@ const BountiesBase = ({ firebase, navigate }) => {
     });
   };
 
+  const bountyAcceptHandler = async (requestToWorkId) => {
+    setRwrkId(requestToWorkId);
+    setRequestWorkLoader(true);
+    await axios
+      .patch(`${appConfig.apiBaseUrl}requestToWorks/${requestToWorkId}/approve`)
+      .then((response) => {
+        if (response.status === 200) {
+          setShowModal(true);
+          getCustomerBounties();
+          setRequestWorkLoader(false);
+
+          console.log("response", response);
+        }
+      })
+      .catch((error) => {
+        setRequestWorkLoader(false);
+        console.log("error", error);
+      });
+  };
+
   const data = State.allBounties?.map((bounty) => (
     <Well key={bounty.cob_bountyid}>
       <ViewBountyBox>
@@ -264,7 +318,7 @@ const BountiesBase = ({ firebase, navigate }) => {
           const string2 = value.profilePicture;
           const string1 = "data:image/png;base64,";
           imageUrl = string1.concat(string2);
-          if (value.Id == bounty["@odata.etag"]) {
+          if (value.Id === bounty["@odata.etag"]) {
             return (
               <RequestToWork>
                 <h3>Request to work</h3>
@@ -293,15 +347,34 @@ const BountiesBase = ({ firebase, navigate }) => {
                       </div>
                       <div>{value.email}</div>
                       <div>{value.message}</div>
+                      {bounty._cob_providerid_value === value.cob_providerId2 && (
+                        <SelectedButton>
+                          <AiFillStar />
+                          Selected
+                        </SelectedButton>
+                      )}
                     </div>
                   </RequestToWorkIn>
-                  <ButtonWrapper>
-                    <Button end variant="cta">
-                      {" "}
-                      Accept{" "}
-                    </Button>
-                    <Button variant="negative"> Reject </Button>
-                  </ButtonWrapper>
+                  {bounty._cob_providerid_value === null ? (
+                    <ButtonWrapper>
+                      <Button
+                        onPress={() => {
+                          bountyAcceptHandler(value.requestToWorkdId);
+                        }}
+                        end
+                        variant="cta"
+                      >
+                        {value.requestToWorkdId === rwrkId &&
+                          requestworkloader && (
+                          <ProgressCircle
+                            aria-label="Loading…"
+                            isIndeterminate
+                          />
+                        )} Accept
+                      </Button>
+                      <Button variant="negative"> Reject </Button>
+                    </ButtonWrapper>
+                  ) : null}
                 </div>
               </RequestToWork>
             );
@@ -333,6 +406,17 @@ const BountiesBase = ({ firebase, navigate }) => {
           <div>please wait...</div>
         </LoadingWrapper>
       )}
+      <DialogTrigger isOpen={showModal}>
+        <></>
+        <AlertDialog
+          title="Success"
+          variant="information"
+          primaryActionLabel="OK"
+          onPrimaryAction={() => setShowModal(false)}
+        >
+          Bounty request accepted
+        </AlertDialog>
+      </DialogTrigger>
     </div>
   );
 };
