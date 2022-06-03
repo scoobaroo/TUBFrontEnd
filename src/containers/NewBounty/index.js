@@ -25,7 +25,9 @@ import { ethers, getDefaultProvider, utils } from "ethers";
 import { fs } from "fs";
 
 import abi from "../../abi/Bounty.json";
-import bytecode from "../../abi/Bytecode.json"
+import bytecode from "../../abi/Bytecode.json";
+import ABI from "../../abi/BountyABI.json";
+import BountyBytecode from "../../abi/BountyBytecode.json";
 import { call } from "file-loader";
 import { Navigate } from "react-router-dom";
 
@@ -82,6 +84,7 @@ function NewBountyBase(props) {
   const [showBountyError, setShowBountyError] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [discription, setDiscription] = React.useState("");
+  const [BounyName, setBounyName] = React.useState("");
 
   React.useEffect(() => {
     if (_state.authUser && _state.authUser.uid) {
@@ -108,6 +111,7 @@ function NewBountyBase(props) {
   }, [subCategoryId]);
 
   React.useEffect(() => {
+    setBounyName(props.location.state.Bounty);
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     setProvider(provider);
     let isSubsribed = true;
@@ -204,11 +208,20 @@ function NewBountyBase(props) {
     console.log("abi=>", abi);
     console.log("bytecode =>", bytecode);
 
-    let contractFactory = new ethers.ContractFactory(
-      abi,
-      bytecode.object,
-      provider.getSigner()
-    );
+    if (BounyName === "Create New Bounty") {
+      let contractFactory = new ethers.ContractFactory(
+        abi,
+        bytecode.object,
+        provider.getSigner()
+      );
+    } else if (BounyName === "Create New Designated Bounty") {
+      let contractFactory = new ethers.ContractFactory(
+        ABI,
+        BountyBytecode.object,
+        provider.getSigner()
+      );
+    }
+
     // let init = prompt("How much ether would you like to put into this smart contract?");
     console.log("INIT =>", initalAmount);
     const initialValue = { value: ethers.utils.parseEther(initalAmount) };

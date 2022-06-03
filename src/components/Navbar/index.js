@@ -1,7 +1,14 @@
 import React from "react";
 import { Pivot as Hamburger } from "hamburger-react";
 import styled from "styled-components";
-import { ActionButton, Switch, Button } from "@adobe/react-spectrum";
+import {
+  ActionButton,
+  Switch,
+  Button,
+  MenuTrigger,
+  Menu,
+  Item,
+} from "@adobe/react-spectrum";
 import withAuthorization from "../../session/withAuthorization";
 import { withFirebase } from "../../firebase";
 import { compose } from "recompose";
@@ -33,7 +40,7 @@ const NavMenuWrapper = styled.div`
     display: none;
     @media (max-width: 576px) {
       display: block;
-      margin: 0 14px;
+      margin:  6px;
     }
   }
 
@@ -89,6 +96,12 @@ const AuthedNavWrapper = styled.div`
 `;
 
 const CreateNewBounty = styled.div`
+  & button {
+    background: #6b6b6b;
+    border-radius: 30px;
+    color: #fff;
+    cursor: pointer;
+  }
   @media (max-width: 576px) {
     display: none;
   }
@@ -182,8 +195,13 @@ const NavMenu = ({
           </div>
           {}
           <div className="_btn-authed create-new-bounty-mobile">
-            <Button onPress={handleNewBounty} marginEnd={2} fo>
+            <Button onPress={()=>handleNewBounty("Create New Bounty")} isQuiet>
               Create New Bounty
+            </Button>
+          </div>
+          <div className="_btn-authed create-new-bounty-mobile">
+            <Button onPress={()=>handleNewBounty("Create New Designated Bounty")} isQuiet>
+            Create New Designated Bounty
             </Button>
           </div>
         </>
@@ -286,9 +304,11 @@ const NavBarBase = ({ firebase, navigate }) => {
     firebase.signOut();
     setAccountId("");
   };
-  const handleNewBounty = () => {
+  const handleNewBounty = (key) => {
+    alert(key);
+    console.log("key =>", key);
     setOpen(!open);
-    navigate("/new-bounty");
+    navigate("/new-bounty" , { state: {Bounty: key } });
   };
 
   const handleMyCreatedBounty = () => {
@@ -339,9 +359,18 @@ const NavBarBase = ({ firebase, navigate }) => {
             </ConnectedButton>
             {state.accountId && (
               <CreateNewBounty>
-                <Button marginEnd={2} fo onPress={handleNewBounty}>
+                {/* <Button marginEnd={2} fo onPress={handleNewBounty}>
                   Create New Bounty
-                </Button>
+                </Button> */}
+                <MenuTrigger>
+                  <ActionButton>Create Bounty</ActionButton>
+                  <Menu onAction={(key) => handleNewBounty(key)}>
+                    <Item key="Create New Bounty">Create New Bounty</Item>
+                    <Item key="Create New Designated Bounty">
+                      Create New Designated Bounty
+                    </Item>
+                  </Menu>
+                </MenuTrigger>
               </CreateNewBounty>
             )}
 

@@ -19,6 +19,8 @@ import { AppContext } from "../../context";
 import { stat } from "fs";
 import { VoidSigner } from "ethers";
 import { AiFillStar } from "react-icons/ai";
+import { ethers, getDefaultProvider, utils } from "ethers";
+import abi from "../../abi/Bounty.json";
 
 const LoadingWrapper = styled.div`
   min-height: 50vh;
@@ -140,6 +142,7 @@ const requestToworkDetails = {
 };
 
 const BountiesBase = ({ firebase, navigate }) => {
+  const [provider, setProvider] = React.useState(null);
   const [state] = React.useContext(AppContext);
   const [State, setState] = React.useState({ ...initialState });
   const [profile, setProfile] = React.useState(false);
@@ -151,6 +154,8 @@ const BountiesBase = ({ firebase, navigate }) => {
   ]);
   const [loader, setLoader] = React.useState(0);
   React.useEffect(() => {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    setProvider(provider);
     setState((prevState) => ({
       ...prevState,
       allBounties: [],
@@ -275,9 +280,24 @@ const BountiesBase = ({ firebase, navigate }) => {
     });
   };
 
-  const bountyAcceptHandler = async (requestToWorkId) => {
+  const setSmartContractAddress = async (smartContractAddress) => {
+    console.log("smartContractAddress", smartContractAddress);
+    setShowModal(false);
+    let contract = new ethers.Contract(
+      smartContractAddress,
+      abi,
+      provider.getSigner()
+    );
+    console.log("contract", contract);
+    // let result = await contract.setprovider();
+    // console.log("result", result);
+
+  }
+
+  const bountyAcceptHandler = async (requestToWorkId,cob_smartcontractaddress) => {
     setRwrkId(requestToWorkId);
     setRequestWorkLoader(true);
+    setSmartContractAddress(cob_smartcontractaddress);
     await axios
       .patch(`${appConfig.apiBaseUrl}requestToWorks/${requestToWorkId}/approve`)
       .then((response) => {
@@ -359,7 +379,7 @@ const BountiesBase = ({ firebase, navigate }) => {
                     <ButtonWrapper>
                       <Button
                         onPress={() => {
-                          bountyAcceptHandler(value.requestToWorkdId);
+                          bountyAcceptHandler(value.requestToWorkdId,bounty.cob_smartcontractaddress);
                         }}
                         end
                         variant="cta"
