@@ -84,7 +84,7 @@ function NewBountyBase(props) {
   const [showBountyError, setShowBountyError] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [discription, setDiscription] = React.useState("");
-  const [BounyName, setBounyName] = React.useState("");
+  const [bountyName, setBounyName] = React.useState("");
 
   React.useEffect(() => {
     if (_state.authUser && _state.authUser.uid) {
@@ -208,13 +208,13 @@ function NewBountyBase(props) {
     console.log("abi=>", abi);
     console.log("bytecode =>", bytecode);
 
-    if (BounyName === "Create New Bounty") {
+    if (bountyName === "Create New Bounty") {
       let contractFactory = new ethers.ContractFactory(
         abi,
         bytecode.object,
         provider.getSigner()
       );
-    } else if (BounyName === "Create New Designated Bounty") {
+    } else if (bountyName === "Create New Designated Bounty") {
       let contractFactory = new ethers.ContractFactory(
         ABI,
         BountyBytecode.object,
@@ -323,7 +323,7 @@ function NewBountyBase(props) {
   return (
     <BountyFormWrapper>
       <div>
-        <h1>📜 Create Bounty</h1>
+        <h1>📜 {bountyName}</h1>
       </div>
       <ComboBox
         placeholder="Select Category"

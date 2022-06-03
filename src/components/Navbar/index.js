@@ -305,7 +305,6 @@ const NavBarBase = ({ firebase, navigate }) => {
     setAccountId("");
   };
   const handleNewBounty = (key) => {
-    alert(key);
     console.log("key =>", key);
     setOpen(!open);
     navigate("/new-bounty" , { state: {Bounty: key } });
