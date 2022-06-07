@@ -2,7 +2,6 @@ import React from "react";
 import axios from "axios";
 import { Button, ProgressCircle, Well } from "@adobe/react-spectrum";
 import styled from "styled-components";
-import { Navigate } from "react-router-dom";
 import appConfig from "webpack-config-loader!../../app-config.js";
 import withAuthorization from "../../session/withAuthorization";
 import { withFirebase } from "../../firebase";
@@ -37,7 +36,7 @@ const BountyGrid = styled.div`
 
 const BountyCard = ({ bounty, props }) => {
   return (
-    <Well>
+    <Well key={bounty.cob_bountyid}>
       <div>{bounty.cob_name}</div>
       <div>{bounty.cob_description || `No Description`}</div>
       <Button onClick={() => goToBounty(bounty, props)} >View Bounty</Button>
@@ -139,7 +138,7 @@ const BountiesBase = ({ firebase, navigate }) => {
         <BountyGrid>
           {State.allBounties?.map((bounty) => (
             // <BountyCard key={bounty.cob_bountyid} bounty={bounty} props={props} />
-            <Well>
+            <Well key={bounty.cob_bountyid}>
               <div>{bounty.cob_name}</div>
               <div>{bounty.cob_description || `No Description`}</div>
               <Button onClick={() => goToBounty(bounty)} >View Bounty</Button>

@@ -137,8 +137,7 @@ const Modal = ({
               label="Type"
               isReadOnly={true}
               inputValue={type}
-            >
-            </ComboBox>
+            ></ComboBox>
             <TextField
               onChange={addressEditHandler}
               value={value}
@@ -507,8 +506,6 @@ const BountyDetails = () => {
       ERC20Chain: "COB_erc20",
     }));
   };
-
-
 
   const metaMaskAddresHandler = () => {
     setRequestToWorkHandler((prevState) => ({

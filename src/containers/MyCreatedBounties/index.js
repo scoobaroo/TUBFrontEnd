@@ -241,6 +241,7 @@ const BountiesBase = ({ firebase, navigate }) => {
                     education: response.data.cob_Education_providerid_Account,
                     cob_providerId: bounty._cob_providerid_value,
                     cob_providerId2: value._cob_providerid_value,
+                    cob_walletaddress: value.cob_walletaddress,
                   },
                 ]);
               }
@@ -280,24 +281,24 @@ const BountiesBase = ({ firebase, navigate }) => {
     });
   };
 
-  const setSmartContractAddress = async (smartContractAddress) => {
-    console.log("smartContractAddress", smartContractAddress);
+  const setSmartContractAddress = async (
+    smartContractAddress,
+    cob_walletaddress,
+    requestToWorkId
+  ) => {
     setShowModal(false);
     let contract = new ethers.Contract(
       smartContractAddress,
       abi,
       provider.getSigner()
     );
-    console.log("contract", contract);
-    // let result = await contract.setprovider();
-    // console.log("result", result);
+    const value = await contract.setProvider(cob_walletaddress);
+    if (value) {
+      bountRequestWorkAprroval(requestToWorkId);
+    }
+  };
 
-  }
-
-  const bountyAcceptHandler = async (requestToWorkId,cob_smartcontractaddress) => {
-    setRwrkId(requestToWorkId);
-    setRequestWorkLoader(true);
-    setSmartContractAddress(cob_smartcontractaddress);
+  const bountRequestWorkAprroval = async (requestToWorkId) => {
     await axios
       .patch(`${appConfig.apiBaseUrl}requestToWorks/${requestToWorkId}/approve`)
       .then((response) => {
@@ -305,7 +306,6 @@ const BountiesBase = ({ firebase, navigate }) => {
           setShowModal(true);
           getCustomerBounties();
           setRequestWorkLoader(false);
-
           console.log("response", response);
         }
       })
@@ -313,6 +313,20 @@ const BountiesBase = ({ firebase, navigate }) => {
         setRequestWorkLoader(false);
         console.log("error", error);
       });
+  };
+
+  const bountyAcceptHandler = async (
+    requestToWorkId,
+    cob_smartcontractaddress,
+    cob_walletaddress
+  ) => {
+    setRwrkId(requestToWorkId);
+    setRequestWorkLoader(true);
+    setSmartContractAddress(
+      cob_smartcontractaddress,
+      cob_walletaddress,
+      requestToWorkId
+    );
   };
 
   const data = State.allBounties?.map((bounty) => (
@@ -340,10 +354,10 @@ const BountiesBase = ({ firebase, navigate }) => {
           imageUrl = string1.concat(string2);
           if (value.Id === bounty["@odata.etag"]) {
             return (
-              <RequestToWork>
+              <RequestToWork key={value.Id}>
                 <h3>Request to work</h3>
 
-                <div key={value.Id}>
+                <div>
                   <RequestToWorkIn>
                     <img
                       onClick={() =>
@@ -367,7 +381,8 @@ const BountiesBase = ({ firebase, navigate }) => {
                       </div>
                       <div>{value.email}</div>
                       <div>{value.message}</div>
-                      {bounty._cob_providerid_value === value.cob_providerId2 && (
+                      {bounty._cob_providerid_value ===
+                        value.cob_providerId2 && (
                         <SelectedButton>
                           <AiFillStar />
                           Selected
@@ -379,18 +394,23 @@ const BountiesBase = ({ firebase, navigate }) => {
                     <ButtonWrapper>
                       <Button
                         onPress={() => {
-                          bountyAcceptHandler(value.requestToWorkdId,bounty.cob_smartcontractaddress);
+                          bountyAcceptHandler(
+                            value.requestToWorkdId,
+                            bounty.cob_smartcontractaddress,
+                            value.cob_walletaddress
+                          );
                         }}
                         end
                         variant="cta"
                       >
                         {value.requestToWorkdId === rwrkId &&
                           requestworkloader && (
-                          <ProgressCircle
-                            aria-label="Loading…"
-                            isIndeterminate
-                          />
-                        )} Accept
+                            <ProgressCircle
+                              aria-label="Loading…"
+                              isIndeterminate
+                            />
+                          )}{" "}
+                        Accept
                       </Button>
                       <Button variant="negative"> Reject </Button>
                     </ButtonWrapper>

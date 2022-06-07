@@ -113,7 +113,7 @@ const BountyCard = ({ bounty }) => {
 
 const BountyList = ({ filter, BountyDetails }) => {
   return filter.map((bounty) => (
-    <Well>
+    <Well key={bounty.cob_bountyid}>
       <div className="bounty-name">{bounty.cob_name}</div>
 
       <div className="bounty-name">
@@ -181,7 +181,7 @@ const BountiesBase = ({ firebase, navigate }) => {
       url: `${appConfig.apiBaseUrl}bounties`,
     })
       .then((response) => {
-        console.log("bounties",response.data);
+        console.log("bounties", response.data);
         if (response.status === 200) {
           const {
             data: { value },
@@ -353,83 +353,75 @@ const BountiesBase = ({ firebase, navigate }) => {
     );
   }
 
-  
-
   return (
     <div>
-        <FilterGrid>
-          <FilterItemWrapper>
-            <SearchField label="Search" />
-          </FilterItemWrapper>
-          <FilterItemWrapper>
-            {filterState.categories && (
-              <ComboBox
-                label="Category"
-                onSelectionChange={(value) => CategoryFilterHandler(value)}
-                items={filterState.categories}
-              >
-                {(item) => (
-                  <Item key={item.categoryId}>{item.categoryName}</Item>
-                )}
-              </ComboBox>
-            )}
-          </FilterItemWrapper>
-          {subCategories && subCategories?.length > 0 && (
-            <FilterItemWrapper>
-              <ComboBox
-                label="Sub Category"
-                onSelectionChange={(value) => subCategoryFilterHandler(value)}
-                items={subCategories}
-              >
-                {(item) => (
-                  <Item key={item.subCategoryId}>{item.subCategoryName}</Item>
-                )}
-              </ComboBox>
-            </FilterItemWrapper>
+      <FilterGrid>
+        <FilterItemWrapper>
+          <SearchField label="Search" />
+        </FilterItemWrapper>
+        <FilterItemWrapper>
+          {filterState.categories && (
+            <ComboBox
+              label="Category"
+              onSelectionChange={(value) => CategoryFilterHandler(value)}
+              items={filterState.categories}
+            >
+              {(item) => <Item key={item.categoryId}>{item.categoryName}</Item>}
+            </ComboBox>
           )}
-          {!!topics?.length && (
-            <FilterItemWrapper>
-              <ComboBox
-                label="Topics"
-                items={topics}
-                onSelectionChange={(value) => {
-                  topicFilterHandler(value);
-                }}
-              >
-                {(item) => <Item key={item.topicId}>{item.topicName}</Item>}
-              </ComboBox>
-            </FilterItemWrapper>
-          )}
-        </FilterGrid>
-        {loader && (
-          <NewloadingWrapper>
-            <LoadingWrapper>
-              <div>
-                <ProgressCircle
-                  size="L"
-                  aria-label="Loading…"
-                  isIndeterminate
-                />
-              </div>
-              <div>please wait...</div>
-            </LoadingWrapper>
-          </NewloadingWrapper>
+        </FilterItemWrapper>
+        {subCategories && subCategories?.length > 0 && (
+          <FilterItemWrapper>
+            <ComboBox
+              label="Sub Category"
+              onSelectionChange={(value) => subCategoryFilterHandler(value)}
+              items={subCategories}
+            >
+              {(item) => (
+                <Item key={item.subCategoryId}>{item.subCategoryName}</Item>
+              )}
+            </ComboBox>
+          </FilterItemWrapper>
         )}
+        {!!topics?.length && (
+          <FilterItemWrapper>
+            <ComboBox
+              label="Topics"
+              items={topics}
+              onSelectionChange={(value) => {
+                topicFilterHandler(value);
+              }}
+            >
+              {(item) => <Item key={item.topicId}>{item.topicName}</Item>}
+            </ComboBox>
+          </FilterItemWrapper>
+        )}
+      </FilterGrid>
+      {loader && (
+        <NewloadingWrapper>
+          <LoadingWrapper>
+            <div>
+              <ProgressCircle size="L" aria-label="Loading…" isIndeterminate />
+            </div>
+            <div>please wait...</div>
+          </LoadingWrapper>
+        </NewloadingWrapper>
+      )}
 
-        {!loader ? (
-          <BountyGrid>
-            {filerDataConditon ? (
-              <NoData>No Match Found</NoData>
-            ) : state.topicCondition ? (
-              <BountyList
-                filter={state.filterTopics}
-                BountyDetails={goToBounty}
-              />
-            ) : (
-              <BountyList filter={state.bounties} BountyDetails={goToBounty} />
-            )}
-          </BountyGrid>
-        ) : null}
+      {!loader ? (
+        <BountyGrid>
+          {filerDataConditon ? (
+            <NoData>No Match Found</NoData>
+          ) : state.topicCondition ? (
+            <BountyList
+              filter={state.filterTopics}
+              BountyDetails={goToBounty}
+            />
+          ) : (
+            <BountyList filter={state.bounties} BountyDetails={goToBounty} />
+          )}
+        </BountyGrid>
+      ) : null}
     </div>
   );
 };

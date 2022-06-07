@@ -1,142 +1,220 @@
 [
 	{
-		"inputs": [],
-		"stateMutability": "payable",
-		"type": "constructor"
+	   "inputs":[
+		  
+	   ],
+	   "stateMutability":"payable",
+	   "type":"constructor"
 	},
 	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "Cancel",
-		"type": "event"
+	   "anonymous":false,
+	   "inputs":[
+		  {
+			 "indexed":false,
+			 "internalType":"address",
+			 "name":"owner",
+			 "type":"address"
+		  },
+		  {
+			 "indexed":false,
+			 "internalType":"uint256",
+			 "name":"amount",
+			 "type":"uint256"
+		  }
+	   ],
+	   "name":"Cancel",
+	   "type":"event"
 	},
 	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "oldBounty",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "newBounty",
-				"type": "uint256"
-			}
-		],
-		"name": "IncreaseBounty",
-		"type": "event"
+	   "anonymous":false,
+	   "inputs":[
+		  {
+			 "indexed":false,
+			 "internalType":"uint256",
+			 "name":"oldBounty",
+			 "type":"uint256"
+		  },
+		  {
+			 "indexed":false,
+			 "internalType":"uint256",
+			 "name":"newBounty",
+			 "type":"uint256"
+		  }
+	   ],
+	   "name":"IncreaseBounty",
+	   "type":"event"
 	},
 	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "payee",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "Paid",
-		"type": "event"
+	   "anonymous":false,
+	   "inputs":[
+		  {
+			 "indexed":false,
+			 "internalType":"address",
+			 "name":"owner",
+			 "type":"address"
+		  },
+		  {
+			 "indexed":false,
+			 "internalType":"address",
+			 "name":"payee",
+			 "type":"address"
+		  },
+		  {
+			 "indexed":false,
+			 "internalType":"uint256",
+			 "name":"amount",
+			 "type":"uint256"
+		  }
+	   ],
+	   "name":"Paid",
+	   "type":"event"
 	},
 	{
-		"inputs": [],
-		"name": "cancel",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
+	   "anonymous":false,
+	   "inputs":[
+		  {
+			 "indexed":false,
+			 "internalType":"address",
+			 "name":"owner",
+			 "type":"address"
+		  },
+		  {
+			 "indexed":false,
+			 "internalType":"address",
+			 "name":"newProvider",
+			 "type":"address"
+		  },
+		  {
+			 "indexed":false,
+			 "internalType":"enum Bounty.BountyStatus",
+			 "name":"status",
+			 "type":"uint8"
+		  }
+	   ],
+	   "name":"Release",
+	   "type":"event"
 	},
 	{
-		"inputs": [],
-		"name": "getBounty",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
+	   "inputs":[
+		  
+	   ],
+	   "name":"bounty",
+	   "outputs":[
+		  {
+			 "internalType":"uint256",
+			 "name":"",
+			 "type":"uint256"
+		  }
+	   ],
+	   "stateMutability":"view",
+	   "type":"function"
 	},
 	{
-		"inputs": [],
-		"name": "increaseBounty",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "payable",
-		"type": "function"
+	   "inputs":[
+		  
+	   ],
+	   "name":"cancel",
+	   "outputs":[
+		  
+	   ],
+	   "stateMutability":"nonpayable",
+	   "type":"function"
 	},
 	{
-		"inputs": [],
-		"name": "owner",
-		"outputs": [
-			{
-				"internalType": "address payable",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
+	   "inputs":[
+		  
+	   ],
+	   "name":"increaseBounty",
+	   "outputs":[
+		  {
+			 "internalType":"uint256",
+			 "name":"",
+			 "type":"uint256"
+		  }
+	   ],
+	   "stateMutability":"payable",
+	   "type":"function"
 	},
 	{
-		"inputs": [],
-		"name": "provider",
-		"outputs": [
-			{
-				"internalType": "address payable",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
+	   "inputs":[
+		  
+	   ],
+	   "name":"owner",
+	   "outputs":[
+		  {
+			 "internalType":"address payable",
+			 "name":"",
+			 "type":"address"
+		  }
+	   ],
+	   "stateMutability":"view",
+	   "type":"function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "addy",
-				"type": "address"
-			}
-		],
-		"name": "setAndTransferToProvider",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
+	   "inputs":[
+		  
+	   ],
+	   "name":"provider",
+	   "outputs":[
+		  {
+			 "internalType":"address payable",
+			 "name":"",
+			 "type":"address"
+		  }
+	   ],
+	   "stateMutability":"view",
+	   "type":"function"
+	},
+	{
+	   "inputs":[
+		  
+	   ],
+	   "name":"release",
+	   "outputs":[
+		  
+	   ],
+	   "stateMutability":"nonpayable",
+	   "type":"function"
+	},
+	{
+	   "inputs":[
+		  {
+			 "internalType":"string",
+			 "name":"addy",
+			 "type":"string"
+		  }
+	   ],
+	   "name":"setProvider",
+	   "outputs":[
+		  
+	   ],
+	   "stateMutability":"nonpayable",
+	   "type":"function"
+	},
+	{
+	   "inputs":[
+		  
+	   ],
+	   "name":"status",
+	   "outputs":[
+		  {
+			 "internalType":"enum Bounty.BountyStatus",
+			 "name":"",
+			 "type":"uint8"
+		  }
+	   ],
+	   "stateMutability":"view",
+	   "type":"function"
+	},
+	{
+	   "inputs":[
+		  
+	   ],
+	   "name":"transferToProvider",
+	   "outputs":[
+		  
+	   ],
+	   "stateMutability":"nonpayable",
+	   "type":"function"
 	}
-]
+ ]

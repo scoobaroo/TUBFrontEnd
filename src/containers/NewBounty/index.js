@@ -10,6 +10,11 @@ import {
   AlertDialog,
   DialogTrigger,
   ActionButton,
+  Dialog,
+  Heading,
+  Divider,
+  Content,
+  ButtonGroup,
 } from "@adobe/react-spectrum";
 import { FcFullTrash } from "react-icons/fc";
 import axios from "axios";
@@ -30,6 +35,8 @@ import ABI from "../../abi/BountyABI.json";
 import BountyBytecode from "../../abi/BountyBytecode.json";
 import { call } from "file-loader";
 import { Navigate } from "react-router-dom";
+import { useMetaMask } from "metamask-react";
+import Network from "../../helper/metamask-network";
 
 const LoadingWrapper = styled.div`
   min-height: 50vh;
@@ -85,12 +92,24 @@ function NewBountyBase(props) {
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [discription, setDiscription] = React.useState("");
   const [bountyName, setBounyName] = React.useState("");
+  const [createBountyModal, setCreateBountyModal] = React.useState(false);
+  const { status, connect, account, chainId, ethereum } = useMetaMask();
+  const [network, setNetwork] = React.useState();
+  const [chainValue, setChainValue] = React.useState();
+  const [showMessage, setShowMessage] = React.useState(false);
 
   React.useEffect(() => {
     if (_state.authUser && _state.authUser.uid) {
       setAuthUserId(_state.authUser.uid);
     }
   }, [_state.authUser]);
+
+  React.useEffect(() => {
+    if(status !== "connected"){
+      setShowMessage(true);
+      setShowBountyError(true)
+    }
+  }, []);
 
   React.useEffect(() => {
     if (_state.accountId) {
@@ -117,7 +136,7 @@ function NewBountyBase(props) {
     let isSubsribed = true;
     if (isSubsribed) getCategories();
     return () => (isSubsribed = false);
-  }, []);
+  }, [props.location]);
 
   React.useEffect(() => {
     let isSubsribed = true;
@@ -140,9 +159,7 @@ function NewBountyBase(props) {
   ];
 
   const getCategories = () => {
-    console.log(_state.categorys, "category value is there");
     if (_state.categorys) {
-      console.log("categories are already loaded");
       setState((prevState) => ({
         ...prevState,
         loading: false,
@@ -161,8 +178,6 @@ function NewBountyBase(props) {
               categories,
               loading,
             }));
-
-            console.log("categories =>", categories);
           }
         })
         .catch((error) => {
@@ -172,7 +187,20 @@ function NewBountyBase(props) {
     }
   };
 
+  const setChaninIdHandler = (name) => {
+    let mainString = name;
+    let subString;
+    const value = _state.RequestWork;
+    value?.filter((item) => {
+      subString = item.Label.UserLocalizedLabel.Label;
+      if (mainString.includes(`${subString}`)) {
+        setChainValue(item.Value);
+      }
+    });
+  };
+
   const createNewBounty = async () => {
+    setCreateBountyModal(false);
     try {
       setState((prevState) => ({
         ...prevState,
@@ -192,6 +220,28 @@ function NewBountyBase(props) {
     }
   };
 
+  const modalConfirmHandler = () => {
+    if (status === "connected") {
+      setShowMessage(false);
+      const network = Network.find((chain) => chain.hex === chainId);
+      if (network) {
+        setNetwork(network.name);
+        setChaninIdHandler(network.name);
+      }
+      setCreateBountyModal(true);
+      if (bountyName === "Create New Designated Bounty") {
+        setChaninIdHandler(network.name);
+      }
+    }else{
+      setShowMessage(true);
+      setShowBountyError(true)
+    }
+  };
+
+  const modalCancleHandler = () => {
+    setCreateBountyModal(false);
+  };
+
   const deployBounty = async () => {
     let accounts = await provider.send("eth_requestAccounts", []);
     console.log(accounts);
@@ -207,15 +257,15 @@ function NewBountyBase(props) {
     console.log("etherFormatted =>", etherFormatted);
     console.log("abi=>", abi);
     console.log("bytecode =>", bytecode);
-
+    let contractFactory
     if (bountyName === "Create New Bounty") {
-      let contractFactory = new ethers.ContractFactory(
+      contractFactory = new ethers.ContractFactory(
         abi,
         bytecode.object,
         provider.getSigner()
       );
     } else if (bountyName === "Create New Designated Bounty") {
-      let contractFactory = new ethers.ContractFactory(
+      contractFactory = new ethers.ContractFactory(
         ABI,
         BountyBytecode.object,
         provider.getSigner()
@@ -273,19 +323,39 @@ function NewBountyBase(props) {
     console.log(values);
     const selectedTopicsList = selectedTopics?.map((x) => x.topicId);
     console.log(selectedTopicsList);
-    const bountyObject = {
-      Name: "default",
-      CategoryIds: [categoryId],
-      SubCategoryIds: [subCategoryId],
-      Description: discription,
-      Requirements: [requirements],
-      TopicIds: [...new Set(selectedTopicsList)],
-      AccountId: accountId,
-      SmartContractAddress: values.contractAddress,
-      BountyAmount: Number(initalAmount),
-      SubTopicIds: [],
-      CustomerId: id,
-    };
+    let bountyObject;
+    debugger;
+    if (bountyName === "Create New Bounty") {
+      bountyObject = {
+        Name: "default",
+        CategoryIds: [categoryId],
+        SubCategoryIds: [subCategoryId],
+        Description: discription,
+        Requirements: [requirements],
+        TopicIds: [...new Set(selectedTopicsList)],
+        AccountId: accountId,
+        SmartContractAddress: values.contractAddress,
+        BountyAmount: Number(initalAmount),
+        SubTopicIds: [],
+        CustomerId: id,
+        ERC20Chain: chainValue.toString(),
+      };
+    } else if (bountyName === "Create New Designated Bounty") {
+      bountyObject = {
+        Name: "designated",
+        CategoryIds: [categoryId],
+        SubCategoryIds: [subCategoryId],
+        Description: discription,
+        Requirements: [requirements],
+        TopicIds: [...new Set(selectedTopicsList)],
+        AccountId: accountId,
+        SmartContractAddress: values.contractAddress,
+        BountyAmount: Number(initalAmount),
+        SubTopicIds: [],
+        CustomerId: id,
+        ERC20Chain: chainValue.toString(),
+      };
+    }
     axios
       .post(`${appConfig.apiBaseUrl}bounties/new`, bountyObject)
       .then((response) => {
@@ -382,10 +452,7 @@ function NewBountyBase(props) {
           <TextField value={initalAmount} onChange={initialAmountOnChange}>
             Initial Amount
           </TextField>
-          <Button
-            onPress={async () => await createNewBounty()}
-            variant="primary"
-          >
+          <Button onPress={() => modalConfirmHandler()} variant="primary">
             Create Bounty
           </Button>
         </>
@@ -409,7 +476,7 @@ function NewBountyBase(props) {
           primaryActionLabel="OK"
           onPrimaryAction={() => setShowBountyError(false)}
         >
-          Insufficient fund for intrisinc transaction. Please try later.
+          {showMessage ? "please connect to the network" : "Insufficient fund for intrisinc transaction. Please try later."}
         </AlertDialog>
       </DialogTrigger>
       <DialogTrigger isOpen={showSuccess}>
@@ -422,6 +489,30 @@ function NewBountyBase(props) {
         >
           Bounty saved successfully.
         </AlertDialog>
+      </DialogTrigger>
+
+      <DialogTrigger isOpen={createBountyModal}>
+        <></>
+        <Dialog>
+          <Heading>create bounty</Heading>
+          <Divider />
+          <Content>
+            {" "}
+            You are attempting to create a bounty on {network} network. Proceed?
+          </Content>
+          <ButtonGroup>
+            <Button variant="secondary" onPress={modalCancleHandler}>
+              Cancel
+            </Button>
+            <Button
+              variant="cta"
+              onPress={async () => await createNewBounty()}
+              autoFocus
+            >
+              Confirm
+            </Button>
+          </ButtonGroup>
+        </Dialog>
       </DialogTrigger>
     </BountyFormWrapper>
   );
