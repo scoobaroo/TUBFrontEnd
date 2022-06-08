@@ -105,11 +105,11 @@ function NewBountyBase(props) {
   }, [_state.authUser]);
 
   React.useEffect(() => {
-    if(status !== "connected"){
+    if(status !== "initializing" && status !== "connected"){
       setShowMessage(true);
       setShowBountyError(true)
     }
-  }, []);
+  }, [status]);
 
   React.useEffect(() => {
     if (_state.accountId) {
@@ -324,7 +324,6 @@ function NewBountyBase(props) {
     const selectedTopicsList = selectedTopics?.map((x) => x.topicId);
     console.log(selectedTopicsList);
     let bountyObject;
-    debugger;
     if (bountyName === "Create New Bounty") {
       bountyObject = {
         Name: "default",

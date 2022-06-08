@@ -61,6 +61,7 @@ const ViewBountyBoxLeft = styled.div`
   margin-right: 15px;
 `;
 const RequestToWork = styled.div`
+  position: relative;
   padding: 15px;
   margin-top: 5px;
   border-radius: 7px;
@@ -104,6 +105,18 @@ const ButtonWrapper = styled.div`
   }
 `;
 
+const ButtonReleaseWrapper = styled.div`
+  position: absolute;
+  bottom: 11px;
+  right: 16px;
+  @media (max-width: 576px) {
+    position: relative;
+    right:auto;
+    bottom: auto;
+    margin-top: 10px;
+  }
+`;
+
 const SelectedButton = styled.div`
   border-radius: 7px;
   background: #4d4c4c;
@@ -123,6 +136,11 @@ const initialState = {
   loading: true,
   error: null,
 };
+
+const messageInitial = {
+  work: false,
+  release: false,
+}
 
 const requestToworkDetails = {
   first_name: "",
@@ -148,11 +166,14 @@ const BountiesBase = ({ firebase, navigate }) => {
   const [profile, setProfile] = React.useState(false);
   const [rwrkId, setRwrkId] = React.useState(null);
   const [requestworkloader, setRequestWorkLoader] = React.useState(false);
+  const [requestReleaseLoader, setRequestReleaseLoader] = React.useState(false);
+  const [message, setMessage] = React.useState({ ...messageInitial });
   const [showModal, setShowModal] = React.useState(false);
   const [requestToWork, setRequestToWork] = React.useState([
     { ...requestToworkDetails },
   ]);
   const [loader, setLoader] = React.useState(0);
+  const [requestWorkRelease, setRequestWorkRelease] = React.useState(false);
   React.useEffect(() => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     setProvider(provider);
@@ -303,7 +324,13 @@ const BountiesBase = ({ firebase, navigate }) => {
       .patch(`${appConfig.apiBaseUrl}requestToWorks/${requestToWorkId}/approve`)
       .then((response) => {
         if (response.status === 200) {
+          setRequestWorkRelease(true);
           setShowModal(true);
+          setMessage((prevState) => ({
+            ...prevState,
+            work: true,
+            release: false
+          }));
           getCustomerBounties();
           setRequestWorkLoader(false);
           console.log("response", response);
@@ -329,8 +356,49 @@ const BountiesBase = ({ firebase, navigate }) => {
     );
   };
 
-  const data = State.allBounties?.map((bounty) => (
-    <Well key={bounty.cob_bountyid}>
+  const bountyReleaseCallHandler = async (requestToWorkId) => {
+    axios
+      .patch(`${appConfig.apiBaseUrl}requestToWorks/${requestToWorkId}/release`)
+      .then((response) => {
+        if (response.status === 200) {
+          setShowModal(true);
+          setMessage((prevState) => ({
+            ...prevState,
+            work: false,
+            release: true
+          }));
+          getCustomerBounties();
+          setRequestReleaseLoader(false);
+          console.log("response", response);
+        }
+      })
+      .catch((error) => {
+        setRequestReleaseLoader(false);
+        console.log("error", error);
+      });
+  };
+
+  const bountyReleaseHandler = async (
+    requestToWorkId,
+    cob_smartcontractaddress
+  ) => {
+    setRequestReleaseLoader(true);
+    setRwrkId(requestToWorkId);
+    let contract = new ethers.Contract(
+      cob_smartcontractaddress,
+      abi,
+      provider.getSigner()
+    );
+    console.log("contract", contract);
+    const value = await contract.release();
+    console.log("value", value);
+    if (value) {
+      bountyReleaseCallHandler(requestToWorkId);
+    }
+  };
+
+  const data = State.allBounties?.map((bounty, index) => (
+    <Well key={index}>
       <ViewBountyBox>
         <ViewBountyBoxLeft>
           <div>
@@ -347,14 +415,14 @@ const BountiesBase = ({ firebase, navigate }) => {
       </ViewBountyBox>
 
       {bounty.cob_RequestToWork_bountyid_cob_Bounty.length > 0 &&
-        requestToWork.map((value) => {
+        requestToWork.map((value, index) => {
           let imageUrl;
           const string2 = value.profilePicture;
           const string1 = "data:image/png;base64,";
           imageUrl = string1.concat(string2);
           if (value.Id === bounty["@odata.etag"]) {
             return (
-              <RequestToWork key={value.Id}>
+              <RequestToWork key={index}>
                 <h3>Request to work</h3>
 
                 <div>
@@ -383,11 +451,11 @@ const BountiesBase = ({ firebase, navigate }) => {
                       <div>{value.message}</div>
                       {bounty._cob_providerid_value ===
                         value.cob_providerId2 && (
-                        <SelectedButton>
-                          <AiFillStar />
-                          Selected
-                        </SelectedButton>
-                      )}
+                          <SelectedButton>
+                            <AiFillStar />
+                            Selected
+                          </SelectedButton>
+                        )}
                     </div>
                   </RequestToWorkIn>
                   {bounty._cob_providerid_value === null ? (
@@ -414,7 +482,29 @@ const BountiesBase = ({ firebase, navigate }) => {
                       </Button>
                       <Button variant="negative"> Reject </Button>
                     </ButtonWrapper>
-                  ) : null}
+                  ) : (
+                    <ButtonReleaseWrapper>
+                      <Button
+                        variant="negative"
+                        onPress={() => {
+                          bountyReleaseHandler(
+                            value.requestToWorkdId,
+                            bounty.cob_smartcontractaddress
+                          );
+                        }}
+                      >
+                        {" "}
+                        {value.requestToWorkdId === rwrkId &&
+                          requestReleaseLoader && (
+                            <ProgressCircle
+                              aria-label="Loading…"
+                              isIndeterminate
+                            />
+                          )}{" "}
+                        Release
+                      </Button>
+                    </ButtonReleaseWrapper>
+                  )}
                 </div>
               </RequestToWork>
             );
@@ -454,7 +544,8 @@ const BountiesBase = ({ firebase, navigate }) => {
           primaryActionLabel="OK"
           onPrimaryAction={() => setShowModal(false)}
         >
-          Bounty request accepted
+          {message.work ? ("Bounty request accepted") : message.release ? ("Bounty released successfully") : (null)}
+
         </AlertDialog>
       </DialogTrigger>
     </div>
