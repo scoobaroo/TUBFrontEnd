@@ -4,9 +4,14 @@ import {
   Button,
   ProgressCircle,
   Well,
-  Heading,
   DialogTrigger,
   AlertDialog,
+  Dialog,
+  Heading,
+  Content,
+  Divider,
+  Text,
+  ButtonGroup,
 } from "@adobe/react-spectrum";
 import styled from "styled-components";
 import { Navigate } from "react-router-dom";
@@ -46,6 +51,7 @@ const BountyGrid = styled.div`
 
 const ViewBountyBox = styled.div`
   display: flex;
+
   @media (max-width: 576px) {
     flex-direction: column;
   }
@@ -111,9 +117,12 @@ const ButtonReleaseWrapper = styled.div`
   right: 16px;
   @media (max-width: 576px) {
     position: relative;
-    right:auto;
+    right: auto;
     bottom: auto;
     margin-top: 10px;
+  }
+  & button {
+    margin-left: 10px;
   }
 `;
 
@@ -137,10 +146,11 @@ const initialState = {
   error: null,
 };
 
-const messageInitial = {
+const message = {
   work: false,
   release: false,
-}
+  completed: false,
+};
 
 const requestToworkDetails = {
   first_name: "",
@@ -157,6 +167,7 @@ const requestToworkDetails = {
   certification: [],
   cob_providerId: "",
   cob_providerId2: "",
+  bountyId: "",
 };
 
 const BountiesBase = ({ firebase, navigate }) => {
@@ -167,8 +178,13 @@ const BountiesBase = ({ firebase, navigate }) => {
   const [rwrkId, setRwrkId] = React.useState(null);
   const [requestworkloader, setRequestWorkLoader] = React.useState(false);
   const [requestReleaseLoader, setRequestReleaseLoader] = React.useState(false);
-  const [message, setMessage] = React.useState({ ...messageInitial });
+  const [completeWorkLoader, setCompleteWorkLoader] = React.useState(false);
+  const [contractAddress, setContractAddress] = React.useState();
+  const [showcompleteModal, setShowcompleteModal] = React.useState(false);
+  const [showReleseModal, setShowReleseModal] = React.useState(false);
+  const [message, setMessage] = React.useState({ ...message });
   const [showModal, setShowModal] = React.useState(false);
+  const [bountyId, setBountyId] = React.useState();
   const [requestToWork, setRequestToWork] = React.useState([
     { ...requestToworkDetails },
   ]);
@@ -263,6 +279,7 @@ const BountiesBase = ({ firebase, navigate }) => {
                     cob_providerId: bounty._cob_providerid_value,
                     cob_providerId2: value._cob_providerid_value,
                     cob_walletaddress: value.cob_walletaddress,
+                    bountyId: bounty.cob_bountyid,
                   },
                 ]);
               }
@@ -313,9 +330,14 @@ const BountiesBase = ({ firebase, navigate }) => {
       abi,
       provider.getSigner()
     );
-    const value = await contract.setProvider(cob_walletaddress);
-    if (value) {
-      bountRequestWorkAprroval(requestToWorkId);
+    try {
+      const value = await contract.setProvider(cob_walletaddress);
+      if (value) {
+        bountRequestWorkAprroval(requestToWorkId);
+      }
+    } catch (error) {
+      setRequestWorkLoader(false);
+      console.log("error", error);
     }
   };
 
@@ -329,7 +351,8 @@ const BountiesBase = ({ firebase, navigate }) => {
           setMessage((prevState) => ({
             ...prevState,
             work: true,
-            release: false
+            release: false,
+            completed: false,
           }));
           getCustomerBounties();
           setRequestWorkLoader(false);
@@ -365,7 +388,8 @@ const BountiesBase = ({ firebase, navigate }) => {
           setMessage((prevState) => ({
             ...prevState,
             work: false,
-            release: true
+            release: true,
+            completed: false,
           }));
           getCustomerBounties();
           setRequestReleaseLoader(false);
@@ -378,23 +402,89 @@ const BountiesBase = ({ firebase, navigate }) => {
       });
   };
 
-  const bountyReleaseHandler = async (
-    requestToWorkId,
-    cob_smartcontractaddress
-  ) => {
+  const bountyReleaseHandler = async () => {
     setRequestReleaseLoader(true);
-    setRwrkId(requestToWorkId);
+    setShowReleseModal(false);
     let contract = new ethers.Contract(
-      cob_smartcontractaddress,
+      contractAddress,
       abi,
       provider.getSigner()
     );
     console.log("contract", contract);
-    const value = await contract.release();
-    console.log("value", value);
-    if (value) {
-      bountyReleaseCallHandler(requestToWorkId);
+    try {
+      const value = await contract.release();
+      console.log("value", value);
+      if (value) {
+        bountyReleaseCallHandler(rwrkId);
+      }
+    } catch (error) {
+      console.log("error", error);
+      setRequestReleaseLoader(false);
     }
+  };
+
+  const bountystatusChangeHandler = async () => {
+    const bountyStatus = "Completed";
+    axios
+      .patch(`${appConfig.apiBaseUrl}bounties/${bountyId}`, { bountyStatus })
+      .then((response) => {
+        console.log("response", response);
+        setShowModal(true);
+        setMessage((prevState) => ({
+          ...prevState,
+          work: false,
+          release: false,
+          completed: true,
+        }));
+        setCompleteWorkLoader(false);
+        getCustomerBounties();
+      })
+      .catch((error) => {
+        setCompleteWorkLoader(false);
+        console.log("error", error);
+      });
+  };
+
+  const openReleaseModalHandler = (
+    requestToWorkId,
+    cob_smartcontractaddress
+  ) => {
+    setRwrkId(requestToWorkId);
+    setContractAddress(cob_smartcontractaddress);
+    setShowReleseModal(true);
+  };
+
+  const completeConfirmHandler = async (requestToWorkId) => {
+    console.log("cob_smartcontractaddress", contractAddress);
+    console.log("bountyId", bountyId);
+    setShowcompleteModal(false);
+    setCompleteWorkLoader(true);
+    let contract = new ethers.Contract(
+      contractAddress,
+      abi,
+      provider.getSigner()
+    );
+    console.log("contract", contract);
+    try {
+      const value = await contract.transferToProvider();
+      if (value) {
+        bountystatusChangeHandler();
+      }
+    } catch (error) {
+      console.log("error", error);
+      setCompleteWorkLoader(false);
+    }
+  };
+
+  const openCompleteModalHandler = (
+    requestToWorkId,
+    cob_smartcontractaddress,
+    bountyId
+  ) => {
+    setShowcompleteModal(true);
+    setRwrkId(requestToWorkId);
+    setContractAddress(cob_smartcontractaddress);
+    setBountyId(bountyId);
   };
 
   const data = State.allBounties?.map((bounty, index) => (
@@ -449,8 +539,8 @@ const BountiesBase = ({ firebase, navigate }) => {
                       </div>
                       <div>{value.email}</div>
                       <div>{value.message}</div>
-                      {bounty._cob_providerid_value ===
-                        value.cob_providerId2 && (
+                      {bounty._cob_providerid_value === value.cob_providerId2 &&
+                        bounty.cob_bountystatus !== 769020002 && (
                           <SelectedButton>
                             <AiFillStar />
                             Selected
@@ -458,52 +548,81 @@ const BountiesBase = ({ firebase, navigate }) => {
                         )}
                     </div>
                   </RequestToWorkIn>
-                  {bounty._cob_providerid_value === null ? (
-                    <ButtonWrapper>
-                      <Button
-                        onPress={() => {
-                          bountyAcceptHandler(
-                            value.requestToWorkdId,
-                            bounty.cob_smartcontractaddress,
-                            value.cob_walletaddress
-                          );
-                        }}
-                        end
-                        variant="cta"
-                      >
-                        {value.requestToWorkdId === rwrkId &&
-                          requestworkloader && (
-                            <ProgressCircle
-                              aria-label="Loading…"
-                              isIndeterminate
-                            />
-                          )}{" "}
-                        Accept
-                      </Button>
-                      <Button variant="negative"> Reject </Button>
-                    </ButtonWrapper>
+                  {bounty.cob_bountystatus !== 769020002 ? (
+                    bounty._cob_providerid_value === null ? (
+                      <ButtonWrapper>
+                        <Button
+                          onPress={() => {
+                            bountyAcceptHandler(
+                              value.requestToWorkdId,
+                              bounty.cob_smartcontractaddress,
+                              value.cob_walletaddress
+                            );
+                          }}
+                          end
+                          variant="cta"
+                        >
+                          {value.requestToWorkdId === rwrkId &&
+                            requestworkloader && (
+                              <ProgressCircle
+                                aria-label="Loading…"
+                                isIndeterminate
+                              />
+                            )}{" "}
+                          Accept
+                        </Button>
+                        <Button variant="negative"> Reject </Button>
+                      </ButtonWrapper>
+                    ) : (
+                      <>
+                        <ButtonReleaseWrapper>
+                          <Button
+                            variant="negative"
+                            onPress={() => {
+                              openReleaseModalHandler(
+                                value.requestToWorkdId,
+                                bounty.cob_smartcontractaddress
+                              );
+                            }}
+                          >
+                            {" "}
+                            {value.requestToWorkdId === rwrkId &&
+                              requestReleaseLoader && (
+                                <ProgressCircle
+                                  aria-label="Loading…"
+                                  isIndeterminate
+                                />
+                              )}{" "}
+                            Release
+                          </Button>
+                          <Button
+                            variant="cta"
+                            onPress={() => {
+                              openCompleteModalHandler(
+                                value.requestToWorkdId,
+                                bounty.cob_smartcontractaddress,
+                                value.bountyId
+                              );
+                            }}
+                          >
+                            {" "}
+                            {value.requestToWorkdId === rwrkId &&
+                              completeWorkLoader && (
+                                <ProgressCircle
+                                  aria-label="Loading…"
+                                  isIndeterminate
+                                />
+                              )}{" "}
+                            Complete
+                          </Button>
+                        </ButtonReleaseWrapper>
+                      </>
+                    )
                   ) : (
-                    <ButtonReleaseWrapper>
-                      <Button
-                        variant="negative"
-                        onPress={() => {
-                          bountyReleaseHandler(
-                            value.requestToWorkdId,
-                            bounty.cob_smartcontractaddress
-                          );
-                        }}
-                      >
-                        {" "}
-                        {value.requestToWorkdId === rwrkId &&
-                          requestReleaseLoader && (
-                            <ProgressCircle
-                              aria-label="Loading…"
-                              isIndeterminate
-                            />
-                          )}{" "}
-                        Release
-                      </Button>
-                    </ButtonReleaseWrapper>
+                    <SelectedButton>
+                    <AiFillStar />
+                    Awarded
+                  </SelectedButton>
                   )}
                 </div>
               </RequestToWork>
@@ -544,9 +663,61 @@ const BountiesBase = ({ firebase, navigate }) => {
           primaryActionLabel="OK"
           onPrimaryAction={() => setShowModal(false)}
         >
-          {message.work ? ("Bounty request accepted") : message.release ? ("Bounty released successfully") : (null)}
-
+          {message.work
+            ? "Bounty request accepted"
+            : message.release
+            ? "Bounty released successfully"
+            : message.completed
+            ? "Bounty completed successfully"
+            : ""}
         </AlertDialog>
+      </DialogTrigger>
+      <DialogTrigger isOpen={showcompleteModal}>
+        <></>
+        <Dialog>
+          <Heading>Complete Work </Heading>
+          <Divider />
+          <Content>
+            <Text>Do you want to complete and transfer fund to provider?</Text>
+          </Content>
+          <ButtonGroup>
+            <Button
+              variant="secondary"
+              onPress={() => {
+                setShowcompleteModal(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="cta" onPress={completeConfirmHandler}>
+              Confirm
+            </Button>
+          </ButtonGroup>
+        </Dialog>
+      </DialogTrigger>
+      <DialogTrigger isOpen={showReleseModal}>
+        <></>
+        <Dialog>
+          <Heading> Release bounty</Heading>
+
+          <Divider />
+          <Content>
+            <Text>Do you want to release the bounty?</Text>
+          </Content>
+          <ButtonGroup>
+            <Button
+              variant="secondary"
+              onPress={() => {
+                setShowReleseModal(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="cta" onPress={bountyReleaseHandler}>
+              Confirm
+            </Button>
+          </ButtonGroup>
+        </Dialog>
       </DialogTrigger>
     </div>
   );

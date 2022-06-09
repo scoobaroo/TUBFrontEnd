@@ -592,7 +592,7 @@ const BountyDetails = () => {
           <Button variant="negative">View on blockchain explorer</Button>
         </a>
 
-        {bountyDetails.customerId !== globalState.accountId && (
+        {bountyDetails.customerId !== globalState.accountId && bountyDetails.bountyStatus === "Active" && (
           <>
             <Button onPress={openModal} variant="negative">
               Request To Work
