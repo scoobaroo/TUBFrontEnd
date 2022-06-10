@@ -22,6 +22,7 @@ import MyCreatedBounties from "./containers/MyCreatedBounties";
 import BountyImWorkedOn from "./containers/BountyImWorkedOn";
 import UserProfile from "./containers/UserProfile";
 import RequestToWorkProfile from "./containers/RequestToWorkProfile";
+import SearchResult from "./containers/SearchResult";
 import "./clientlibs/css/App.css";
 
 function Wrapper() {
@@ -48,6 +49,7 @@ function Wrapper() {
           <Route path="/userprofile" element={<UserProfile />} />
           <Route path="/bountyworkedon" element={<BountyImWorkedOn />} />
           <Route path="/requesttoworkprofile" element={<RequestToWorkProfile />} />
+          <Route path="/search-result" element={<SearchResult />} />
         </Routes>
       </Router>
     </Provider>

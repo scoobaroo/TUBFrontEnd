@@ -45,7 +45,25 @@ const BountyDeteilsWrapper = styled.div`
   border: 1px #4f4a4a solid;
   border-radius: 5px;
   padding: 16px;
+  & img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+    @media (max-width: 576px) {
+      margin-bottom: 10px;
+    }
+  }
 `;
+
+const ImageWrapper = styled.div`
+    margin-left:10px;
+    display: flex;
+    align-items: center;
+    margin-bottom:15px;
+    font-size: 18px;
+    `;
 
 const ItemWrapper = styled.div`
   margin: 10px;
@@ -53,10 +71,19 @@ const ItemWrapper = styled.div`
 
 const ButtonWrapper = styled.div`
   display: flex;
-  justify-content: center;
   margin-top: 35px;
   width: 100%;
   justify-content: space-between;
+  @media (max-width: 576px) {
+    flex-direction: column;
+    justify-content:center
+  }
+  & button {
+    @media (max-width: 576px) {
+      margin-bottom: 10px;
+    }
+  }
+
 `;
 
 const LoadingWrapper = styled.div`
@@ -191,6 +218,7 @@ const BountyDetails = () => {
     loading: true,
     showUploadModal: false,
     files: [],
+    customerId: "",
   };
   const intialMessage = {
     cancel: false,
@@ -234,7 +262,9 @@ const BountyDetails = () => {
   const [requestToWorkHandler, setRequestToWorkHandler] = React.useState({
     ...requestToWorkState,
   });
+  const [imageUrl, setImageUrl] = React.useState("");
   const { account, ethereum } = useMetaMask();
+  const [userName, setUserName] = React.useState("");
 
   // get BlobService = notice `?` is pulled out of sasToken - if created in Azure portal
   const blobService = new BlobServiceClient(
@@ -266,10 +296,38 @@ const BountyDetails = () => {
     setTypes(value?.map((item) => item.Label.UserLocalizedLabel));
   }, []);
 
+  React.useEffect(() => {
+    loadProfileDetails();
+  }, [bountyDetails.customerId]);
+
+  const loadProfileDetails = () => {
+    console.log("accontId", bountyDetails.customerId);
+    axios
+      .get(`${appConfig.apiBaseUrl}users/accountId/${bountyDetails.customerId}`)
+      .then((res) => {
+        console.log(res);
+        let imageUrl;
+        if (res.data.cob_profilepicture !== "") {
+          const string2 = res.data.cob_profilepicture;
+          const string1 = "data:image/png;base64,";
+          imageUrl = string1.concat(string2);
+          setImageUrl(imageUrl);
+          setUserName(res.data.cob_firstname + " " + res.data.cob_lastname);
+        } else {
+          imageUrl =
+            "https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true";
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   const loadBountyDetails = async () => {
     await axios
       .get(`${appConfig.apiBaseUrl}bounties/${bountyId}`)
       .then((response) => {
+        console.log("dsfdsfdsfsdf", response.data);
         setBountyDetails((prevState) => ({
           ...prevState,
           categoryName: response.data?.CategoryId?.categoryName,
@@ -522,7 +580,7 @@ const BountyDetails = () => {
     }));
   };
 
-  if (bountyDetails.loading || loader) {
+  if (bountyDetails.loading || loader || imageUrl === "" || userName === "") {
     return (
       <LoadingWrapper>
         <div>
@@ -537,6 +595,8 @@ const BountyDetails = () => {
     <BountyWrapper>
       <h2>#Bounty Details</h2>
       <BountyDeteilsWrapper>
+     
+
         <ItemWrapper>
           <Heading>
             <span style={{ width: "150px", display: "inline-block" }}>
@@ -553,20 +613,23 @@ const BountyDetails = () => {
             : {bountyDetails.subCatergoryName}
           </Heading>
         </ItemWrapper>
-        <ItemWrapper>
-          <Heading>
-            <span style={{ width: "150px", display: "inline-block" }}>
-              Topics
-            </span>
-            :{" "}
-            {bountyDetails.topics?.map(
-              (topic, key) =>
-                `${topic.topicName}${
-                  key !== bountyDetails.topics.length - 1 ? "," : ""
-                } `
-            )}
-          </Heading>
-        </ItemWrapper>
+        {bountyDetails.topics.length != 0 && (
+          <ItemWrapper>
+            <Heading>
+              <span style={{ width: "150px", display: "inline-block" }}>
+                Topics
+              </span>
+              :{" "}
+              {bountyDetails.topics?.map(
+                (topic, key) =>
+                  `${topic.topicName}${
+                    key !== bountyDetails.topics.length - 1 ? "," : ""
+                  } `
+              )}
+            </Heading>
+          </ItemWrapper>
+        )}
+
         <ItemWrapper>
           <Heading>
             <span style={{ width: "150px", display: "inline-block" }}>
@@ -583,6 +646,11 @@ const BountyDetails = () => {
             : {bountyDetails.bountyStatus}
           </Heading>
         </ItemWrapper>
+        
+        <ImageWrapper>
+          <img src={imageUrl} alt="profile" />
+          <div>{userName}</div>
+        </ImageWrapper>
 
         <a
           style={{ textDecoration: "none" }}
@@ -592,24 +660,26 @@ const BountyDetails = () => {
           <Button variant="negative">View on blockchain explorer</Button>
         </a>
 
-        {bountyDetails.customerId !== globalState.accountId && bountyDetails.bountyStatus === "Active" && (
-          <>
-            <Button onPress={openModal} variant="negative">
-              Request To Work
-            </Button>
-            <Modal
-              modal={showModalTwo}
-              register={requestToWorkSubmit}
-              closeModal={closeModal}
-              onMessageHandler={onMessageHandler}
-              types={types}
-              metaMaskAddresHandler={metaMaskAddresHandler}
-              value={requestToWorkHandler.WalletAddress}
-              addressEditHandler={addressEditHandler}
-              type={requestToWorkHandler.ERC20Chain}
-            />
-          </>
-        )}
+
+        {bountyDetails.customerId !== globalState.accountId &&
+          bountyDetails.bountyStatus === "Active" && (
+            <>
+              <Button onPress={openModal} variant="negative">
+                Request To Work
+              </Button>
+              <Modal
+                modal={showModalTwo}
+                register={requestToWorkSubmit}
+                closeModal={closeModal}
+                onMessageHandler={onMessageHandler}
+                types={types}
+                metaMaskAddresHandler={metaMaskAddresHandler}
+                value={requestToWorkHandler.WalletAddress}
+                addressEditHandler={addressEditHandler}
+                type={requestToWorkHandler.ERC20Chain}
+              />
+            </>
+          )}
 
         {bountyDetails.customerId == globalState.accountId ? (
           <>

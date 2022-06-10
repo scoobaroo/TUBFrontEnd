@@ -18,6 +18,7 @@ import { ethers, getDefaultProvider, utils } from "ethers";
 import withRouter from "../../session/withRouter";
 import { AppContext } from "../../context";
 import useAccountId from "../../hooks/useAccountId";
+import bountyStatusMap from "../../helper/bounty-status";
 const LoadingWrapper = styled.div`
   min-height: 50vh;
   display: flex;
@@ -49,6 +50,31 @@ const BountyGrid = styled.div`
   }
   & .bounty-name {
     word-break: break-all;
+  }
+  & .bounty-status {
+    margin: 10px 0;
+    span {
+      display: inline-block;
+      padding: 0 10px 2px 10px;
+      border-radius: 25px;
+      min-width: 100px;
+      text-align: center;
+      margin: 0;
+      border: 1px solid #fd941d;
+      color: #fd941d;
+    }
+    & .Completed {
+      border: 1px solid #44b556;
+      color: #44b556;
+    }
+    & .Cancelled {
+      border: 1px solid #ff1622;
+      color: #ff1622;
+    }
+    & .Created {
+      border: 1px solid #3994ff;
+      color: #3994ff;
+    }
   }
 `;
 
@@ -119,6 +145,12 @@ const BountyList = ({ filter, BountyDetails }) => {
       <div className="bounty-name">
         {bounty.cob_description || `No Description`}
       </div>
+      <div className="bounty-status">
+        <span className={bountyStatusMap[bounty.cob_bountystatus]}>
+          {bountyStatusMap[bounty.cob_bountystatus]}
+        </span>
+      </div>
+
       <Button onClick={() => BountyDetails(bounty)}>View Bounty</Button>
     </Well>
   ));

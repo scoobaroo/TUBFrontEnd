@@ -8,6 +8,8 @@ import {
   MenuTrigger,
   Menu,
   Item,
+  SearchField,
+  ComboBox,
 } from "@adobe/react-spectrum";
 import withAuthorization from "../../session/withAuthorization";
 import { withFirebase } from "../../firebase";
@@ -17,7 +19,12 @@ import useUIControls from "../../hooks/useUIControls";
 import useAccountId from "../../hooks/useAccountId";
 import { AppContext } from "../../context";
 import { GiSunrise, GiSunset, GiResize } from "react-icons/gi";
-import { AiOutlineLogin, AiOutlineLogout } from "react-icons/ai";
+import appConfig from "webpack-config-loader!../../app-config.js";
+import {
+  AiOutlineLogin,
+  AiOutlineLogout,
+  AiOutlineSearch,
+} from "react-icons/ai";
 import { FaUserAlt } from "react-icons/fa";
 import axios from "axios";
 import ImageIcon from "../ImageIcon";
@@ -40,7 +47,7 @@ const NavMenuWrapper = styled.div`
     display: none;
     @media (max-width: 576px) {
       display: block;
-      margin:  6px;
+      margin: 6px;
     }
   }
 
@@ -86,6 +93,75 @@ const NavControls = styled.div`
     justify-content: flex-end;
   }
 `;
+
+const SerachWrapper = styled.div`
+  display: flex;
+  @media (max-width: 992px) {
+    display: none;
+  }
+`;
+const SerachWrapperMobile = styled.div`
+  display: none;
+  @media (max-width: 992px) {
+    display: flex;
+    width: 100%;
+    padding: 10px 22px 0 22px;
+  }
+`;
+const SearchFilter = styled.div`
+  & div {
+    min-width: auto;
+    width: 120px;
+
+    @media (max-width: 768px) {
+      border-radius: 25px 0 0 25px;
+      min-width: 8px;
+    }
+  }
+  & input {
+    border-radius: 25px 0 0 25px;
+  }
+  & button {
+    border-left: none;
+    border-radius: 0;
+    background: #080808;
+    width: 25px !important;
+  }
+`;
+const SearchButton = styled.div`
+  & button {
+    border-radius: 0 25px 25px 0;
+    min-width: auto;
+    padding: 0 10px 0 8px;
+  }
+`;
+const SearchInput = styled.div`
+  @media (max-width: 992px) {
+    width: 100%;
+  }
+  & div {
+    min-width: auto;
+    width: 190px;
+    & div {
+      width: 20px;
+      & svg {
+        display: block;
+      }
+    }
+    @media (max-width: 992px) {
+      width: 100%;
+    }
+  }
+  & input {
+    padding: 7px 10px !important;
+    border-left: none;
+    border-radius: 0;
+  }
+  & svg {
+    display: none;
+  }
+`;
+
 const AuthedNavWrapper = styled.div`
   display: flex;
   width: 100%;
@@ -125,6 +201,9 @@ const ConnectedButton = styled.button`
   line-height: 40px;
   border-radius: 30px;
   cursor: pointer;
+  @media (max-width: 992px) {
+    line-height: 20px;
+  }
   @media (max-width: 576px) {
     padding: 0 7px;
     margin-right: 0;
@@ -138,6 +217,9 @@ const ConnectedButton = styled.button`
     background: none;
     box-shadow: none;
     border: none;
+    @media (max-width: 992px) {
+      line-height: 20px;
+    }
     @media (max-width: 576px) {
       line-height: 18px;
     }
@@ -195,13 +277,19 @@ const NavMenu = ({
           </div>
           {}
           <div className="_btn-authed create-new-bounty-mobile">
-            <Button onPress={()=>handleNewBounty("Create New Bounty")} isQuiet>
+            <Button
+              onPress={() => handleNewBounty("Create New Bounty")}
+              isQuiet
+            >
               Create New Bounty
             </Button>
           </div>
           <div className="_btn-authed create-new-bounty-mobile">
-            <Button onPress={()=>handleNewBounty("Create New Designated Bounty")} isQuiet>
-            Create New Designated Bounty
+            <Button
+              onPress={() => handleNewBounty("Create New Designated Bounty")}
+              isQuiet
+            >
+              Create New Designated Bounty
             </Button>
           </div>
         </>
@@ -294,6 +382,8 @@ const NavBarBase = ({ firebase, navigate }) => {
   const [state] = React.useContext(AppContext);
   const [open, setOpen] = React.useState(false);
   const { toggleTheme, reSize } = useUIControls();
+  const [searchValue, setSearchValue] = React.useState("Bounty");
+  const [searchCharecter, setSearchCharecter] = React.useState("");
   const { setAccountId } = useAccountId();
   const currentUser = firebase.auth?.currentUser;
   const isLoggedIn = !!currentUser;
@@ -306,8 +396,7 @@ const NavBarBase = ({ firebase, navigate }) => {
   };
   const handleNewBounty = (key) => {
     console.log("key =>", key);
-    setOpen(!open);
-    navigate("/new-bounty" , { state: {Bounty: key } });
+    navigate("/new-bounty", { state: { Bounty: key } });
   };
 
   const handleMyCreatedBounty = () => {
@@ -331,7 +420,21 @@ const NavBarBase = ({ firebase, navigate }) => {
     setOpen(!open);
     navigate("/sign-up");
   };
-  console.log(state.accountId);
+
+  const searchHandler = (e) => {
+    setSearchValue(e);
+  };
+
+  const searchCharecterHandler = (e) => {
+    setSearchCharecter(e);
+  };
+
+  const searchsubmitHandler = (e) => {
+    const keyword = searchCharecter;
+    navigate("/search-result", {
+      state: { keyword, value: searchValue },
+    });
+  };
   return (
     <>
       <NavBarWrapper>
@@ -353,6 +456,28 @@ const NavBarBase = ({ firebase, navigate }) => {
             </div>
           </NavMenuWrapper>
           <ThemeButtonContainer>
+            {state.accountId && (
+              <SerachWrapper>
+                <SearchFilter>
+                  <ComboBox
+                    onSelectionChange={searchHandler}
+                    defaultInputValue={searchValue}
+                  >
+                    <Item key="Account">Account</Item>
+                    <Item key="Bounty">Bounty</Item>
+                  </ComboBox>
+                </SearchFilter>
+                <SearchInput>
+                  <SearchField onChange={searchCharecterHandler} />
+                </SearchInput>
+                <SearchButton>
+                  <Button onPress={searchsubmitHandler}>
+                    <AiOutlineSearch />
+                  </Button>
+                </SearchButton>
+              </SerachWrapper>
+            )}
+
             <ConnectedButton>
               <Connection />
             </ConnectedButton>
@@ -408,6 +533,27 @@ const NavBarBase = ({ firebase, navigate }) => {
             goToSignInPage={goToSignInPage}
             goToSignUpPage={goToSignUpPage}
           />
+        )}
+        {state.accountId && (
+          <SerachWrapperMobile>
+            <SearchFilter>
+              <ComboBox
+                onSelectionChange={searchHandler}
+                defaultInputValue={searchValue}
+              >
+                <Item key="Account">Account</Item>
+                <Item key="Bounty">Bounty</Item>
+              </ComboBox>
+            </SearchFilter>
+            <SearchInput>
+              <SearchField onChange={searchCharecterHandler} />
+            </SearchInput>
+            <SearchButton>
+              <Button onPress={searchsubmitHandler}>
+                <AiOutlineSearch />
+              </Button>
+            </SearchButton>
+          </SerachWrapperMobile>
         )}
       </NavBarWrapper>
     </>
