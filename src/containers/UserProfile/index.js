@@ -1,6 +1,7 @@
 import React from "react";
 import "./userProfile.css";
 import styled from "styled-components";
+import ReactStars from "react-rating-stars-component";
 import {
   Button,
   Text,
@@ -28,7 +29,7 @@ import {
   Content,
   Form,
   ButtonGroup,
-  ComboBox
+  ComboBox,
 } from "@adobe/react-spectrum";
 import { FaPlus } from "react-icons/fa";
 import appConfig from "webpack-config-loader!../../app-config.js";
@@ -100,6 +101,16 @@ const ModalWrapper = styled.div`
   margin-bottom: 12px;
 `;
 
+const RatingWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 5px;
+  & div {
+    margin-left: 5px;
+  }
+`;
+
 const Profile = ({
   onSubmit,
   src,
@@ -109,10 +120,38 @@ const Profile = ({
   email,
   first_name,
   last_name,
+  customerRate,
+  providerRate,
 }) => (
   <CardWrapper>
     <div className="card">
       <h1>User Profile</h1>
+      <RatingWrapper>
+        <h4>Customer Rating</h4>:
+        <ReactStars
+          count={5}
+          edit={false}
+          value={customerRate}
+          size={26}
+          isHalf={true}
+          emptyIcon={<i className="far fa-star"></i>}
+          halfIcon={<i className="fa fa-star-half-alt"></i>}
+          fullIcon={<i className="fa fa-star"></i>}
+        />
+      </RatingWrapper>
+      <RatingWrapper>
+        <h4>Provieder Rating</h4>:
+        <ReactStars
+          count={5}
+          edit={false}
+          value={providerRate}
+          size={26}
+          isHalf={true}
+          emptyIcon={<i className="far fa-star"></i>}
+          halfIcon={<i className="fa fa-star-half-alt"></i>}
+          fullIcon={<i className="fa fa-star"></i>}
+        />
+      </RatingWrapper>
       <form onSubmit={onSubmit}>
         <label className="custom-file-upload fas">
           <div className="img-wrap">
@@ -192,7 +231,11 @@ const Modal = ({
         <Content>
           <Form>
             <TextField onChange={onSetName} label="Label Or Name" autoFocus />
-            <ComboBox onSelectionChange={onSetEducationType} label="Education Type" items={EducationType}>
+            <ComboBox
+              onSelectionChange={onSetEducationType}
+              label="Education Type"
+              items={EducationType}
+            >
               {(item) => <Item key={item.Label}>{item.Label}</Item>}
             </ComboBox>
           </Form>
@@ -288,6 +331,8 @@ const UserProfileEdit = () => {
     last_name: "",
     educationDetails: [],
     certifications: [],
+    customerRate: 0,
+    providerRate: 0,
   };
 
   const InitialEducationState = {
@@ -330,7 +375,6 @@ const UserProfileEdit = () => {
     setEducationType(value?.map((item) => item.Label.UserLocalizedLabel));
   }, []);
 
-
   const loadProfileDetails = () => {
     axios
       .get(`${appConfig.apiBaseUrl}users/accountId/${globalState.accountId}`)
@@ -355,6 +399,8 @@ const UserProfileEdit = () => {
           last_name: res.data.cob_lastname,
           educationDetails: res.data.cob_Education_providerid_Account,
           certifications: res.data.cob_Certification_providerid_Account,
+          customerRate: res.data.cob_customerrating,
+          providerRate: res.data.cob_providerrating,
         }));
       })
       .catch((err) => {
@@ -469,6 +515,8 @@ const UserProfileEdit = () => {
     email,
     first_name,
     last_name,
+    customerRate,
+    providerRate,
   } = state;
 
   if (state.email === "" || loader) {
@@ -662,6 +710,8 @@ const UserProfileEdit = () => {
           last_name={last_name}
           first_name={first_name}
           email={email}
+          customerRate={customerRate}
+          providerRate={providerRate}
         />
       )}
       <Well margin="15px">
@@ -669,6 +719,8 @@ const UserProfileEdit = () => {
           <TabList>
             <Item key="Edu">Educations</Item>
             <Item key="Cert">Certifications</Item>
+            <Item key="Customer_rating">Customer Rating</Item>
+            <Item key="provider_rating">Provider Rating</Item>
           </TabList>
 
           <TabPanels>
@@ -684,15 +736,20 @@ const UserProfileEdit = () => {
               />
               <TableView>
                 <TableHeader>
-                  <Column>Label or Name</Column>
+                  <Column>Degree</Column>
                   <Column align="end">Type</Column>
                 </TableHeader>
                 <TableBody>
                   {state.educationDetails?.map((item) => (
                     <Row>
                       <Cell>{item.cob_name}</Cell>
-                      <Cell>{item['cob_educationtype@OData.Community.Display.V1.FormattedValue']}</Cell>
-                      
+                      <Cell>
+                        {
+                          item[
+                            "cob_educationtype@OData.Community.Display.V1.FormattedValue"
+                          ]
+                        }
+                      </Cell>
                     </Row>
                   ))}
                 </TableBody>
@@ -710,8 +767,7 @@ const UserProfileEdit = () => {
               />
               <TableView>
                 <TableHeader>
-                  <Column>Label</Column>
-                  <Column>Name</Column>
+                  <Column>Certification</Column>
                   <Column align="end">Type</Column>
                 </TableHeader>
                 <TableBody>
@@ -719,9 +775,36 @@ const UserProfileEdit = () => {
                     <Row>
                       <Cell>{item.cob_name}</Cell>
                       <Cell>{}</Cell>
-                      <Cell>{}</Cell>
                     </Row>
                   ))}
+                </TableBody>
+              </TableView>
+            </Item>
+            <Item key="coustomer_rating">
+              <TableView>
+                <TableHeader>
+                  <Column>Provider</Column>
+                  <Column align="end">Type</Column>
+                </TableHeader>
+                <TableBody>
+                  <Row>
+                    <Cell></Cell>
+                    <Cell>{}</Cell>
+                  </Row>
+                </TableBody>
+              </TableView>
+            </Item>
+            <Item key="provider_rating">
+              <TableView>
+                <TableHeader>
+                  <Column>provider</Column>
+                  <Column align="end">Type</Column>
+                </TableHeader>
+                <TableBody>
+                  <Row>
+                    <Cell></Cell>
+                    <Cell>{}</Cell>
+                  </Row>
                 </TableBody>
               </TableView>
             </Item>

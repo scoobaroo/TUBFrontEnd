@@ -10,8 +10,10 @@ import {
   Heading,
   Content,
   Divider,
+  TextArea,
   Text,
   ButtonGroup,
+  TextField,
 } from "@adobe/react-spectrum";
 import styled from "styled-components";
 import { Navigate } from "react-router-dom";
@@ -26,6 +28,7 @@ import { VoidSigner } from "ethers";
 import { AiFillStar } from "react-icons/ai";
 import { ethers, getDefaultProvider, utils } from "ethers";
 import abi from "../../abi/Bounty.json";
+import ReactStars from "react-rating-stars-component";
 
 const LoadingWrapper = styled.div`
   min-height: 50vh;
@@ -41,6 +44,22 @@ const BountyGrid = styled.div`
   grid-template-columns: repeat(1, 1fr);
   grid-row-gap: 8px;
 `;
+
+const ItemWrapperRating = styled.div`
+  display: flex;
+  flex-direction: column;
+  & div {
+    width: 100%;
+  }
+  & button {
+    width: 110px;
+    margin: 12px 0 0 10px;
+  }
+  & input {
+    margin-bottom: 10px;
+  }
+`;
+
 // @media (max-width: 768px) {
 //   grid-template-columns: repeat(2, 1fr);
 // }
@@ -140,6 +159,10 @@ const SelectedButton = styled.div`
   }
 `;
 
+const RatingWrapper = styled.div`
+  margin-top: 5px;
+`;
+
 const initialState = {
   allBounties: null,
   loading: true,
@@ -150,6 +173,7 @@ const message = {
   work: false,
   release: false,
   completed: false,
+  rating: false,
 };
 
 const requestToworkDetails = {
@@ -181,10 +205,17 @@ const BountiesBase = ({ firebase, navigate }) => {
   const [completeWorkLoader, setCompleteWorkLoader] = React.useState(false);
   const [contractAddress, setContractAddress] = React.useState();
   const [showcompleteModal, setShowcompleteModal] = React.useState(false);
+  const [rateLoader, setRateLoader] = React.useState(false);
+  const [ratingDiscriptionValue, setRatingDiscriptionValue] =
+    React.useState("");
   const [showReleseModal, setShowReleseModal] = React.useState(false);
   const [message, setMessage] = React.useState({ ...message });
   const [showModal, setShowModal] = React.useState(false);
   const [bountyId, setBountyId] = React.useState();
+  const [coustemerId, setCoustomerId] = React.useState();
+  const [providerId, setProviderId] = React.useState();
+  const [ratingValue, setRatingValue] = React.useState(0);
+  const [ratingName, setRatingName] = React.useState("");
   const [requestToWork, setRequestToWork] = React.useState([
     { ...requestToworkDetails },
   ]);
@@ -221,7 +252,6 @@ const BountiesBase = ({ firebase, navigate }) => {
           } = response;
           const allBounties = [...new Set(value)];
           setState((prevState) => ({
-            ...prevState,
             allBounties,
             loading: false,
           }));
@@ -353,6 +383,7 @@ const BountiesBase = ({ firebase, navigate }) => {
             work: true,
             release: false,
             completed: false,
+            rating: false,
           }));
           getCustomerBounties();
           setRequestWorkLoader(false);
@@ -390,6 +421,7 @@ const BountiesBase = ({ firebase, navigate }) => {
             work: false,
             release: true,
             completed: false,
+            rating: false,
           }));
           getCustomerBounties();
           setRequestReleaseLoader(false);
@@ -435,6 +467,7 @@ const BountiesBase = ({ firebase, navigate }) => {
           work: false,
           release: false,
           completed: true,
+          rating: false,
         }));
         setCompleteWorkLoader(false);
         getCustomerBounties();
@@ -479,12 +512,55 @@ const BountiesBase = ({ firebase, navigate }) => {
   const openCompleteModalHandler = (
     requestToWorkId,
     cob_smartcontractaddress,
-    bountyId
+    bountyId,
+    coustomer_id,
+    privider_id
   ) => {
+    setCoustomerId(coustomer_id);
+    setProviderId(privider_id);
     setShowcompleteModal(true);
     setRwrkId(requestToWorkId);
     setContractAddress(cob_smartcontractaddress);
     setBountyId(bountyId);
+  };
+
+  const ratingChanged = (newRating) => {
+    setRatingValue(newRating);
+  };
+
+  const bountyRatingHandler = () => {
+    let data;
+    setRateLoader(true);
+    if (state.accountId === coustemerId) {
+      data = {
+        CustomerId: coustemerId,
+        ProviderId: providerId,
+        Name: ratingName,
+        RatingType: "CustomerReviewOfProvider",
+        Rating: ratingValue.toString(),
+        BountyId: bountyId,
+        Description: ratingDiscriptionValue,
+      };
+      axios
+        .post(`${appConfig.apiBaseUrl}ratings/new`, data)
+        .then((response) => {
+          setRateLoader(false);
+          console.log(response);
+          setShowModal(true);
+          setMessage((prevState) => ({
+            ...prevState,
+            work: false,
+            release: false,
+            completed: false,
+            rating: true,
+          }));
+        })
+        .catch((error) => {
+          setRateLoader(false);
+          setRateLoader(false);
+          console.log(error);
+        });
+    }
   };
 
   const data = State.allBounties?.map((bounty, index) => (
@@ -514,7 +590,6 @@ const BountiesBase = ({ firebase, navigate }) => {
             return (
               <RequestToWork key={index}>
                 <h3>Request to work</h3>
-
                 <div>
                   <RequestToWorkIn>
                     <img
@@ -601,7 +676,9 @@ const BountiesBase = ({ firebase, navigate }) => {
                               openCompleteModalHandler(
                                 value.requestToWorkdId,
                                 bounty.cob_smartcontractaddress,
-                                value.bountyId
+                                value.bountyId,
+                                bounty._cob_customerid_value,
+                                bounty._cob_providerid_value
                               );
                             }}
                           >
@@ -620,9 +697,9 @@ const BountiesBase = ({ firebase, navigate }) => {
                     )
                   ) : (
                     <SelectedButton>
-                    <AiFillStar />
-                    Awarded
-                  </SelectedButton>
+                      <AiFillStar />
+                      Awarded
+                    </SelectedButton>
                   )}
                 </div>
               </RequestToWork>
@@ -658,18 +735,81 @@ const BountiesBase = ({ firebase, navigate }) => {
       <DialogTrigger isOpen={showModal}>
         <></>
         <AlertDialog
-          title="Success"
-          variant="information"
-          primaryActionLabel="OK"
-          onPrimaryAction={() => setShowModal(false)}
+          isPrimaryActionDisabled={true}
+          title={
+            message.work
+              ? "success"
+              : message.release
+              ? "success"
+              : message.completed
+              ? "Bounty completed successfully"
+              : message.rating
+              ? "success"
+              : ""
+          }
         >
           {message.work
             ? "Bounty request accepted"
             : message.release
             ? "Bounty released successfully"
-            : message.completed
-            ? "Bounty completed successfully"
+            : message.rating
+            ? "Bounty rated successfully"
             : ""}
+          {message.completed && (
+            <Content>
+              <Text>Rate this bounty now?</Text>
+              <ItemWrapperRating>
+                <ReactStars
+                  count={5}
+                  onChange={(newRating) => ratingChanged(newRating)}
+                  size={24}
+                  fullIcon={<i className="fa fa-star"></i>}
+                  activeColor="#ffd700"
+                />
+                <TextField placeholder="Name" onChange={setRatingName} />
+                <TextArea
+                  placeholder="comment"
+                  onChange={setRatingDiscriptionValue}
+                />
+                <div style={{ display: "flex", justifyContent: "end" }}>
+                  <Button
+                    variant="negative"
+                    onPress={() => setShowModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button variant="cta" onPress={() => bountyRatingHandler()}>
+                    submit
+                  </Button>
+                </div>
+              </ItemWrapperRating>
+            </Content>
+          )}
+
+          {!message.completed && (
+            <div style={{ display: "flex", justifyContent: "end" }}>
+              <Button variant="secondary" onPress={() => setShowModal(false)}>
+                ok
+              </Button>
+            </div>
+          )}
+          {rateLoader && (
+            <div
+              style={{
+                position: "absolute",
+                top: "0",
+                right: "0",
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                background: "rgb(0 0 0 / 38%)",
+              }}
+            >
+              <ProgressCircle aria-label="Loading…" isIndeterminate />
+            </div>
+          )}
         </AlertDialog>
       </DialogTrigger>
       <DialogTrigger isOpen={showcompleteModal}>
