@@ -36,6 +36,10 @@ import {
 } from "@azure/storage-blob";
 import { FaFileAlt } from "react-icons/fa";
 import { useMetaMask } from "metamask-react";
+import Reviews from "../../components/Review";
+import ReviewDisplay from "../../components/ReviewDispay";
+import SuccessModal from "../../components/SuccessModal";
+import ErrorModal from "../../components/ErrorModal";
 
 const BountyWrapper = styled.div`
   display: grid;
@@ -99,23 +103,11 @@ const ImageWrapper = styled.div`
   font-size: 18px;
   margin-left: 10px;
 `;
-const ImageWrapperReview = styled.div`
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  font-size: 18px;
-  & img {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 15px;
-  }
-`;
 
 const ItemWrapper = styled.div`
   margin: 10px;
 `;
+
 const ItemWrapperRating = styled.div`
   padding: 20px;
   border-radius: 10px;
@@ -151,24 +143,6 @@ const ItemWrapperReview = styled.div`
   display: flex;
   @media (max-width: 992px) {
     flex-wrap: wrap;
-  }
-`;
-
-const Wrapper = styled.div`
-  cursor: pointer;
-  margin: 10px;
-  background-color: #222222;
-  border-radius: 10px;
-  padding: 20px;
-  width: 50%;
-  @media (max-width: 992px) {
-    width: 100%;
-    margin: 10px 0;
-  }
-  & h4 {
-    border-bottom: 1px solid #434242;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
   }
 `;
 
@@ -374,6 +348,7 @@ const BountyDetails = () => {
     getBounty: false,
     image: false,
     requestWork: false,
+    acceptBounty: false,
   };
 
   const requestToWorkState = {
@@ -443,6 +418,7 @@ const BountyDetails = () => {
   const [active, setActive] = React.useState();
   const [provider, setProvider] = React.useState();
   const [showModal, setShowModal] = React.useState(false);
+  const [requestworkloader, setRequestWorkLoader] = React.useState(false);
   const [confirmCancel, setconfirmCancel] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [showError, setShowError] = React.useState(false);
@@ -455,6 +431,8 @@ const BountyDetails = () => {
     ...reqtoWorkProvider,
   });
   const [globalState] = React.useContext(AppContext);
+  const [martkasCompleteLoader, setMartkasCompleteLoader] =
+    React.useState(false);
   const [ImageBloburls, setImageBloburls] = React.useState([]);
   const inputFileRef = React.useRef(null);
   const [imageLoader, setImageLoader] = React.useState(false);
@@ -462,10 +440,18 @@ const BountyDetails = () => {
   const storageAccountName = appConfig.azure.storageAccountName;
   const containerName = `bounty-${bountyId}`;
   const [showurl, setShowurl] = React.useState(false);
+  const [completeWorkLoader, setCompleteWorkLoader] = React.useState(false);
   const [types, setTypes] = React.useState();
   const [showModalTwo, setShowModalTwo] = React.useState(false);
   const [ratingValue, setRatingValue] = React.useState(0);
   const [ratingLoader, setRatingLoader] = React.useState(false);
+  const [showcompleteModal, setShowcompleteModal] = React.useState(false);
+  const [showmarkascompleteModal, setShowmarkascompleteModal] =
+    React.useState(false);
+  const [rwrkId, setRwrkId] = React.useState(null);
+  const [contractAddress, setContractAddress] = React.useState();
+  const [showReleseModal, setShowReleseModal] = React.useState(false);
+  const [requestReleaseLoader, setRequestReleaseLoader] = React.useState(false);
   const [requestToWorkHandler, setRequestToWorkHandler] = React.useState({
     ...requestToWorkState,
   });
@@ -641,10 +627,11 @@ const BountyDetails = () => {
           subCatergoryName: response.data?.SubCategoryId?.subCategoryName,
           bountyamout: response.data?.BountyAmount,
           bountyStatus: response.data?.BountyStatus,
-          smartContractAddress: response.data?.SmartContractAddress,
+          SmartContractAddress: response.data?.SmartContractAddress,
           topics: response.data?.Topics,
           customerId: response.data?.CustomerId?.Id,
-          providerId: response.data?.ProviderId.Id || response.data?.ProviderId,
+          providerId:
+            response.data?.ProviderId?.Id || response.data?.ProviderId,
           loading: false,
           rating: response.data?.Ratings,
           reqToWork: response.data?.RequestToWorks,
@@ -666,7 +653,7 @@ const BountyDetails = () => {
       });
   };
 
-  const uploadFiles = async () => {};
+  const uploadFiles = async () => { };
 
   const filesSelected = (e) => {
     debugger;
@@ -682,7 +669,7 @@ const BountyDetails = () => {
   };
   const increaseBounty = async () => {
     let contract = new ethers.Contract(
-      bountyDetails.smartContractAddress,
+      bountyDetails.SmartContractAddress,
       abi,
       provider.getSigner()
     );
@@ -693,7 +680,7 @@ const BountyDetails = () => {
 
   const getBounty = async () => {
     let contract = new ethers.Contract(
-      bountyDetails.smartContractAddress,
+      bountyDetails.SmartContractAddress,
       abi,
       provider.getSigner()
     );
@@ -707,7 +694,7 @@ const BountyDetails = () => {
   const cancel = async () => {
     setShowModal(false);
     let contract = new ethers.Contract(
-      bountyDetails.smartContractAddress,
+      bountyDetails.SmartContractAddress,
       abi,
       provider.getSigner()
     );
@@ -716,7 +703,7 @@ const BountyDetails = () => {
 
   const getStatus = async () => {
     let contract = new ethers.Contract(
-      bountyDetails.smartContractAddress,
+      bountyDetails.SmartContractAddress,
       abi,
       provider.getSigner()
     );
@@ -726,6 +713,7 @@ const BountyDetails = () => {
     console.log(status);
     setActive(status);
   };
+
   const cancelHandler = async () => {
     try {
       await cancel();
@@ -736,6 +724,9 @@ const BountyDetails = () => {
         getBounty: false,
         image: false,
         requestWork: false,
+        acceptBounty: false,
+        release: false,
+        completeBounty: false,
       }));
     } catch (error) {
       setShowError(true);
@@ -745,6 +736,9 @@ const BountyDetails = () => {
         getBounty: false,
         image: false,
         requestWork: false,
+        acceptBounty: false,
+        release: false,
+        completeBounty: false,
       }));
     }
   };
@@ -759,6 +753,9 @@ const BountyDetails = () => {
         cancel: false,
         image: false,
         requestWork: false,
+        acceptBounty: false,
+        release: false,
+        completeBounty: false,
       }));
     } catch (error) {
       setShowError(true);
@@ -768,6 +765,9 @@ const BountyDetails = () => {
         cancel: false,
         image: false,
         requestWork: false,
+        acceptBounty: false,
+        release: false,
+        completeBounty: false,
       }));
       console.log(error);
     }
@@ -799,6 +799,9 @@ const BountyDetails = () => {
       getBounty: false,
       cancel: false,
       image: true,
+      acceptBounty: false,
+      release: false,
+      completeBounty: false,
     }));
     setShowSuccess(true);
     setImageLoader(false);
@@ -856,6 +859,9 @@ const BountyDetails = () => {
           cancel: false,
           image: false,
           requestWork: true,
+          acceptBounty: false,
+          release: false,
+          completeBounty: false,
         }));
       })
       .catch((error) => {
@@ -868,6 +874,9 @@ const BountyDetails = () => {
           cancel: false,
           image: false,
           requestWork: true,
+          acceptBounty: false,
+          release: false,
+          completeBounty: false,
         }));
       });
   };
@@ -1032,12 +1041,38 @@ const BountyDetails = () => {
     }
   };
 
+  const bountRequestWorkAprroval = async (requestToWorkId) => {
+    await axios
+      .patch(`${appConfig.apiBaseUrl}requestToWorks/${requestToWorkId}/approve`)
+      .then((response) => {
+        if (response.status === 200) {
+          setRequestWorkLoader(false);
+          setShowSuccess(true);
+          setMessage((prevState) => ({
+            ...prevState,
+            cancel: false,
+            getBounty: false,
+            image: false,
+            requestWork: false,
+            acceptBounty: true,
+            release: false,
+            completeBounty: false,
+          }));
+          console.log("response", response);
+          loadBountyDetails();
+        }
+      })
+      .catch((error) => {
+        setRequestWorkLoader(false);
+        console.log("error", error);
+      });
+  };
+
   const setSmartContractAddress = async (
     smartContractAddress,
     cob_walletaddress,
     requestToWorkId
   ) => {
-    setShowModal(false);
     let contract = new ethers.Contract(
       smartContractAddress,
       abi,
@@ -1054,27 +1089,156 @@ const BountyDetails = () => {
     }
   };
 
-  const bountyAcceptHandler = async (
+  const bountyAcceptHandler = (
     requestToWorkId,
     cob_smartcontractaddress,
     cob_walletaddress
   ) => {
+    setRwrkId(requestToWorkId);
+    setRequestWorkLoader(true);
     setSmartContractAddress(
       cob_smartcontractaddress,
       cob_walletaddress,
       requestToWorkId
     );
   };
+  const bountystatusChangeHandler = async () => {
+    const bountyStatus = "Completed";
+    axios
+      .patch(`${appConfig.apiBaseUrl}bounties/${bountyId}`, { bountyStatus })
+      .then((response) => {
+        setShowSuccess(true);
+        setMessage((prevState) => ({
+          ...prevState,
+          cancel: false,
+          getBounty: false,
+          image: false,
+          requestWork: false,
+          acceptBounty: false,
+          release: false,
+          completeBounty: true,
+        }));
+        loadBountyDetails();
+        setCompleteWorkLoader(false);
+      })
+      .catch((error) => {
+        setCompleteWorkLoader(false);
+        console.log("error", error);
+      });
+  };
+
+  const completeConfirmHandler = async (requestToWorkId) => {
+    setShowcompleteModal(false);
+    setCompleteWorkLoader(true);
+    let contract = new ethers.Contract(
+      contractAddress,
+      abi,
+      provider.getSigner()
+    );
+    try {
+      const value = await contract.transferToProvider();
+      if (value) {
+        bountystatusChangeHandler();
+      }
+    } catch (error) {
+      console.log("error", error);
+      setCompleteWorkLoader(false);
+    }
+  };
 
   const openCompleteModalHandler = (
-    cob_smartcontractaddress,
-    bountyId,
-    coustomer_id,
-    privider_id
-  ) => {};
-
-  const openReleaseModalHandler = (cob_smartcontractaddress) => {
+    requestToWorkId,
+    cob_smartcontractaddress
+  ) => {
+    setShowcompleteModal(true);
+    setRwrkId(requestToWorkId);
     setContractAddress(cob_smartcontractaddress);
+  };
+
+  const bountyReleaseCallHandler = async (requestToWorkId) => {
+    await axios
+      .patch(`${appConfig.apiBaseUrl}requestToWorks/${rwrkId}/release`)
+      .then((response) => {
+        if (response.status === 200) {
+          setShowSuccess(true);
+          setMessage((prevState) => ({
+            ...prevState,
+            cancel: false,
+            getBounty: false,
+            image: false,
+            requestWork: false,
+            acceptBounty: false,
+            completeBounty: false,
+            release: true,
+          }));
+          setRequestReleaseLoader(false);
+          loadBountyDetails();
+          console.log("response", response);
+        }
+      })
+      .catch((error) => {
+        setRequestReleaseLoader(false);
+        console.log("error", error);
+      });
+  };
+
+  const openReleaseModalHandler = (req_workId, cob_smartcontractaddress) => {
+    setRwrkId(req_workId);
+    setContractAddress(cob_smartcontractaddress);
+    setShowReleseModal(true);
+  };
+
+  const bountyReleaseHandler = async () => {
+    setRequestReleaseLoader(true);
+    setShowReleseModal(false);
+    let contract = new ethers.Contract(
+      contractAddress,
+      abi,
+      provider.getSigner()
+    );
+    console.log("contract", contract);
+    try {
+      const value = await contract.release();
+      console.log("value", value);
+      if (value) {
+        bountyReleaseCallHandler(rwrkId);
+      }
+    } catch (error) {
+      console.log("error", error);
+      setRequestReleaseLoader(false);
+    }
+  };
+
+  const markasCompleteHandler = async () => {
+    setShowmarkascompleteModal(false);
+    setMartkasCompleteLoader(true);
+    await axios
+      .patch(`${appConfig.apiBaseUrl}requestToWorks/${rwrkId}/complete`)
+      .then((response) => {
+        if (response.status === 200) {
+          setShowSuccess(true);
+          setMessage((prevState) => ({
+            ...prevState,
+            cancel: false,
+            getBounty: false,
+            image: false,
+            requestWork: false,
+            acceptBounty: false,
+            completeBounty: true,
+            release: false,
+          }));
+          setMartkasCompleteLoader(false);
+          loadBountyDetails();
+        }
+      })
+      .catch((error) => {
+        console.log("error", error);
+      });
+  };
+
+  const markasCompleteModalHandler = (requestToWorkId) => {
+    setRwrkId(requestToWorkId);
+    setShowmarkascompleteModal(true);
   };
 
   const ratingChanged = (newRating) => {
@@ -1092,6 +1256,206 @@ const BountyDetails = () => {
       </LoadingWrapper>
     );
   }
+
+  const ShowSuccessModal =
+    showSuccess &&
+    (message.cancel ? (
+      <SuccessModal
+        title={"Cancel Success"}
+        message={"Bounty cancelled successfully"}
+        action={() => setShowSuccess(false)}
+      />
+    ) : message.image ? (
+      <SuccessModal
+        title={"Success"}
+        message={"image uploaded successfully"}
+        action={() => setShowSuccess(false)}
+      />
+    ) : message.requestWork ? (
+      <SuccessModal
+        title={"Success"}
+        message={"Request to Work submitted successfully"}
+        action={() => setShowSuccess(false)}
+      />
+    ) : message.acceptBounty ? (
+      <SuccessModal
+        title={"Success"}
+        message={"Bounty request accepted"}
+        action={() => setShowSuccess(false)}
+      />
+    ) : message.release ? (
+      <SuccessModal
+        title={"Success"}
+        message={"Bounty released successfully"}
+        action={() => setShowSuccess(false)}
+      />
+    ) : message.completeBounty ? (
+      <SuccessModal
+        title={"Success"}
+        message={"Bounty completed successfully"}
+        action={() => setShowSuccess(false)}
+      />
+    ) : (
+      <SuccessModal
+        title={"Get Bounty Success"}
+        message={"Bounty got successfully"}
+        action={() => setShowSuccess(false)}
+      />
+    ));
+
+  const ShowErrorModal =
+    showError &&
+    (message.getBounty ? (
+      <ErrorModal
+        message={"Bounty not found"}
+        action={() => setShowError(false)}
+      />
+    ) : message.requestWork ? (
+      <ErrorModal
+        action={() => setShowError(false)}
+        message={"Failed to submit request"}
+      />
+    ) : (
+      <ErrorModal
+        action={() => setShowError(false)}
+        message={"Failed to cancel bounty."}
+      />
+    ));
+
+  const RequestToWorkContainer = bountyDetails.reqToWork.map(
+    (reqToWork, index) =>
+      bountyDetails.reqToWork.length > 0 &&
+        bountyDetails.customerId == globalState.accountId ? (
+        <RequestToWork>
+          <h3>Request to work</h3>
+          <RequestToWorkIn>
+            <img
+              src={reqToWorkPovider.profilePicture}
+              onClick={() => reqproviderProfileViewer()}
+            />
+            <div>
+              <div>
+                {reqToWorkPovider.first_name + " " + reqToWorkPovider.last_name}
+              </div>
+              <div>{reqToWorkPovider.email}</div>
+              <div>{reqToWork.message}</div>
+            </div>
+          </RequestToWorkIn>
+          {bountyDetails.bountyStatus !== "Completed" ? (
+            bountyDetails.providerId === null ? (
+              <ButtonWrapperTwo>
+                <Button
+                  onPress={() => {
+                    bountyAcceptHandler(
+                      reqToWork.requestToWorkId,
+                      bountyDetails.SmartContractAddress,
+                      reqToWork.walletAddress
+                    );
+                  }}
+                  end
+                  variant="cta"
+                >
+                  {reqToWork.requestToWorkId === rwrkId &&
+                    requestworkloader && (
+                      <ProgressCircle aria-label="Loading…" isIndeterminate />
+                    )}{" "}
+                  Accept
+                </Button>
+                <Button variant="negative"> Reject </Button>
+              </ButtonWrapperTwo>
+            ) : (
+              <>
+                <ButtonReleaseWrapper>
+                  <Button
+                    variant="negative"
+                    onPress={() => {
+                      openReleaseModalHandler(
+                        reqToWork.requestToWorkId,
+                        bountyDetails.SmartContractAddress
+                      );
+                    }}
+                  >
+                    {" "}
+                    {reqToWork.requestToWorkId === rwrkId &&
+                      requestReleaseLoader && (
+                        <ProgressCircle aria-label="Loading…" isIndeterminate />
+                      )}{" "}
+                    Release
+                  </Button>
+                  {reqToWork.status === "Completed" &&
+                    bountyDetails.bountyStatus === "In Progress" && (
+                      <Button
+                        variant="cta"
+                        onPress={() => {
+                          openCompleteModalHandler(
+                            reqToWork.requestToWorkId,
+                            bountyDetails.SmartContractAddress,
+                            bountyDetails.customerId,
+                            bountyDetails.providerId
+                          );
+                        }}
+                      >
+                        {" "}
+                        {reqToWork.requestToWorkId === rwrkId &&
+                          completeWorkLoader && (
+                            <ProgressCircle
+                              aria-label="Loading…"
+                              isIndeterminate
+                            />
+                          )}{" "}
+                        Complete
+                      </Button>
+                    )}
+                </ButtonReleaseWrapper>
+              </>
+            )
+          ) : (
+            <SelectedButton>
+              <AiFillStar />
+              Awarded
+            </SelectedButton>
+          )}
+        </RequestToWork>
+      ) : (
+        bountyDetails.providerId === globalState.accountId &&
+        bountyDetails.bountyStatus === "In Progress" && (
+          <RequestToWork>
+            <h3>Request to work</h3>
+            <RequestToWorkIn>
+              <img
+                src={reqToWorkPovider.profilePicture}
+                onClick={() => reqproviderProfileViewer()}
+              />
+              <div>
+                <div>
+                  {reqToWorkPovider.first_name +
+                    " " +
+                    reqToWorkPovider.last_name}
+                </div>
+                <div>{reqToWorkPovider.email}</div>
+                <div>{reqToWorkPovider.message}</div>
+              </div>
+            </RequestToWorkIn>
+            {reqToWork.status !== "Completed" && (
+              <ButtonWrapperTwo>
+                <Button
+                  onPress={() =>
+                    markasCompleteModalHandler(reqToWork.requestToWorkId)
+                  }
+                >
+                  {" "}
+                  {reqToWork.requestToWorkId === rwrkId &&
+                    martkasCompleteLoader && (
+                      <ProgressCircle aria-label="Loading…" isIndeterminate />
+                    )}{" "}
+                  Mark as complete
+                </Button>
+              </ButtonWrapperTwo>
+            )}
+          </RequestToWork>
+        )
+      )
+  );
 
   return (
     <BountyWrapper>
@@ -1122,8 +1486,7 @@ const BountyDetails = () => {
               :{" "}
               {bountyDetails.topics?.map(
                 (topic, key) =>
-                  `${topic.topicName}${
-                    key !== bountyDetails.topics.length - 1 ? "," : ""
+                  `${topic.topicName}${key !== bountyDetails.topics.length - 1 ? "," : ""
                   } `
               )}
             </Heading>
@@ -1186,7 +1549,7 @@ const BountyDetails = () => {
 
         <a
           style={{ textDecoration: "none" }}
-          href={`https://rinkeby.etherscan.io/address/${bountyDetails.smartContractAddress}`}
+          href={`https://rinkeby.etherscan.io/address/${bountyDetails.SmartContractAddress}`}
           target="_blank"
         >
           <Button variant="negative">View on blockchain explorer</Button>
@@ -1269,183 +1632,38 @@ const BountyDetails = () => {
             </ButtonWrapper>
           </>
         ) : null}
-        {bountyDetails.bountyStatus !== "Completed" &&
-        bountyDetails.reqToWork.length > 0 &&
-        bountyDetails.customerId == globalState.accountId
-          ? bountyDetails.reqToWork.map((reqToWork, index) => (
-              <RequestToWork>
-                <h3>Request to work</h3>
-                <RequestToWorkIn>
-                  <img
-                    src={reqToWorkPovider.profilePicture}
-                    onClick={() => reqproviderProfileViewer()}
-                  />
-                  <div>
-                    <div>
-                      {reqToWorkPovider.first_name +
-                        " " +
-                        reqToWorkPovider.last_name}
-                    </div>
-                    <div>{reqToWorkPovider.email}</div>
-                    <div>{reqToWorkPovider.message}</div>
-                  </div>
-                </RequestToWorkIn>
-                {bountyDetails.bountyStatus !== "Completed" ? (
-                  bountyDetails.providerId === null ? (
-                    <ButtonWrapperTwo>
-                      <Button
-                        onPress={() => {
-                          bountyAcceptHandler(
-                            bountyDetails.SmartContractAddress,
-                            reqToWork.cob_walletaddress
-                          );
-                        }}
-                        end
-                        variant="cta"
-                      >
-                        {/* {value.requestToWorkdId === rwrkId &&
-                        requestworkloader && (
-                          <ProgressCircle
-                            aria-label="Loading…"
-                            isIndeterminate
-                          />
-                        )}{" "} */}
-                        Accept
-                      </Button>
-                      <Button variant="negative"> Reject </Button>
-                    </ButtonWrapperTwo>
-                  ) : (
-                    <>
-                      <ButtonReleaseWrapper>
-                        <Button
-                          variant="negative"
-                          onPress={() => {
-                            openReleaseModalHandler(
-                              bountyDetails.SmartContractAddress
-                            );
-                          }}
-                        >
-                          {/* {" "}
-                        {value.requestToWorkdId === rwrkId &&
-                          requestReleaseLoader && (
-                            <ProgressCircle
-                              aria-label="Loading…"
-                              isIndeterminate
-                            />
-                          )}{" "} */}
-                          Release
-                        </Button>
-                        <Button
-                          variant="cta"
-                          onPress={() => {
-                            openCompleteModalHandler(
-                              bountyDetails.SmartContractAddress,
-                              bountyId,
-                              bountyDetails.customerId,
-                              bountyDetails.providerId
-                            );
-                          }}
-                        >
-                          {/* {" "}
-                        {value.requestToWorkdId === rwrkId &&
-                          completeWorkLoader && (
-                            <ProgressCircle
-                              aria-label="Loading…"
-                              isIndeterminate
-                            />
-                          )}{" "} */}
-                          Complete
-                        </Button>
-                      </ButtonReleaseWrapper>
-                    </>
-                  )
-                ) : (
-                  <SelectedButton>
-                    <AiFillStar />
-                    Awarded
-                  </SelectedButton>
-                )}
-              </RequestToWork>
-            ))
-          : bountyDetails.providerId === globalState.accountId &&
-            bountyDetails.bountyStatus === "In Progress" && (
-              <RequestToWork>
-                <h3>Request to work</h3>
-                <RequestToWorkIn>
-                  <img
-                    src={reqToWorkPovider.profilePicture}
-                    onClick={() => reqproviderProfileViewer()}
-                  />
-                  <div>
-                    <div>
-                      {reqToWorkPovider.first_name +
-                        " " +
-                        reqToWorkPovider.last_name}
-                    </div>
-                    <div>{reqToWorkPovider.email}</div>
-                    <div>{reqToWorkPovider.message}</div>
-                  </div>
-                </RequestToWorkIn>
-                <ButtonWrapperTwo>
-                  <Button>Mark as complete</Button>
-                </ButtonWrapperTwo>
-              </RequestToWork>
-            )}
+
+        {RequestToWorkContainer}
       </BountyDeteilsWrapper>
-      {
-        // bountyDetails.bountyStatus !== "Completed" &&
-        <div>
-          <h2>#Related Files</h2>
-          <FileWrapper>
-            {showurl
-              ? ImageBloburls.map((blob, key) => (
-                  <ItemWrapper>
-                    <FaFileAlt />
-                    <Link>
-                      <a href={`${blob.url}`} target="_blank">
-                        {blob.name}
-                      </a>
-                    </Link>
-                  </ItemWrapper>
-                ))
-              : null}
-          </FileWrapper>
-        </div>
-      }
+
+      <div>
+        <h2>#Related Files</h2>
+        <FileWrapper>
+          {showurl
+            ? ImageBloburls.map((blob, key) => (
+              <ItemWrapper>
+                <FaFileAlt />
+                <Link>
+                  <a href={`${blob.url}`} target="_blank">
+                    {blob.name}
+                  </a>
+                </Link>
+              </ItemWrapper>
+            ))
+            : null}
+        </FileWrapper>
+      </div>
 
       {bountyDetails.bountyStatus === "Completed" && reviewconditon && (
         <ItemWrapperRating>
-          <h3>Review</h3>
-          <div
-            style={{ display: "flex", flexDirection: "column", width: "100%" }}
-          >
-            <ReactStars
-              count={5}
-              onChange={(newRating) => ratingChanged(newRating)}
-              size={26}
-              fullIcon={<i className="fa fa-star"></i>}
-              activeColor="#ffd700"
-            />
-            <TextField
-              placeholder="Tittle"
-              width={"100%"}
-              onChange={setRatingName}
-            />
-            <TextArea
-              placeholder="Comment"
-              width={"100%"}
-              onChange={setRatingDiscriptionValue}
-            />
-            <Button onPress={() => bountRatingHandler(bountyDetails)}>
-              {ratingLoader && (
-                <div>
-                  {" "}
-                  <ProgressCircle aria-label="Loading…" isIndeterminate />
-                </div>
-              )}
-              submit
-            </Button>
-          </div>
+          <Reviews
+            ratingChangeHandler={ratingChanged}
+            ratingNameHandler={setRatingName}
+            ratingDiscriptionHandler={setRatingDiscriptionValue}
+            bountyRatingHandler={bountRatingHandler}
+            loader={ratingLoader}
+            bountyDetails={bountyDetails}
+          />
         </ItemWrapperRating>
       )}
 
@@ -1453,109 +1671,106 @@ const BountyDetails = () => {
         (customerRateDiscription || providerRateDiscription) && (
           <ItemWrapperReview>
             {customerRateDiscription && (
-              <Wrapper>
-                <h4>Customer Review</h4>
-
-                <ImageWrapperReview review={true}>
-                  <img src={imageUrl} alt="profile" />
-                  <Heading>{userName}</Heading>
-                </ImageWrapperReview>
-
-                <ReactStars
-                  count={5}
-                  value={customerRateValue}
-                  edit={false}
-                  size={26}
-                  fullIcon={<i className="fa fa-star"></i>}
-                  activeColor="#ffd700"
-                />
-
+              <ReviewDisplay
+                profileViewHandler={ProfileViewer}
+                heading={"Customer Review"}
+                imageUrl={imageUrl}
+                userName={userName}
+                RateVAlue={customerRateValue}
+              >
                 {customerRateDiscription}
-              </Wrapper>
+              </ReviewDisplay>
             )}{" "}
             {providerRateDiscription && (
-              <Wrapper>
-                <h4>Provider Review</h4>
-
-                <ImageWrapperReview
-                  review={true}
-                  onClick={() => providerProfileViewer()}
-                >
-                  <img src={userProviderDetails.profilePicture} alt="profile" />
-                  <Heading>
-                    {userProviderDetails.first_name +
-                      " " +
-                      userProviderDetails.last_name}
-                  </Heading>
-                </ImageWrapperReview>
-                <ReactStars
-                  count={5}
-                  value={providerRateVAlue}
-                  edit={false}
-                  size={26}
-                  fullIcon={<i className="fa fa-star"></i>}
-                  activeColor="#ffd700"
-                />
-
+              <ReviewDisplay
+                profileViewHandler={providerProfileViewer}
+                heading={"Provider Review"}
+                imageUrl={userProviderDetails.profilePicture}
+                userName={
+                  userProviderDetails.first_name +
+                  " " +
+                  userProviderDetails.last_name
+                }
+                RateVAlue={providerRateVAlue}
+              >
                 {providerRateDiscription}
-              </Wrapper>
+              </ReviewDisplay>
             )}
           </ItemWrapperReview>
         )}
 
-      <DialogTrigger isOpen={showModal}>
+      {ShowSuccessModal}
+
+      {ShowErrorModal}
+
+      <DialogTrigger isOpen={showReleseModal}>
         <></>
-        <AlertDialog
-          variant="confirmation"
-          title="Confirmation"
-          primaryActionLabel="Confirm"
-          cancelLabel="Cancel"
-          autoFocusButton="primary"
-          onCancel={() => setShowModal(false)}
-          onPrimaryAction={() => cancelHandler()}
-        >
-          Are you sure want to canel this bounty
-        </AlertDialog>
+        <Dialog>
+          <Heading>Release bounty</Heading>
+          <Divider />
+          <Content>
+            <Text>Do you want to release the bounty?</Text>
+          </Content>
+          <ButtonGroup>
+            <Button
+              variant="secondary"
+              onPress={() => {
+                setShowReleseModal(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="cta" onPress={bountyReleaseHandler}>
+              Confirm
+            </Button>
+          </ButtonGroup>
+        </Dialog>
       </DialogTrigger>
-      <DialogTrigger isOpen={showSuccess}>
+      <DialogTrigger isOpen={showcompleteModal}>
         <></>
-        <AlertDialog
-          title={
-            message.cancel
-              ? "Cancel Success"
-              : message.image
-              ? "success"
-              : message.requestWork
-              ? "Success"
-              : "Get Bounty Success"
-          }
-          variant="information"
-          primaryActionLabel="OK"
-          onPrimaryAction={() => setShowSuccess(false)}
-        >
-          {message.cancel
-            ? "Bounty cancelled successfully"
-            : message.image
-            ? "image uploaded successfully"
-            : message.requestWork
-            ? "Request to Work submitted successfully"
-            : "Bounty got successfully"}
-        </AlertDialog>
+        <Dialog>
+          <Heading>Complete Work </Heading>
+          <Divider />
+          <Content>
+            <Text>Do you want to complete and transfer fund to provider?</Text>
+          </Content>
+          <ButtonGroup>
+            <Button
+              variant="secondary"
+              onPress={() => {
+                setShowcompleteModal(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="cta" onPress={completeConfirmHandler}>
+              Confirm
+            </Button>
+          </ButtonGroup>
+        </Dialog>
       </DialogTrigger>
-      <DialogTrigger isOpen={showError}>
+      <DialogTrigger isOpen={showmarkascompleteModal}>
         <></>
-        <AlertDialog
-          title="Failed"
-          variant="error"
-          primaryActionLabel="OK"
-          onPrimaryAction={() => setShowError(false)}
-        >
-          {message.getBounty
-            ? "Bounty not found"
-            : message.requestWork
-            ? "Failed to submit request"
-            : "Failed to cancel bounty."}
-        </AlertDialog>
+        <Dialog>
+          <Heading>Complete Work </Heading>
+          <Divider />
+          <Content>
+            <Text>Do you want to complete?</Text>
+          </Content>
+          <ButtonGroup>
+            <Button
+              variant="secondary"
+              onPress={() => {
+                setShowmarkascompleteModal(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="cta" onPress={markasCompleteHandler}>
+              Confirm
+            </Button>
+          </ButtonGroup>
+        </Dialog>
       </DialogTrigger>
     </BountyWrapper>
   );
