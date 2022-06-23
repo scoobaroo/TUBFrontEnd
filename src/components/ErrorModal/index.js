@@ -3,7 +3,7 @@ import { AlertDialog, DialogTrigger } from "@adobe/react-spectrum";
 
 const ErrorModal = (props)=> {
   return (
-    <DialogTrigger isOpen={true}>
+    <DialogTrigger isOpen={props.open}>
       <></>
       <AlertDialog
         title="Failed"

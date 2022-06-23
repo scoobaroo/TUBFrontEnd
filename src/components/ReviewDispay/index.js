@@ -39,11 +39,12 @@ const ReviewDisplay = (props) => {
   return (
     <Wrapper>
       <h4> {props.heading}</h4>
-
-      <ImageWrapperReview onClick={props.profileViewHandler}>
-        <img src={props.imageUrl} alt="profile" />
-        <Heading>{props.userName}</Heading>
-      </ImageWrapperReview>
+      {props.imageUrl && (
+        <ImageWrapperReview onClick={props.profileViewHandler}>
+          <img src={props.imageUrl} alt="profile" />
+          <Heading>{props.userName}</Heading>
+        </ImageWrapperReview>
+      )}
 
       <ReactStars
         count={5}

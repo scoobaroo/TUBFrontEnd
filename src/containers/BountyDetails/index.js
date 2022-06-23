@@ -3,6 +3,7 @@ import appConfig from "webpack-config-loader!../../app-config.js";
 import ReactStars from "react-rating-stars-component";
 import { useNavigate } from "react-router-dom";
 import { AiFillStar } from "react-icons/ai";
+import Network from "../../helper/metamask-network";
 import {
   Heading,
   TextField,
@@ -342,6 +343,7 @@ const BountyDetails = () => {
     providerId: "",
     rating: [],
     reqToWork: [],
+    ERC20Chain: "",
   };
   const intialMessage = {
     cancel: false,
@@ -349,6 +351,9 @@ const BountyDetails = () => {
     image: false,
     requestWork: false,
     acceptBounty: false,
+    status: false,
+    metamask: false,
+    getstatus: false,
   };
 
   const requestToWorkState = {
@@ -456,11 +461,13 @@ const BountyDetails = () => {
     ...requestToWorkState,
   });
   const [imageUrl, setImageUrl] = React.useState("");
-  const { account, ethereum } = useMetaMask();
+  const { account, ethereum, chainId, status } = useMetaMask();
   const [userName, setUserName] = React.useState("");
   const [ratingDiscriptionValue, setRatingDiscriptionValue] =
     React.useState("");
   const [reviewconditon, setReviewconditon] = React.useState(true);
+  const [ERC20ChainName, setErc20chaninName] = React.useState("");
+  const [chainValue, setChainValue] = React.useState();
 
   // get BlobService = notice `?` is pulled out of sasToken - if created in Azure portal
   const blobService = new BlobServiceClient(
@@ -496,7 +503,34 @@ const BountyDetails = () => {
   React.useEffect(() => {
     loadProfileDetails();
     loadProviderDetails();
+    setErc20chaninNameValue();
   }, [bountyDetails.customerId]);
+
+  React.useEffect(() => {
+    setErc20chaninNameValue();
+  }, [chainId]);
+
+  React.useEffect(() => {
+    if (
+      status !== "initializing" &&
+      status !== "connected" &&
+      status !== "connecting"
+    ) {
+      setShowError(true);
+      setMessage((prevState) => ({
+        ...prevState,
+        cancel: false,
+        getBounty: false,
+        image: false,
+        requestWork: false,
+        acceptBounty: false,
+        release: false,
+        completeBounty: false,
+        status: false,
+        metamask: true,
+      }));
+    }
+  }, [status]);
 
   React.useEffect(() => {
     if (bountyDetails.reqToWork.length > 0) {
@@ -508,6 +542,29 @@ const BountyDetails = () => {
       loadReqWorkProviderDatails(id);
     }
   }, [bountyDetails.reqToWork]);
+
+  const setChaninIdHandler = (name) => {
+    let mainString = name;
+    let subString;
+    const value = globalState.RequestWork;
+    value?.filter((item) => {
+      subString = item.Label.UserLocalizedLabel.Label;
+
+      if (mainString.includes(`${subString}`)) {
+        setChainValue(item.Value);
+      }
+      if (item.Value == bountyDetails.ERC20Chain) {
+        setErc20chaninName(item.Label.UserLocalizedLabel.Label);
+      }
+    });
+  };
+
+  const setErc20chaninNameValue = () => {
+    const network = Network.find((chain) => chain.hex === chainId);
+    if (network) {
+      setChaninIdHandler(network.name);
+    }
+  };
 
   const loadProfileDetails = () => {
     console.log("accontId", bountyDetails.customerId);
@@ -635,6 +692,7 @@ const BountyDetails = () => {
           loading: false,
           rating: response.data?.Ratings,
           reqToWork: response.data?.RequestToWorks,
+          ERC20Chain: response.data?.ERC20Chain,
         }));
         status = response.data?.BountyStatus;
         custemerId = response.data?.CustomerId?.Id;
@@ -653,7 +711,7 @@ const BountyDetails = () => {
       });
   };
 
-  const uploadFiles = async () => { };
+  const uploadFiles = async () => {};
 
   const filesSelected = (e) => {
     debugger;
@@ -679,13 +737,29 @@ const BountyDetails = () => {
   };
 
   const getBounty = async () => {
+    if (bountyDetails.ERC20Chain !== chainValue) {
+      setShowError(true);
+      setMessage((prevState) => ({
+        ...prevState,
+        cancel: false,
+        getBounty: false,
+        image: false,
+        requestWork: false,
+        acceptBounty: false,
+        release: false,
+        completeBounty: false,
+        status: true,
+        metamask: false,
+      }));
+      return;
+    }
     let contract = new ethers.Contract(
       bountyDetails.SmartContractAddress,
       abi,
       provider.getSigner()
     );
     // contract.connect(provider.getSigner());
-    let bountyAmount = await contract.getBounty();
+    let bountyAmount = await contract.bounty();
     let amount = parseInt(bountyAmount._hex, 16).toString();
     bountyAmount = ethers.utils.formatEther(amount);
     setBountyAmount(bountyAmount);
@@ -693,6 +767,7 @@ const BountyDetails = () => {
 
   const cancel = async () => {
     setShowModal(false);
+
     let contract = new ethers.Contract(
       bountyDetails.SmartContractAddress,
       abi,
@@ -702,6 +777,44 @@ const BountyDetails = () => {
   };
 
   const getStatus = async () => {
+    try {
+      if (bountyDetails.ERC20Chain !== chainValue) {
+        setShowError(true);
+        setMessage((prevState) => ({
+          ...prevState,
+          cancel: false,
+          getBounty: false,
+          image: false,
+          requestWork: false,
+          acceptBounty: false,
+          release: false,
+          completeBounty: false,
+          status: true,
+          metamask: false,
+        }));
+        return;
+      }
+      await statusHandler();
+    } catch (err) {
+      setShowError(true);
+      setMessage((prevState) => ({
+        ...prevState,
+        cancel: false,
+        getBounty: false,
+        image: false,
+        requestWork: false,
+        acceptBounty: false,
+        release: false,
+        completeBounty: false,
+        status: false,
+        metamask: false,
+        getstatus: true,
+      }));
+    }
+    }
+  
+
+  const statusHandler = async () => {
     let contract = new ethers.Contract(
       bountyDetails.SmartContractAddress,
       abi,
@@ -709,14 +822,32 @@ const BountyDetails = () => {
     );
     // let fact = await contract.deployed();
     console.log(contract);
-    let status = await contract.getStatus();
+    let status = await contract.status();
     console.log(status);
     setActive(status);
   };
 
   const cancelHandler = async () => {
     try {
+      if (bountyDetails.ERC20Chain !== chainValue) {
+        setShowModal(false);
+        setShowError(true);
+        setMessage((prevState) => ({
+          ...prevState,
+          cancel: false,
+          getBounty: false,
+          image: false,
+          requestWork: false,
+          acceptBounty: false,
+          release: false,
+          completeBounty: false,
+          status: true,
+          metamask: false,
+        }));
+        return;
+      }
       await cancel();
+      setShowModal(false);
       setShowSuccess(true);
       setMessage((prevState) => ({
         ...prevState,
@@ -727,6 +858,8 @@ const BountyDetails = () => {
         acceptBounty: false,
         release: false,
         completeBounty: false,
+        status: false,
+        metamask: false,
       }));
     } catch (error) {
       setShowError(true);
@@ -739,6 +872,8 @@ const BountyDetails = () => {
         acceptBounty: false,
         release: false,
         completeBounty: false,
+        status: false,
+        metamask: false,
       }));
     }
   };
@@ -756,6 +891,8 @@ const BountyDetails = () => {
         acceptBounty: false,
         release: false,
         completeBounty: false,
+        status: false,
+        metamask: false,
       }));
     } catch (error) {
       setShowError(true);
@@ -768,6 +905,8 @@ const BountyDetails = () => {
         acceptBounty: false,
         release: false,
         completeBounty: false,
+        status: false,
+        metamask: false,
       }));
       console.log(error);
     }
@@ -802,6 +941,8 @@ const BountyDetails = () => {
       acceptBounty: false,
       release: false,
       completeBounty: false,
+      status: false,
+      metamask: false,
     }));
     setShowSuccess(true);
     setImageLoader(false);
@@ -862,6 +1003,8 @@ const BountyDetails = () => {
           acceptBounty: false,
           release: false,
           completeBounty: false,
+          status: false,
+          metamask: false,
         }));
       })
       .catch((error) => {
@@ -876,7 +1019,9 @@ const BountyDetails = () => {
           requestWork: true,
           acceptBounty: false,
           release: false,
+          status: false,
           completeBounty: false,
+          metamask: false,
         }));
       });
   };
@@ -1057,6 +1202,8 @@ const BountyDetails = () => {
             acceptBounty: true,
             release: false,
             completeBounty: false,
+            status: false,
+            metamask: false,
           }));
           console.log("response", response);
           loadBountyDetails();
@@ -1117,6 +1264,8 @@ const BountyDetails = () => {
           acceptBounty: false,
           release: false,
           completeBounty: true,
+          status: false,
+          metamask: false,
         }));
         loadBountyDetails();
         setCompleteWorkLoader(false);
@@ -1170,6 +1319,8 @@ const BountyDetails = () => {
             acceptBounty: false,
             completeBounty: false,
             release: true,
+            status: false,
+            metamask: false,
           }));
           setRequestReleaseLoader(false);
           loadBountyDetails();
@@ -1226,6 +1377,8 @@ const BountyDetails = () => {
             acceptBounty: false,
             completeBounty: true,
             release: false,
+            status: false,
+            metamask: false,
           }));
           setMartkasCompleteLoader(false);
           loadBountyDetails();
@@ -1264,42 +1417,49 @@ const BountyDetails = () => {
         title={"Cancel Success"}
         message={"Bounty cancelled successfully"}
         action={() => setShowSuccess(false)}
+        open={showSuccess}
       />
     ) : message.image ? (
       <SuccessModal
         title={"Success"}
         message={"image uploaded successfully"}
         action={() => setShowSuccess(false)}
+        open={showSuccess}
       />
     ) : message.requestWork ? (
       <SuccessModal
         title={"Success"}
         message={"Request to Work submitted successfully"}
         action={() => setShowSuccess(false)}
+        open={showSuccess}
       />
     ) : message.acceptBounty ? (
       <SuccessModal
         title={"Success"}
         message={"Bounty request accepted"}
         action={() => setShowSuccess(false)}
+        open={showSuccess}
       />
     ) : message.release ? (
       <SuccessModal
         title={"Success"}
         message={"Bounty released successfully"}
         action={() => setShowSuccess(false)}
+        open={showSuccess}
       />
     ) : message.completeBounty ? (
       <SuccessModal
         title={"Success"}
         message={"Bounty completed successfully"}
         action={() => setShowSuccess(false)}
+        open={showSuccess}
       />
     ) : (
       <SuccessModal
         title={"Get Bounty Success"}
         message={"Bounty got successfully"}
         action={() => setShowSuccess(false)}
+        open={showSuccess}
       />
     ));
 
@@ -1309,23 +1469,40 @@ const BountyDetails = () => {
       <ErrorModal
         message={"Bounty not found"}
         action={() => setShowError(false)}
+        open={showError}
       />
     ) : message.requestWork ? (
       <ErrorModal
         action={() => setShowError(false)}
         message={"Failed to submit request"}
+        open={showError}
+      />
+    ) : message.status ? (
+      <ErrorModal
+        action={() => setShowError(false)}
+        message={
+          "Bounty was created in a different chain. Please connect to the same chain as the bounty created in and try again."
+        }
+        open={showError}
+      />
+    ) : message.metamask ? (
+      <ErrorModal
+        action={() => setShowError(false)}
+        message={"please connect to the network."}
+        open={showError}
       />
     ) : (
       <ErrorModal
         action={() => setShowError(false)}
         message={"Failed to cancel bounty."}
+        open={showError}
       />
     ));
 
   const RequestToWorkContainer = bountyDetails.reqToWork.map(
     (reqToWork, index) =>
       bountyDetails.reqToWork.length > 0 &&
-        bountyDetails.customerId == globalState.accountId ? (
+      bountyDetails.customerId == globalState.accountId ? (
         <RequestToWork>
           <h3>Request to work</h3>
           <RequestToWorkIn>
@@ -1486,7 +1663,8 @@ const BountyDetails = () => {
               :{" "}
               {bountyDetails.topics?.map(
                 (topic, key) =>
-                  `${topic.topicName}${key !== bountyDetails.topics.length - 1 ? "," : ""
+                  `${topic.topicName}${
+                    key !== bountyDetails.topics.length - 1 ? "," : ""
                   } `
               )}
             </Heading>
@@ -1507,6 +1685,14 @@ const BountyDetails = () => {
               Bounty Status
             </span>
             : {bountyDetails.bountyStatus}
+          </Heading>
+        </ItemWrapper>
+        <ItemWrapper>
+          <Heading>
+            <span style={{ width: "150px", display: "inline-block" }}>
+              ERC20Chain
+            </span>
+            : {ERC20ChainName}
           </Heading>
         </ItemWrapper>
 
@@ -1549,7 +1735,7 @@ const BountyDetails = () => {
 
         <a
           style={{ textDecoration: "none" }}
-          href={`https://rinkeby.etherscan.io/address/${bountyDetails.SmartContractAddress}`}
+          href={`https://${ERC20ChainName}.etherscan.io/address/${bountyDetails.SmartContractAddress}`}
           target="_blank"
         >
           <Button variant="negative">View on blockchain explorer</Button>
@@ -1641,15 +1827,15 @@ const BountyDetails = () => {
         <FileWrapper>
           {showurl
             ? ImageBloburls.map((blob, key) => (
-              <ItemWrapper>
-                <FaFileAlt />
-                <Link>
-                  <a href={`${blob.url}`} target="_blank">
-                    {blob.name}
-                  </a>
-                </Link>
-              </ItemWrapper>
-            ))
+                <ItemWrapper>
+                  <FaFileAlt />
+                  <Link>
+                    <a href={`${blob.url}`} target="_blank">
+                      {blob.name}
+                    </a>
+                  </Link>
+                </ItemWrapper>
+              ))
             : null}
         </FileWrapper>
       </div>
@@ -1767,6 +1953,29 @@ const BountyDetails = () => {
               Cancel
             </Button>
             <Button variant="cta" onPress={markasCompleteHandler}>
+              Confirm
+            </Button>
+          </ButtonGroup>
+        </Dialog>
+      </DialogTrigger>
+      <DialogTrigger isOpen={showModal}>
+        <></>
+        <Dialog>
+          <Heading>Cancel bounty </Heading>
+          <Divider />
+          <Content>
+            <Text>Do you want to cancel bounty?</Text>
+          </Content>
+          <ButtonGroup>
+            <Button
+              variant="secondary"
+              onPress={() => {
+                setShowModal(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="cta" onPress={cancelHandler}>
               Confirm
             </Button>
           </ButtonGroup>

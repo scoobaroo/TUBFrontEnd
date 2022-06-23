@@ -3,7 +3,7 @@ import { AlertDialog, DialogTrigger } from "@adobe/react-spectrum";
 
 const SuccessModal = (props) => {
   return (
-    <DialogTrigger isOpen={true}>
+    <DialogTrigger isOpen={props.open}>
       <></>
       <AlertDialog
         title={props.title}

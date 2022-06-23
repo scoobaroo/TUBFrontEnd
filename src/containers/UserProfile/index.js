@@ -39,6 +39,7 @@ import withRouter from "../../session/withRouter";
 import { compose } from "recompose";
 import withAuthorization from "../../session/withAuthorization";
 import { AppContext } from "../../context";
+import ReviewDisplay from "../../components/ReviewDispay";
 
 const ImgUpload = ({ onChange, src }) => (
   <label className="custom-file-upload fas">
@@ -352,6 +353,13 @@ const UserProfileEdit = () => {
   };
 
   const [message, setMessage] = React.useState({ ...InitalMessage });
+  const [customerReviewProvider, setcustomerReviewProvider] = React.useState(
+    []
+  );
+  const [providerReviewCustomer, setproviderReviewCustomer] = React.useState(
+    []
+  );
+  const [ratingData, setRatingData] = React.useState([]);
   const [globalState] = React.useContext(AppContext);
   const [state, setState] = React.useState({ ...InitialState });
   const [showSuccess, setShowSuccess] = React.useState(false);
@@ -368,7 +376,13 @@ const UserProfileEdit = () => {
 
   React.useEffect(() => {
     loadProfileDetails();
+    loadReviewDetails();
   }, []);
+
+  React.useEffect(() => {
+    providerRatingHandler();
+    customerRatingHandler();
+  }, [ratingData]);
 
   React.useEffect(() => {
     const value = globalState.EducationType;
@@ -407,6 +421,39 @@ const UserProfileEdit = () => {
         console.log(err);
       });
   };
+
+  const loadReviewDetails = () => {
+    let userId = globalState.accountId;
+    axios
+      .get(`${appConfig.apiBaseUrl}ratings/users/${userId}`)
+      .then((res) => {
+        console.log("ASdfasdfsdaf", res);
+        setRatingData(res.data.value);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const providerRatingHandler = () => {
+    const providerReview = ratingData.filter(
+      (item) =>
+        item["cob_ratingtype@OData.Community.Display.V1.FormattedValue"] ===
+        "Provider Review of Customer"
+    );
+    setproviderReviewCustomer(providerReview);
+  };
+
+  const customerRatingHandler = () => {
+    const customerReview = ratingData.filter(
+      (item) =>
+        item["cob_ratingtype@OData.Community.Display.V1.FormattedValue"] ===
+        "Customer Review of Provider"
+    );
+    setcustomerReviewProvider(customerReview);
+  };
+
+  console.log("customerReviewProvider", customerReviewProvider);
 
   const photoUpload = (e) => {
     e.preventDefault();
@@ -719,7 +766,7 @@ const UserProfileEdit = () => {
           <TabList>
             <Item key="Edu">Educations</Item>
             <Item key="Cert">Certifications</Item>
-            <Item key="Customer_rating">Customer Rating</Item>
+            <Item key="customer_rating">Customer Rating</Item>
             <Item key="provider_rating">Provider Rating</Item>
           </TabList>
 
@@ -780,33 +827,22 @@ const UserProfileEdit = () => {
                 </TableBody>
               </TableView>
             </Item>
-            <Item key="coustomer_rating">
-              <TableView>
-                <TableHeader>
-                  <Column>Provider</Column>
-                  <Column align="end">Type</Column>
-                </TableHeader>
-                <TableBody>
-                  <Row>
-                    <Cell></Cell>
-                    <Cell>{}</Cell>
-                  </Row>
-                </TableBody>
-              </TableView>
+            <Item key="customer_rating">
+              {customerReviewProvider.map((item) => (
+                <ReviewDisplay RateVAlue={item.cob_rating}>
+                  <h3>{item.cob_name}</h3>
+                  {item.cob_description}
+                </ReviewDisplay>
+              ))}
             </Item>
             <Item key="provider_rating">
-              <TableView>
-                <TableHeader>
-                  <Column>provider</Column>
-                  <Column align="end">Type</Column>
-                </TableHeader>
-                <TableBody>
-                  <Row>
-                    <Cell></Cell>
-                    <Cell>{}</Cell>
-                  </Row>
-                </TableBody>
-              </TableView>
+              {providerReviewCustomer.map((item) => (
+                <ReviewDisplay RateVAlue={item.cob_rating}>
+                  <h3>{item.cob_name}</h3>
+
+                  {item.cob_description}
+                </ReviewDisplay>
+              ))}
             </Item>
           </TabPanels>
         </Tabs>

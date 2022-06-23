@@ -105,7 +105,7 @@ function NewBountyBase(props) {
   }, [_state.authUser]);
 
   React.useEffect(() => {
-    if(status !== "initializing" && status !== "connected"){
+    if(status !== "initializing" && status !== "connected" && status !== "connecting"){
       setShowMessage(true);
       setShowBountyError(true)
     }
