@@ -249,6 +249,17 @@ const ModalWrapper = styled.div`
   margin-bottom: 12px;
 `;
 
+const ReviewWrapper = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-row-gap: 16px;
+  grid-column-gap: 16px;
+  margin: 16px;
+  @media (max-width: 576px) {
+    grid-template-columns: repeat(1, 1fr);
+  }
+`;
+
 const Modal = ({
   onMessageHandler,
   register,
@@ -711,7 +722,7 @@ const BountyDetails = () => {
       });
   };
 
-  const uploadFiles = async () => {};
+  const uploadFiles = async () => { };
 
   const filesSelected = (e) => {
     debugger;
@@ -811,8 +822,8 @@ const BountyDetails = () => {
         getstatus: true,
       }));
     }
-    }
-  
+  }
+
 
   const statusHandler = async () => {
     let contract = new ethers.Contract(
@@ -1502,7 +1513,7 @@ const BountyDetails = () => {
   const RequestToWorkContainer = bountyDetails.reqToWork.map(
     (reqToWork, index) =>
       bountyDetails.reqToWork.length > 0 &&
-      bountyDetails.customerId == globalState.accountId ? (
+        bountyDetails.customerId == globalState.accountId ? (
         <RequestToWork>
           <h3>Request to work</h3>
           <RequestToWorkIn>
@@ -1663,8 +1674,7 @@ const BountyDetails = () => {
               :{" "}
               {bountyDetails.topics?.map(
                 (topic, key) =>
-                  `${topic.topicName}${
-                    key !== bountyDetails.topics.length - 1 ? "," : ""
+                  `${topic.topicName}${key !== bountyDetails.topics.length - 1 ? "," : ""
                   } `
               )}
             </Heading>
@@ -1827,64 +1837,64 @@ const BountyDetails = () => {
         <FileWrapper>
           {showurl
             ? ImageBloburls.map((blob, key) => (
-                <ItemWrapper>
-                  <FaFileAlt />
-                  <Link>
-                    <a href={`${blob.url}`} target="_blank">
-                      {blob.name}
-                    </a>
-                  </Link>
-                </ItemWrapper>
-              ))
+              <ItemWrapper>
+                <FaFileAlt />
+                <Link>
+                  <a href={`${blob.url}`} target="_blank">
+                    {blob.name}
+                  </a>
+                </Link>
+              </ItemWrapper>
+            ))
             : null}
         </FileWrapper>
       </div>
-
-      {bountyDetails.bountyStatus === "Completed" && reviewconditon && (
-        <ItemWrapperRating>
-          <Reviews
-            ratingChangeHandler={ratingChanged}
-            ratingNameHandler={setRatingName}
-            ratingDiscriptionHandler={setRatingDiscriptionValue}
-            bountyRatingHandler={bountRatingHandler}
-            loader={ratingLoader}
-            bountyDetails={bountyDetails}
-          />
-        </ItemWrapperRating>
-      )}
-
-      {bountyDetails.bountyStatus === "Completed" &&
-        (customerRateDiscription || providerRateDiscription) && (
-          <ItemWrapperReview>
-            {customerRateDiscription && (
-              <ReviewDisplay
-                profileViewHandler={ProfileViewer}
-                heading={"Customer Review"}
-                imageUrl={imageUrl}
-                userName={userName}
-                RateVAlue={customerRateValue}
-              >
-                {customerRateDiscription}
-              </ReviewDisplay>
-            )}{" "}
-            {providerRateDiscription && (
-              <ReviewDisplay
-                profileViewHandler={providerProfileViewer}
-                heading={"Provider Review"}
-                imageUrl={userProviderDetails.profilePicture}
-                userName={
-                  userProviderDetails.first_name +
-                  " " +
-                  userProviderDetails.last_name
-                }
-                RateVAlue={providerRateVAlue}
-              >
-                {providerRateDiscription}
-              </ReviewDisplay>
-            )}
-          </ItemWrapperReview>
+      <ReviewWrapper>
+        {bountyDetails.bountyStatus === "Completed" && reviewconditon && (
+          <ItemWrapperRating>
+            <Reviews
+              ratingChangeHandler={ratingChanged}
+              ratingNameHandler={setRatingName}
+              ratingDiscriptionHandler={setRatingDiscriptionValue}
+              bountyRatingHandler={bountRatingHandler}
+              loader={ratingLoader}
+              bountyDetails={bountyDetails}
+            />
+          </ItemWrapperRating>
         )}
 
+        {bountyDetails.bountyStatus === "Completed" &&
+          (customerRateDiscription || providerRateDiscription) && (
+            <ItemWrapperReview>
+              {customerRateDiscription && (
+                <ReviewDisplay
+                  profileViewHandler={ProfileViewer}
+                  heading={"Customer Review"}
+                  imageUrl={imageUrl}
+                  userName={userName}
+                  RateVAlue={customerRateValue}
+                >
+                  {customerRateDiscription}
+                </ReviewDisplay>
+              )}{" "}
+              {providerRateDiscription && (
+                <ReviewDisplay
+                  profileViewHandler={providerProfileViewer}
+                  heading={"Provider Review"}
+                  imageUrl={userProviderDetails.profilePicture}
+                  userName={
+                    userProviderDetails.first_name +
+                    " " +
+                    userProviderDetails.last_name
+                  }
+                  RateVAlue={providerRateVAlue}
+                >
+                  {providerRateDiscription}
+                </ReviewDisplay>
+              )}
+            </ItemWrapperReview>
+          )}
+      </ReviewWrapper>
       {ShowSuccessModal}
 
       {ShowErrorModal}

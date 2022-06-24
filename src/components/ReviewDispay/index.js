@@ -9,7 +9,7 @@ const Wrapper = styled.div`
   background-color: #222222;
   border-radius: 10px;
   padding: 20px;
-  width: 50%;
+  width: 100%;
   @media (max-width: 992px) {
     width: 100%;
     margin: 10px 0;
@@ -38,7 +38,7 @@ const ImageWrapperReview = styled.div`
 const ReviewDisplay = (props) => {
   return (
     <Wrapper>
-      <h4> {props.heading}</h4>
+      {props.heading && <h4>{props.heading}</h4>}
       {props.imageUrl && (
         <ImageWrapperReview onClick={props.profileViewHandler}>
           <img src={props.imageUrl} alt="profile" />

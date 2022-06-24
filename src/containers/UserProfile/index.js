@@ -112,6 +112,17 @@ const RatingWrapper = styled.div`
   }
 `;
 
+const ReviewWrapper = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-row-gap: 16px;
+  grid-column-gap: 16px;
+  margin: 16px;
+  @media (max-width: 576px) {
+    grid-template-columns: repeat(1, 1fr);
+  }
+`;
+
 const Profile = ({
   onSubmit,
   src,
@@ -793,7 +804,7 @@ const UserProfileEdit = () => {
                       <Cell>
                         {
                           item[
-                            "cob_educationtype@OData.Community.Display.V1.FormattedValue"
+                          "cob_educationtype@OData.Community.Display.V1.FormattedValue"
                           ]
                         }
                       </Cell>
@@ -821,28 +832,32 @@ const UserProfileEdit = () => {
                   {state.certifications?.map((item) => (
                     <Row>
                       <Cell>{item.cob_name}</Cell>
-                      <Cell>{}</Cell>
+                      <Cell>{ }</Cell>
                     </Row>
                   ))}
                 </TableBody>
               </TableView>
             </Item>
             <Item key="customer_rating">
-              {customerReviewProvider.map((item) => (
-                <ReviewDisplay RateVAlue={item.cob_rating}>
-                  <h3>{item.cob_name}</h3>
-                  {item.cob_description}
-                </ReviewDisplay>
-              ))}
+              <ReviewWrapper>
+                {customerReviewProvider.map((item) => (
+                  <ReviewDisplay RateVAlue={item.cob_rating}>
+                    <h3>{item.cob_name}</h3>
+                    {item.cob_description}
+                  </ReviewDisplay>
+                ))}
+              </ReviewWrapper>
             </Item>
             <Item key="provider_rating">
-              {providerReviewCustomer.map((item) => (
-                <ReviewDisplay RateVAlue={item.cob_rating}>
-                  <h3>{item.cob_name}</h3>
+              <ReviewWrapper>
+                {providerReviewCustomer.map((item) => (
+                  <ReviewDisplay RateVAlue={item.cob_rating}>
+                    <h3>{item.cob_name}</h3>
 
-                  {item.cob_description}
-                </ReviewDisplay>
-              ))}
+                    {item.cob_description}
+                  </ReviewDisplay>
+                ))}
+              </ReviewWrapper>
             </Item>
           </TabPanels>
         </Tabs>
@@ -858,8 +873,8 @@ const UserProfileEdit = () => {
           {message.EducationType
             ? "Education Added Successfully"
             : message.Certification
-            ? "Certification Added Successfully"
-            : "Profile saved successfully."}
+              ? "Certification Added Successfully"
+              : "Profile saved successfully."}
         </AlertDialog>
       </DialogTrigger>
       <DialogTrigger isOpen={showBountyError}>
