@@ -468,7 +468,7 @@ const NavBarBase = ({ firebase, navigate }) => {
                   </ComboBox>
                 </SearchFilter>
                 <SearchInput>
-                  <SearchField onChange={searchCharecterHandler} />
+                  <SearchField onSubmit={searchsubmitHandler} onChange={searchCharecterHandler} />
                 </SearchInput>
                 <SearchButton>
                   <Button onPress={searchsubmitHandler}>

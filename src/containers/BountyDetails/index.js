@@ -722,7 +722,7 @@ const BountyDetails = () => {
       });
   };
 
-  const uploadFiles = async () => { };
+  const uploadFiles = async () => {};
 
   const filesSelected = (e) => {
     debugger;
@@ -1513,7 +1513,7 @@ const BountyDetails = () => {
   const RequestToWorkContainer = bountyDetails.reqToWork.map(
     (reqToWork, index) =>
       bountyDetails.reqToWork.length > 0 &&
-        bountyDetails.customerId == globalState.accountId ? (
+      bountyDetails.customerId == globalState.accountId ? (
         <RequestToWork>
           <h3>Request to work</h3>
           <RequestToWorkIn>
@@ -1674,7 +1674,8 @@ const BountyDetails = () => {
               :{" "}
               {bountyDetails.topics?.map(
                 (topic, key) =>
-                  `${topic.topicName}${key !== bountyDetails.topics.length - 1 ? "," : ""
+                  `${topic.topicName}${
+                    key !== bountyDetails.topics.length - 1 ? "," : ""
                   } `
               )}
             </Heading>
@@ -1837,15 +1838,15 @@ const BountyDetails = () => {
         <FileWrapper>
           {showurl
             ? ImageBloburls.map((blob, key) => (
-              <ItemWrapper>
-                <FaFileAlt />
-                <Link>
-                  <a href={`${blob.url}`} target="_blank">
-                    {blob.name}
-                  </a>
-                </Link>
-              </ItemWrapper>
-            ))
+                <ItemWrapper>
+                  <FaFileAlt />
+                  <Link>
+                    <a href={`${blob.url}`} target="_blank">
+                      {blob.name}
+                    </a>
+                  </Link>
+                </ItemWrapper>
+              ))
             : null}
         </FileWrapper>
       </div>

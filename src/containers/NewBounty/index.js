@@ -97,6 +97,7 @@ function NewBountyBase(props) {
   const [network, setNetwork] = React.useState();
   const [chainValue, setChainValue] = React.useState();
   const [showMessage, setShowMessage] = React.useState(false);
+  const [createNewBountyError, setCreateNewBountyError] = React.useState('')
 
   React.useEffect(() => {
     if (_state.authUser && _state.authUser.uid) {
@@ -211,11 +212,12 @@ function NewBountyBase(props) {
         handleSubmitNewBounty(result);
       }
     } catch (error) {
-      console.log(error);
+      console.log("error",error.error.message);
       setState((prevState) => ({
         ...prevState,
         loading: false,
       }));
+      setCreateNewBountyError(error.error.message);
       setShowBountyError(true);
     }
   };
@@ -448,7 +450,7 @@ function NewBountyBase(props) {
             label="Requirements"
           />
           {/* <Button variant="cta">Create</Button>           */}
-          <TextField value={initalAmount} onChange={initialAmountOnChange}>
+          <TextField label='Bounty Amount' value={initalAmount} onChange={initialAmountOnChange}>
             Initial Amount
           </TextField>
           <Button onPress={() => modalConfirmHandler()} variant="primary">
@@ -475,7 +477,7 @@ function NewBountyBase(props) {
           primaryActionLabel="OK"
           onPrimaryAction={() => setShowBountyError(false)}
         >
-          {showMessage ? "please connect to the network" : "Insufficient fund for intrisinc transaction. Please try later."}
+          {showMessage ? "please connect to the network" : `${createNewBountyError}`}
         </AlertDialog>
       </DialogTrigger>
       <DialogTrigger isOpen={showSuccess}>
