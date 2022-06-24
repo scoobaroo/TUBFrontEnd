@@ -38,6 +38,7 @@
     "react-dom": "^18.0.0",
     "react-icons": "^4.3.1",
     "react-idle-timer": "^5.2.0",
+    "react-rating-stars-component": "^2.2.0",
     "react-router-dom": "^6.2.2",
     "react-toastify": "^8.2.0",
     "recompose": "^0.30.0",
