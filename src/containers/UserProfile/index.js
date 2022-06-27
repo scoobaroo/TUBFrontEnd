@@ -40,6 +40,7 @@ import { compose } from "recompose";
 import withAuthorization from "../../session/withAuthorization";
 import { AppContext } from "../../context";
 import ReviewDisplay from "../../components/ReviewDispay";
+import { id } from "ethers/lib/utils";
 
 const ImgUpload = ({ onChange, src }) => (
   <label className="custom-file-upload fas">
@@ -134,6 +135,7 @@ const Profile = ({
   last_name,
   customerRate,
   providerRate,
+  edit,
 }) => (
   <CardWrapper>
     <div className="card">
@@ -152,7 +154,7 @@ const Profile = ({
         />
       </RatingWrapper>
       <RatingWrapper>
-        <h4>Provieder Rating</h4>:
+        <h4>Provider Rating</h4>:
         <ReactStars
           count={5}
           edit={false}
@@ -203,14 +205,16 @@ const Profile = ({
             <span style={{ color: "#766e6e" }}>User email: </span>
             {email}
           </Heading>
-          <Button
-            type="submit"
-            variant="cta"
-            marginTop={"15px"}
-            marginStart={"auto"}
-          >
-            Edit Profile
-          </Button>
+          {edit && (
+            <Button
+              type="submit"
+              variant="cta"
+              marginTop={"15px"}
+              marginStart={"auto"}
+            >
+              Edit Profile
+            </Button>
+          )}
         </div>
       </form>
     </div>
@@ -329,7 +333,7 @@ const Edit = ({ onSubmit, children, EditCancel }) => (
   </CardWrapper>
 );
 
-const UserProfileEdit = () => {
+const UserProfileEdit = (props) => {
   const InitialState = {
     file: "",
     imagePreviewUrl:
@@ -345,6 +349,7 @@ const UserProfileEdit = () => {
     certifications: [],
     customerRate: 0,
     providerRate: 0,
+    edit: true,
   };
 
   const InitialEducationState = {
@@ -384,15 +389,21 @@ const UserProfileEdit = () => {
     ...InitialCertificationState,
   });
   const [showModal, setShowModal] = React.useState(false);
+  const editable = props.location.state?.edit;
+  const userId = props.location.state?.id
+    ? props.location.state?.id
+    : globalState.accountId;
 
   React.useEffect(() => {
     loadProfileDetails();
     loadReviewDetails();
-  }, []);
+  }, [props.location.state.id]);
 
   React.useEffect(() => {
-    providerRatingHandler();
-    customerRatingHandler();
+    if(ratingData){
+      providerRatingHandler();
+      customerRatingHandler();
+    }
   }, [ratingData]);
 
   React.useEffect(() => {
@@ -401,9 +412,11 @@ const UserProfileEdit = () => {
   }, []);
 
   const loadProfileDetails = () => {
+    setLoader(true);
     axios
-      .get(`${appConfig.apiBaseUrl}users/accountId/${globalState.accountId}`)
+      .get(`${appConfig.apiBaseUrl}users/accountId/${userId}`)
       .then((res) => {
+        setLoader(false);
         let imageUrl;
         if (res.data.cob_profilepicture !== "") {
           const string2 = res.data.cob_profilepicture;
@@ -426,15 +439,16 @@ const UserProfileEdit = () => {
           certifications: res.data.cob_Certification_providerid_Account,
           customerRate: res.data.cob_customerrating,
           providerRate: res.data.cob_providerrating,
+          edit: editable,
         }));
       })
       .catch((err) => {
+        setLoader(false);
         console.log(err);
       });
   };
 
   const loadReviewDetails = () => {
-    let userId = globalState.accountId;
     axios
       .get(`${appConfig.apiBaseUrl}ratings/users/${userId}`)
       .then((res) => {
@@ -447,10 +461,11 @@ const UserProfileEdit = () => {
   };
 
   const providerRatingHandler = () => {
+    console.log("ratingData", ratingData);
     const providerReview = ratingData.filter(
       (item) =>
         item["cob_ratingtype@OData.Community.Display.V1.FormattedValue"] ===
-        "Provider Review of Customer"
+          "Customer Review of Provider" && item._cob_providerid_value === userId
     );
     setproviderReviewCustomer(providerReview);
   };
@@ -459,7 +474,7 @@ const UserProfileEdit = () => {
     const customerReview = ratingData.filter(
       (item) =>
         item["cob_ratingtype@OData.Community.Display.V1.FormattedValue"] ===
-        "Customer Review of Provider"
+          "Provider Review of Customer" && item._cob_customerid_value === userId
     );
     setcustomerReviewProvider(customerReview);
   };
@@ -575,6 +590,7 @@ const UserProfileEdit = () => {
     last_name,
     customerRate,
     providerRate,
+    edit,
   } = state;
 
   if (state.email === "" || loader) {
@@ -770,6 +786,7 @@ const UserProfileEdit = () => {
           email={email}
           customerRate={customerRate}
           providerRate={providerRate}
+          edit={edit}
         />
       )}
       <Well margin="15px">
@@ -804,7 +821,7 @@ const UserProfileEdit = () => {
                       <Cell>
                         {
                           item[
-                          "cob_educationtype@OData.Community.Display.V1.FormattedValue"
+                            "cob_educationtype@OData.Community.Display.V1.FormattedValue"
                           ]
                         }
                       </Cell>
@@ -832,7 +849,7 @@ const UserProfileEdit = () => {
                   {state.certifications?.map((item) => (
                     <Row>
                       <Cell>{item.cob_name}</Cell>
-                      <Cell>{ }</Cell>
+                      <Cell>{}</Cell>
                     </Row>
                   ))}
                 </TableBody>
@@ -873,8 +890,8 @@ const UserProfileEdit = () => {
           {message.EducationType
             ? "Education Added Successfully"
             : message.Certification
-              ? "Certification Added Successfully"
-              : "Profile saved successfully."}
+            ? "Certification Added Successfully"
+            : "Profile saved successfully."}
         </AlertDialog>
       </DialogTrigger>
       <DialogTrigger isOpen={showBountyError}>

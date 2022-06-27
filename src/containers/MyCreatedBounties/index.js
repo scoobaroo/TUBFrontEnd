@@ -182,16 +182,12 @@ const requestToworkDetails = {
   email: "",
   profilePicture: "",
   message: "",
-  Id: "",
-  profiderId: "",
-  linkedIn: "",
-  github: "",
-  telephone: "",
-  education: [],
-  certification: [],
+  id: "",
+  providerId: "",
   cob_providerId: "",
   cob_providerId2: "",
   bountyId: "",
+  customerId: "",
 };
 
 const BountiesBase = ({ firebase, navigate }) => {
@@ -297,19 +293,14 @@ const BountiesBase = ({ firebase, navigate }) => {
                     email: response.data.emailaddress1,
                     profilePicture: response.data.cob_profilepicture,
                     message: value.cob_message,
-                    Id: bounty["@odata.etag"],
-                    profiderId: response.data.accountid,
-                    linkedIn: response.data.cob_linkedinurl,
-                    github: response.data.cob_githuburl,
-                    telephone: response.data.telephone1,
+                    id: bounty["@odata.etag"],
+                    providerId: response.data.accountid,
                     requestToWorkdId: value.cob_requesttoworkid,
-                    certification:
-                      response.data.cob_Certification_providerid_Account,
-                    education: response.data.cob_Education_providerid_Account,
                     cob_providerId: bounty._cob_providerid_value,
                     cob_providerId2: value._cob_providerid_value,
                     cob_walletaddress: value.cob_walletaddress,
                     bountyId: bounty.cob_bountyid,
+                    customerId: providerId,
                   },
                 ]);
               }
@@ -324,27 +315,12 @@ const BountiesBase = ({ firebase, navigate }) => {
   };
 
   const ProfileViewer = (
-    first_name,
-    last_name,
-    email,
-    imageUr,
-    linkedInl,
-    github,
-    telephone,
-    certification,
-    education
+    customerId
   ) => {
-    navigate("/requesttoworkprofile", {
+    navigate("/userprofile", {
       state: {
-        firstName: first_name,
-        lastName: last_name,
-        Email: email,
-        Url: imageUr,
-        linkedIn: linkedInl,
-        Github: github,
-        Telephone: telephone,
-        Certification: certification,
-        Education: education,
+        edit: false,
+        id: customerId,
       },
     });
   };
@@ -586,7 +562,7 @@ const BountiesBase = ({ firebase, navigate }) => {
           const string2 = value.profilePicture;
           const string1 = "data:image/png;base64,";
           imageUrl = string1.concat(string2);
-          if (value.Id === bounty["@odata.etag"]) {
+          if (value.id === bounty["@odata.etag"]) {
             return (
               <RequestToWork key={index}>
                 <h3>Request to work</h3>
@@ -595,15 +571,7 @@ const BountiesBase = ({ firebase, navigate }) => {
                     <img
                       onClick={() =>
                         ProfileViewer(
-                          value.first_name,
-                          value.last_name,
-                          value.email,
-                          imageUrl,
-                          value.linkedIn,
-                          value.github,
-                          value.telephone,
-                          value.certification,
-                          value.education
+                          value.providerId
                         )
                       }
                       src={imageUrl}

@@ -168,17 +168,10 @@ const SearchView = (props) => {
         const string2 = response.data.cob_profilepicture;
         const string1 = "data:image/png;base64,";
         imageUrl = string1.concat(string2);
-        props.navigate("/requesttoworkprofile", {
+        props.navigate("/userprofile", {
           state: {
-            firstName: response.data.cob_firstname,
-            lastName: response.data.cob_lastname,
-            Email: response.data.emailaddress1,
-            Url: imageUrl,
-            linkedIn: response.data.cob_linkedinurl,
-            Github: response.data.cob_githuburl,
-            Telephone: response.data.telephone1,
-            Certification: response.data.cob_Certification_providerid_Account,
-            Education: response.data.cob_Education_providerid_Account,
+            edit: false,
+            id: id,
           },
         });
       })
@@ -190,7 +183,7 @@ const SearchView = (props) => {
   const goToBounty = (bounty) => {
     props.navigate("/bountydetails", {
       state: {
-        BountyId: bounty
+        BountyId: bounty,
       },
     });
   };

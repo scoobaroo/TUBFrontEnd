@@ -113,7 +113,6 @@ const ItemWrapperRating = styled.div`
   padding: 20px;
   border-radius: 10px;
   background: #222222;
-  width: 45%;
   margin-bottom: 10px;
   @media (max-width: 768px) {
     width: 100%;
@@ -380,12 +379,10 @@ const BountyDetails = () => {
     last_name: "",
     email: "",
     profilePicture: "",
-    linkedIn: "",
-    github: "",
-    telephone: "",
-    education: [],
-    certification: [],
     profilePicture: "",
+    cob_providerrating: 0,
+    cob_customerrating: 0,
+    id: "",
   };
 
   const reqtoWorkProvider = {
@@ -394,12 +391,11 @@ const BountyDetails = () => {
     email: "",
     profilePicture: "",
     linkedIn: "",
-    github: "",
-    telephone: "",
-    education: [],
-    certification: [],
     profilePicture: "",
     message: "",
+    cob_providerrating: 0,
+    cob_customerrating: 0,
+    id: "",
   };
 
   const providerDetails = {
@@ -407,12 +403,10 @@ const BountyDetails = () => {
     last_name: "",
     email: "",
     profilePicture: "",
-    linkedIn: "",
-    github: "",
-    telephone: "",
-    education: [],
-    certification: [],
     profilePicture: "",
+    cob_providerrating: 0,
+    cob_customerrating: 0,
+    id: "",
   };
 
   const location = useLocation();
@@ -596,11 +590,9 @@ const BountyDetails = () => {
             last_name: res.data.cob_lastname,
             email: res.data.emailaddress1,
             profilePicture: imageUrl,
-            linkedIn: res.data.cob_linkedinurl,
-            github: res.data.cob_githuburl,
-            telephone: res.data.telephone1,
-            education: res.data.cob_Education_providerid_Account,
-            certification: res.data.cob_Certification_providerid_Account,
+            cob_customerrating: res.data.cob_customerrating,
+            cob_providerrating: res.data.cob_providerrating,
+            id: bountyDetails.customerId,
           }));
         } else {
           imageUrl =
@@ -628,11 +620,9 @@ const BountyDetails = () => {
             last_name: res.data.cob_lastname,
             email: res.data.emailaddress1,
             profilePicture: imageUrl,
-            linkedIn: res.data.cob_linkedinurl,
-            github: res.data.cob_githuburl,
-            telephone: res.data.telephone1,
-            education: res.data.cob_Education_providerid_Account,
-            certification: res.data.cob_Certification_providerid_Account,
+            cob_customerrating: res.data.cob_customerrating,
+            cob_providerrating: res.data.cob_providerrating,
+            id: bountyDetails.providerId,
           }));
         } else {
           imageUrl =
@@ -662,12 +652,10 @@ const BountyDetails = () => {
             last_name: res.data.cob_lastname,
             email: res.data.emailaddress1,
             profilePicture: imageUrl,
-            linkedIn: res.data.cob_linkedinurl,
-            github: res.data.cob_githuburl,
-            telephone: res.data.telephone1,
-            education: res.data.cob_Education_providerid_Account,
-            certification: res.data.cob_Certification_providerid_Account,
             message: res.data.cob_message,
+            cob_customerrating: res.data.cob_customerrating,
+            cob_providerrating: res.data.cob_providerrating,
+            id: id,
           }));
         } else {
           imageUrl =
@@ -725,7 +713,6 @@ const BountyDetails = () => {
   const uploadFiles = async () => {};
 
   const filesSelected = (e) => {
-    debugger;
     setBountyDetails((prevState) => ({
       ...prevState,
       files: e.currentTarget.files,
@@ -822,8 +809,7 @@ const BountyDetails = () => {
         getstatus: true,
       }));
     }
-  }
-
+  };
 
   const statusHandler = async () => {
     let contract = new ethers.Contract(
@@ -1111,49 +1097,28 @@ const BountyDetails = () => {
   };
 
   const ProfileViewer = () => {
-    navigate("/requesttoworkprofile", {
+    navigate("/userprofile", {
       state: {
-        firstName: userDetatils.first_name,
-        lastName: userDetatils.last_name,
-        Email: userDetatils.email,
-        Url: userDetatils.profilePicture,
-        linkedIn: userDetatils.linkedIn,
-        Github: userDetatils.github,
-        Telephone: userDetatils.telephone,
-        Certification: userDetatils.certification,
-        Education: userDetatils.education,
+        id: userDetatils.id,
+        edit: false,
       },
     });
   };
 
   const providerProfileViewer = () => {
-    navigate("/requesttoworkprofile", {
+    navigate("/userprofile", {
       state: {
-        firstName: userProviderDetails.first_name,
-        lastName: userProviderDetails.last_name,
-        Email: userProviderDetails.email,
-        Url: userProviderDetails.profilePicture,
-        linkedIn: userProviderDetails.linkedIn,
-        Github: userProviderDetails.github,
-        Telephone: userProviderDetails.telephone,
-        Certification: userProviderDetails.certification,
-        Education: userProviderDetails.education,
+        id: userProviderDetails.id,
+        edit: false,
       },
     });
   };
 
   const reqproviderProfileViewer = () => {
-    navigate("/requesttoworkprofile", {
+    navigate("/userprofile", {
       state: {
-        firstName: reqToWorkPovider.first_name,
-        lastName: reqToWorkPovider.last_name,
-        Email: reqToWorkPovider.email,
-        Url: reqToWorkPovider.profilePicture,
-        linkedIn: reqToWorkPovider.linkedIn,
-        Github: reqToWorkPovider.github,
-        Telephone: reqToWorkPovider.telephone,
-        Certification: reqToWorkPovider.certification,
-        Education: reqToWorkPovider.education,
+        id: reqToWorkPovider.id,
+        edit: false,
       },
     });
   };

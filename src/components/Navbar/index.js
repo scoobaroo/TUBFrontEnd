@@ -388,7 +388,7 @@ const NavBarBase = ({ firebase, navigate }) => {
   const currentUser = firebase.auth?.currentUser;
   const isLoggedIn = !!currentUser;
   const { theme } = state;
-  const userProfileHandler = () => navigate("/userprofile");
+  const userProfileHandler = () => navigate("/userprofile",{state:{id:null}});
   const handleSignIn = () => navigate("/sign-in");
   const handleSignOut = () => {
     firebase.signOut();
@@ -546,7 +546,7 @@ const NavBarBase = ({ firebase, navigate }) => {
               </ComboBox>
             </SearchFilter>
             <SearchInput>
-              <SearchField onChange={searchCharecterHandler} />
+              <SearchField onSubmit={searchsubmitHandler}  onChange={searchCharecterHandler} />
             </SearchInput>
             <SearchButton>
               <Button onPress={searchsubmitHandler}>
