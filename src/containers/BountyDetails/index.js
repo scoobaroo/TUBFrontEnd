@@ -354,6 +354,7 @@ const BountyDetails = () => {
     rating: [],
     reqToWork: [],
     ERC20Chain: "",
+    attachmentCount: 0,
   };
   const intialMessage = {
     cancel: false,
@@ -493,7 +494,6 @@ const BountyDetails = () => {
   React.useEffect(() => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     setProvider(provider);
-    getBlobsInContainer(containerClient);
     setRequestToWorkHandler((prevState) => ({
       ...prevState,
       ERC20Chain: "COB_erc20",
@@ -506,8 +506,14 @@ const BountyDetails = () => {
   }, []);
 
   React.useEffect(() => {
-    loadProfileDetails();
-    loadProviderDetails();
+    if(bountyDetails.attachmentCount !== 0){
+      getBlobsInContainer(containerClient);
+    }
+  }, [bountyDetails.attachmentCount]);
+
+  React.useEffect(() => {
+    if(bountyDetails.customerId) loadProfileDetails();
+    if(bountyDetails.providerId) loadProviderDetails();
     setErc20chaninNameValue();
   }, [bountyDetails.customerId]);
 
@@ -543,8 +549,7 @@ const BountyDetails = () => {
       bountyDetails.reqToWork.map((item) => {
         id = item.providerId;
       });
-
-      loadReqWorkProviderDatails(id);
+     loadReqWorkProviderDatails(id);
     }
   }, [bountyDetails.reqToWork]);
 
@@ -692,6 +697,7 @@ const BountyDetails = () => {
           rating: response.data?.Ratings,
           reqToWork: response.data?.RequestToWorks,
           ERC20Chain: response.data?.ERC20Chain,
+          attachmentCount: response.data?.AttachmentCount,
         }));
         status = response.data?.BountyStatus;
         custemerId = response.data?.CustomerId?.Id;
@@ -943,6 +949,7 @@ const BountyDetails = () => {
     }));
     setShowSuccess(true);
     setImageLoader(false);
+    attachmentCountHandler();
     // get list of blobs in container
     return getBlobsInContainer(containerClient);
   };
@@ -1032,6 +1039,21 @@ const BountyDetails = () => {
       ERC20Chain: "COB_erc20",
     }));
   };
+
+  const attachmentCountHandler = () => {
+    console.log("entered");
+    let data = {
+      AttachmentCount : bountyDetails.attachmentCount + 1,
+      bountyStatus : bountyDetails.bountyStatus,
+    };
+    axios.patch(`${appConfig.apiBaseUrl}bounties/${bountyId}`, data)
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((error) => {
+      console.log(error);
+    })
+  }
 
   const metaMaskAddresHandler = () => {
     setRequestToWorkHandler((prevState) => ({
@@ -1479,7 +1501,7 @@ const BountyDetails = () => {
     (reqToWork, index) =>
       bountyDetails.reqToWork.length > 0 &&
       bountyDetails.customerId == globalState.accountId ? (
-        <RequestToWork>
+        <RequestToWork key={index}>
           <h3>Request to work</h3>
           <RequestToWorkIn>
             <img
@@ -1802,8 +1824,8 @@ const BountyDetails = () => {
         <h2>#Related Files</h2>
         <FileWrapper>
           {showurl
-            ? ImageBloburls.map((blob, key) => (
-                <ItemWrapper>
+            ? ImageBloburls.map((blob, index) => (
+                <ItemWrapper key={index}>
                   <FaFileAlt />
                   <Link>
                     <a href={`${blob.url}`} target="_blank">

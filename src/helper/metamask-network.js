@@ -32,7 +32,7 @@ const Network = [
   {
     id: 7,
     hex: "0x61",
-    name: "BSC Test-net",
+    name: "Binance Smart Chain - Testnet",
   },
 ];
 

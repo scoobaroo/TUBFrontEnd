@@ -44,6 +44,13 @@ const LoadingWrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 9999;
 `;
 
 const BountyFormWrapper = styled.div`
@@ -51,6 +58,18 @@ const BountyFormWrapper = styled.div`
   grid-template-columns: repeat(1, 1fr);
   grid-row-gap: 16px;
   margin: 16px;
+  }
+`;
+
+const FormWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  svg {
+    padding: 0px !important;
+  }
+  button {
+    margin-top: 16px;
+  }
 `;
 
 const TopicsWrapper = styled.div`
@@ -78,13 +97,13 @@ function NewBountyBase(props) {
   const [topics, setTopics] = React.useState([]);
   const [selectedTopics, setSelectedTopics] = React.useState([]);
   const [description, setDescription] = React.useState("");
-  const [requirements, setRequirements] = React.useState();
+  const [requirements, setRequirements] = React.useState("");
   const [authUserId, setAuthUserId] = React.useState(null);
   const [accountId, setAccountId] = React.useState(null);
   const [bountyAmount, setBountyAmount] = React.useState();
   const [contract, setContract] = React.useState();
   const [amount, setAmount] = React.useState();
-  const [initalAmount, setInitialAmount] = React.useState();
+  const [initalAmount, setInitialAmount] = React.useState('');
   const [provider, setProvider] = React.useState();
   const [smartContractAddress, setSmartContractAddress] = React.useState();
   const [showError, setShowError] = React.useState(false);
@@ -97,7 +116,7 @@ function NewBountyBase(props) {
   const [network, setNetwork] = React.useState();
   const [chainValue, setChainValue] = React.useState();
   const [showMessage, setShowMessage] = React.useState(false);
-  const [createNewBountyError, setCreateNewBountyError] = React.useState('')
+  const [createNewBountyError, setCreateNewBountyError] = React.useState("");
 
   React.useEffect(() => {
     if (_state.authUser && _state.authUser.uid) {
@@ -106,9 +125,13 @@ function NewBountyBase(props) {
   }, [_state.authUser]);
 
   React.useEffect(() => {
-    if(status !== "initializing" && status !== "connected" && status !== "connecting"){
+    if (
+      status !== "initializing" &&
+      status !== "connected" &&
+      status !== "connecting"
+    ) {
       setShowMessage(true);
-      setShowBountyError(true)
+      setShowBountyError(true);
     }
   }, [status]);
 
@@ -159,6 +182,11 @@ function NewBountyBase(props) {
     ...new Map(arr.map((item) => [item[key], item])).values(),
   ];
 
+  const isValid = React.useMemo(
+    () => /^-{0,1}\d*\.{0,1}\d+$/.test(initalAmount),
+    [initalAmount]
+  );
+
   const getCategories = () => {
     if (_state.categorys) {
       setState((prevState) => ({
@@ -195,6 +223,7 @@ function NewBountyBase(props) {
     value?.filter((item) => {
       subString = item.Label.UserLocalizedLabel.Label;
       if (mainString.includes(`${subString}`)) {
+        console.log("testing iddddd",item.Value);
         setChainValue(item.Value);
       }
     });
@@ -212,12 +241,14 @@ function NewBountyBase(props) {
         handleSubmitNewBounty(result);
       }
     } catch (error) {
-      console.log("error",error.error.message);
+      let message = error.toString();
       setState((prevState) => ({
         ...prevState,
         loading: false,
       }));
-      setCreateNewBountyError(error.error.message);
+      setCreateNewBountyError(
+        error.message ? error.message : message ? message : "Bounty not created"
+      );
       setShowBountyError(true);
     }
   };
@@ -225,6 +256,9 @@ function NewBountyBase(props) {
   const modalConfirmHandler = () => {
     if (status === "connected") {
       setShowMessage(false);
+      if (!isValid) {
+        return;
+      }
       const network = Network.find((chain) => chain.hex === chainId);
       if (network) {
         setNetwork(network.name);
@@ -234,9 +268,9 @@ function NewBountyBase(props) {
       if (bountyName === "Create New Designated Bounty") {
         setChaninIdHandler(network.name);
       }
-    }else{
+    } else {
       setShowMessage(true);
-      setShowBountyError(true)
+      setShowBountyError(true);
     }
   };
 
@@ -259,7 +293,7 @@ function NewBountyBase(props) {
     console.log("etherFormatted =>", etherFormatted);
     console.log("abi=>", abi);
     console.log("bytecode =>", bytecode);
-    let contractFactory
+    let contractFactory;
     if (bountyName === "Create New Bounty") {
       contractFactory = new ethers.ContractFactory(
         abi,
@@ -289,17 +323,6 @@ function NewBountyBase(props) {
     return result;
   };
 
-  if (state.loading) {
-    return (
-      <LoadingWrapper>
-        <div>
-          <ProgressCircle size="L" aria-label="Loading…" isIndeterminate />
-        </div>
-        <div>please wait...</div>
-      </LoadingWrapper>
-    );
-  }
-
   const handleTopicChange = (topicId) => {
     const filtered = topics.filter((x) => x.topicId === topicId);
     const merged = [...selectedTopics, ...filtered];
@@ -310,14 +333,6 @@ function NewBountyBase(props) {
   const handleDeleteTopic = (topicId) => {
     const filtered = selectedTopics.filter((x) => x.topicId !== topicId);
     setSelectedTopics(filtered);
-  };
-
-  const handleDescChange = (value) => {
-    setDescription(value);
-  };
-
-  const handleReqChange = (value) => {
-    setRequirements(value);
   };
 
   const handleSubmitNewBounty = (values) => {
@@ -387,134 +402,153 @@ function NewBountyBase(props) {
   };
 
   const initialAmountOnChange = (value) => {
-    console.log("initalAmt" + value);
-    setInitialAmount(value);
+    if (/^\d*\.?\d*$/.test(value)) {
+      setInitialAmount(value);
+    }
   };
 
   return (
     <BountyFormWrapper>
-      <div>
-        <h1>📜 {bountyName}</h1>
-      </div>
-      <ComboBox
-        placeholder="Select Category"
-        items={state.categories}
-        onSelectionChange={setCategoryId}
-      >
-        {(item) => <Item key={item.categoryId}>{item.categoryName}</Item>}
-      </ComboBox>
-      {!!state.selected && state.selected.subCategories.length > 0 && (
-        <ComboBox
-          placeholder="Select Sub Category"
-          items={state.selected.subCategories}
-          onSelectionChange={setSubCategoryId}
-        >
-          {(item) => (
-            <Item key={item.subCategoryId}>{item.subCategoryName}</Item>
-          )}
-        </ComboBox>
+      {state.loading && (
+        <LoadingWrapper>
+          <div>
+            <ProgressCircle size="L" aria-label="Loading…" isIndeterminate />
+          </div>
+          <div>please wait...</div>
+        </LoadingWrapper>
       )}
-      {!!topics?.length && (
-        <ComboBox
-          items={topics}
-          placeholder="Select Topic(s)"
-          onSelectionChange={handleTopicChange}
-        >
-          {(item) => <Item key={item.topicId}>{item.topicName}</Item>}
-        </ComboBox>
-      )}
-      {!!selectedTopics && !!selectedTopics.length && (
-        <TopicsWrapper>
-          {selectedTopics?.map((item, idx) => (
-            <div key={idx}>
-              <Button onPress={() => handleDeleteTopic(item.topicId)}>
-                <span>{item.topicName}</span>
-                {` `}
-                <FcFullTrash />
-              </Button>
-            </div>
-          ))}
-        </TopicsWrapper>
-      )}
-      {state.selected && (
+      {state.categories && (
         <>
-          <TextField
-            value={discription}
-            onChange={setDiscription}
-            width="auto"
-            label="Description"
-          />
-          <TextArea
-            onChange={handleReqChange}
-            width="auto"
-            label="Requirements"
-          />
-          {/* <Button variant="cta">Create</Button>           */}
-          <TextField label='Bounty Amount' value={initalAmount} onChange={initialAmountOnChange}>
-            Initial Amount
-          </TextField>
-          <Button onPress={() => modalConfirmHandler()} variant="primary">
-            Create Bounty
-          </Button>
+          <div>
+            <h1>📜 {bountyName}</h1>
+          </div>
+          <ComboBox
+            placeholder="Select Category"
+            items={state.categories}
+            onSelectionChange={setCategoryId}
+          >
+            {(item) => <Item key={item.categoryId}>{item.categoryName}</Item>}
+          </ComboBox>
+          {!!state.selected && state.selected.subCategories.length > 0 && (
+            <ComboBox
+              placeholder="Select Sub Category"
+              items={state?.selected.subCategories}
+              onSelectionChange={setSubCategoryId}
+            >
+              {(item) => (
+                <Item key={item.subCategoryId}>{item.subCategoryName}</Item>
+              )}
+            </ComboBox>
+          )}
+          {!!topics?.length && (
+            <ComboBox
+              items={topics}
+              placeholder="Select Topic(s)"
+              onSelectionChange={handleTopicChange}
+            >
+              {(item) => <Item key={item.topicId}>{item.topicName}</Item>}
+            </ComboBox>
+          )}
+          {!!selectedTopics && !!selectedTopics.length && (
+            <TopicsWrapper>
+              {selectedTopics?.map((item, idx) => (
+                <div key={idx}>
+                  <Button onPress={() => handleDeleteTopic(item.topicId)}>
+                    <span>{item.topicName}</span>
+                    {` `}
+                    <FcFullTrash />
+                  </Button>
+                </div>
+              ))}
+            </TopicsWrapper>
+          )}
+          {state.selected && (
+            <FormWrapper>
+              <TextField
+                value={discription}
+                onChange={setDiscription}
+                width="auto"
+                label="Description"
+              />
+              <TextArea
+                onChange={setRequirements}
+                width="auto"
+                label="Requirements"
+              />
+              {/* <Button variant="cta">Create</Button>           */}
+              <TextField
+                validationState={isValid ? "valid" : "invalid"}
+                label="Bounty Amount"
+                value={initalAmount}
+                onChange={initialAmountOnChange}
+              />
+              <Button onPress={() => modalConfirmHandler()} variant="primary">
+                Create Bounty
+              </Button>
+            </FormWrapper>
+          )}
+          <DialogTrigger isOpen={showError}>
+            <></>
+            <AlertDialog
+              title="Failed"
+              variant="error"
+              primaryActionLabel="OK"
+              onPrimaryAction={() => setShowError(false)}
+            >
+              Failed saving the bounty. Please try again later.
+            </AlertDialog>
+          </DialogTrigger>
+          <DialogTrigger isOpen={showBountyError}>
+            <></>
+            <AlertDialog
+              title="Failed"
+              variant="error"
+              primaryActionLabel="OK"
+              onPrimaryAction={() => setShowBountyError(false)}
+            >
+              {showMessage
+                ? "please connect to the network"
+                : `${createNewBountyError}`}
+            </AlertDialog>
+          </DialogTrigger>
+          <DialogTrigger isOpen={showSuccess}>
+            <></>
+            <AlertDialog
+              title="Bounty Saved"
+              variant="information"
+              primaryActionLabel="OK"
+              onPrimaryAction={() => setShowSuccess(false)}
+            >
+              Bounty saved successfully.
+            </AlertDialog>
+          </DialogTrigger>
+
+          <DialogTrigger isOpen={createBountyModal}>
+            <></>
+            <Dialog>
+              <Heading>create bounty</Heading>
+              <Divider />
+              <Content>
+                {" "}
+                You are attempting to create a bounty on {network} network.
+                Proceed?
+              </Content>
+              <ButtonGroup>
+                <Button variant="secondary" onPress={modalCancleHandler}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="cta"
+                  onPress={async () => await createNewBounty()}
+                  autoFocus
+                >
+                  Confirm
+                </Button>
+              </ButtonGroup>
+            </Dialog>
+          </DialogTrigger>
         </>
       )}
-      <DialogTrigger isOpen={showError}>
-        <></>
-        <AlertDialog
-          title="Failed"
-          variant="error"
-          primaryActionLabel="OK"
-          onPrimaryAction={() => setShowError(false)}
-        >
-          Failed saving the bounty. Please try again later.
-        </AlertDialog>
-      </DialogTrigger>
-      <DialogTrigger isOpen={showBountyError}>
-        <></>
-        <AlertDialog
-          title="Failed"
-          variant="error"
-          primaryActionLabel="OK"
-          onPrimaryAction={() => setShowBountyError(false)}
-        >
-          {showMessage ? "please connect to the network" : `${createNewBountyError}`}
-        </AlertDialog>
-      </DialogTrigger>
-      <DialogTrigger isOpen={showSuccess}>
-        <></>
-        <AlertDialog
-          title="Bounty Saved"
-          variant="information"
-          primaryActionLabel="OK"
-          onPrimaryAction={() => setShowSuccess(false)}
-        >
-          Bounty saved successfully.
-        </AlertDialog>
-      </DialogTrigger>
-
-      <DialogTrigger isOpen={createBountyModal}>
-        <></>
-        <Dialog>
-          <Heading>create bounty</Heading>
-          <Divider />
-          <Content>
-            {" "}
-            You are attempting to create a bounty on {network} network. Proceed?
-          </Content>
-          <ButtonGroup>
-            <Button variant="secondary" onPress={modalCancleHandler}>
-              Cancel
-            </Button>
-            <Button
-              variant="cta"
-              onPress={async () => await createNewBounty()}
-              autoFocus
-            >
-              Confirm
-            </Button>
-          </ButtonGroup>
-        </Dialog>
-      </DialogTrigger>
     </BountyFormWrapper>
   );
 }

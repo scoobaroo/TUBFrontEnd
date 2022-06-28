@@ -136,6 +136,8 @@ const Profile = ({
   customerRate,
   providerRate,
   edit,
+  hashing,
+  loginUser,
 }) => (
   <CardWrapper>
     <div className="card">
@@ -181,9 +183,15 @@ const Profile = ({
             <span style={{ color: "#766e6e" }}>Last Name: </span>
             {last_name}
           </Heading>
+
           <Heading marginBottom="10">
             <span style={{ color: "#766e6e" }}>Telephone: </span>
-            {telephone}
+            {loginUser ? telephone : hashing ? telephone : "########"}
+          </Heading>
+
+          <Heading marginBottom="10">
+            <span style={{ color: "#766e6e" }}>User email: </span>
+            {loginUser ? email : hashing ? email : "########"}
           </Heading>
 
           <Heading marginBottom="10">
@@ -201,10 +209,6 @@ const Profile = ({
             </Link> */}
           </Heading>
 
-          <Heading marginBottom="10">
-            <span style={{ color: "#766e6e" }}>User email: </span>
-            {email}
-          </Heading>
           {edit && (
             <Button
               type="submit"
@@ -382,13 +386,16 @@ const UserProfileEdit = (props) => {
   const [showBountyError, setShowBountyError] = React.useState(false);
   const [educationType, setEducationType] = React.useState();
   const [loader, setLoader] = React.useState(false);
+  const [loginUser, setLoginUser] = React.useState(false);
   const [educationDetails, setEducationDetails] = React.useState({
     ...InitialEducationState,
   });
   const [certificationDetails, setCertificationDetails] = React.useState({
     ...InitialCertificationState,
   });
+  const [userDetailsHashing, setUserDetailsHashing] = React.useState(false);
   const [showModal, setShowModal] = React.useState(false);
+  const [bountyDetails, setBountyDetails] = React.useState([]);
   const editable = props.location.state?.edit;
   const userId = props.location.state?.id
     ? props.location.state?.id
@@ -400,7 +407,11 @@ const UserProfileEdit = (props) => {
   }, [props.location.state.id]);
 
   React.useEffect(() => {
-    if(ratingData){
+    myBountyDetails();
+  }, [editable]);
+
+  React.useEffect(() => {
+    if (ratingData) {
       providerRatingHandler();
       customerRatingHandler();
     }
@@ -410,6 +421,24 @@ const UserProfileEdit = (props) => {
     const value = globalState.EducationType;
     setEducationType(value?.map((item) => item.Label.UserLocalizedLabel));
   }, []);
+
+  React.useEffect(() => {
+    if (bountyDetails.length > 0) {
+      providerIdChekingHandler();
+    }
+  }, [bountyDetails]);
+
+  const myBountyDetails = async () => {
+    await axios
+      .get(`${appConfig.apiBaseUrl}users/${userId}/customerbounties`)
+      .then((res) => {
+        console.log(res.data);
+        setBountyDetails(res.data.value);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   const loadProfileDetails = () => {
     setLoader(true);
@@ -448,11 +477,22 @@ const UserProfileEdit = (props) => {
       });
   };
 
+  const providerIdChekingHandler = () => {
+    if (globalState.accountId === userId) setLoginUser(true);
+
+    const index = bountyDetails.findIndex(
+      (item) => item._cob_providerid_value == globalState.accountId
+    );
+    debugger;
+    if (index > -1) {
+      setUserDetailsHashing(true);
+    }
+  };
+
   const loadReviewDetails = () => {
     axios
       .get(`${appConfig.apiBaseUrl}ratings/users/${userId}`)
       .then((res) => {
-        console.log("ASdfasdfsdaf", res);
         setRatingData(res.data.value);
       })
       .catch((err) => {
@@ -461,7 +501,6 @@ const UserProfileEdit = (props) => {
   };
 
   const providerRatingHandler = () => {
-    console.log("ratingData", ratingData);
     const providerReview = ratingData.filter(
       (item) =>
         item["cob_ratingtype@OData.Community.Display.V1.FormattedValue"] ===
@@ -787,6 +826,8 @@ const UserProfileEdit = (props) => {
           customerRate={customerRate}
           providerRate={providerRate}
           edit={edit}
+          hashing={userDetailsHashing}
+          loginUser={loginUser}
         />
       )}
       <Well margin="15px">
