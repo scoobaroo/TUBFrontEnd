@@ -34,6 +34,16 @@ const Network = [
     hex: "0x61",
     name: "Binance Smart Chain - Testnet",
   },
+  {
+    id: 8,
+    hex: "0x89",
+    name: "Polygon",
+  },{
+    id: 9,
+    hex:"",
+    name:"Ropsten"
+  }
+
 ];
 
 export default Network;

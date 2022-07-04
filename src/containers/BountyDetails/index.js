@@ -506,14 +506,14 @@ const BountyDetails = () => {
   }, []);
 
   React.useEffect(() => {
-    if(bountyDetails.attachmentCount !== 0){
+    if (bountyDetails.attachmentCount !== 0) {
       getBlobsInContainer(containerClient);
     }
   }, [bountyDetails.attachmentCount]);
 
   React.useEffect(() => {
-    if(bountyDetails.customerId) loadProfileDetails();
-    if(bountyDetails.providerId) loadProviderDetails();
+    if (bountyDetails.customerId) loadProfileDetails();
+    if (bountyDetails.providerId) loadProviderDetails();
     setErc20chaninNameValue();
   }, [bountyDetails.customerId]);
 
@@ -549,7 +549,7 @@ const BountyDetails = () => {
       bountyDetails.reqToWork.map((item) => {
         id = item.providerId;
       });
-     loadReqWorkProviderDatails(id);
+      loadReqWorkProviderDatails(id);
     }
   }, [bountyDetails.reqToWork]);
 
@@ -609,30 +609,36 @@ const BountyDetails = () => {
       });
   };
 
+  const obscureEmail = (email) => {
+    const [name, domain] = email.split('@');
+    return `${name[0]}${new Array(name.length).join('*')}@${domain}`;
+  };
+
   const loadProviderDetails = () => {
     axios
       .get(`${appConfig.apiBaseUrl}users/accountId/${bountyDetails.providerId}`)
       .then((res) => {
         console.log("provider datataaaa", res);
         let imageUrl;
-        if (res.data.cob_profilepicture !== "") {
+        if (res.data.cob_profilepicture) {
           const string2 = res.data.cob_profilepicture;
           const string1 = "data:image/png;base64,";
           imageUrl = string1.concat(string2);
-          setUserProviderDetails((prevState) => ({
-            ...prevState,
-            first_name: res.data.cob_firstname,
-            last_name: res.data.cob_lastname,
-            email: res.data.emailaddress1,
-            profilePicture: imageUrl,
-            cob_customerrating: res.data.cob_customerrating,
-            cob_providerrating: res.data.cob_providerrating,
-            id: bountyDetails.providerId,
-          }));
         } else {
           imageUrl =
             "https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true";
         }
+        let email = obscureEmail(res.data.emailaddress1);
+        setUserProviderDetails((prevState) => ({
+          ...prevState,
+          first_name: res.data.cob_firstname,
+          last_name: res.data.cob_lastname,
+          email: email,
+          profilePicture: imageUrl,
+          cob_customerrating: res.data.cob_customerrating,
+          cob_providerrating: res.data.cob_providerrating,
+          id: bountyDetails.providerId,
+        }));
       })
       .catch((err) => {
         console.log(err);
@@ -647,25 +653,26 @@ const BountyDetails = () => {
         setLoader(false);
         console.log("provider datataaaa", res);
         let imageUrl;
+       
         if (res.data.cob_profilepicture !== "") {
           const string2 = res.data.cob_profilepicture;
           const string1 = "data:image/png;base64,";
           imageUrl = string1.concat(string2);
-          setReqToWorkProvider((prevState) => ({
-            ...prevState,
-            first_name: res.data.cob_firstname,
-            last_name: res.data.cob_lastname,
-            email: res.data.emailaddress1,
-            profilePicture: imageUrl,
-            message: res.data.cob_message,
-            cob_customerrating: res.data.cob_customerrating,
-            cob_providerrating: res.data.cob_providerrating,
-            id: id,
-          }));
         } else {
           imageUrl =
             "https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true";
         }
+        setReqToWorkProvider((prevState) => ({
+          ...prevState,
+          first_name: res.data.cob_firstname,
+          last_name: res.data.cob_lastname,
+          email: res.data.emailaddress1,
+          profilePicture: imageUrl,
+          message: res.data.cob_message,
+          cob_customerrating: res.data.cob_customerrating,
+          cob_providerrating: res.data.cob_providerrating,
+          id: id,
+        }));
       })
       .catch((err) => {
         setLoader(false);
@@ -1043,17 +1050,18 @@ const BountyDetails = () => {
   const attachmentCountHandler = () => {
     console.log("entered");
     let data = {
-      AttachmentCount : bountyDetails.attachmentCount + 1,
-      bountyStatus : bountyDetails.bountyStatus,
+      AttachmentCount: bountyDetails.attachmentCount + 1,
+      bountyStatus: bountyDetails.bountyStatus,
     };
-    axios.patch(`${appConfig.apiBaseUrl}bounties/${bountyId}`, data)
-    .then((response) => {
-      console.log(response);
-    })
-    .catch((error) => {
-      console.log(error);
-    })
-  }
+    axios
+      .patch(`${appConfig.apiBaseUrl}bounties/${bountyId}`, data)
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   const metaMaskAddresHandler = () => {
     setRequestToWorkHandler((prevState) => ({
@@ -1636,15 +1644,19 @@ const BountyDetails = () => {
     <BountyWrapper>
       <h2>#Bounty Details</h2>
       <BountyDeteilsWrapper>
-        <ItemWrapper>
-          <Heading>
-            <span style={{ width: "150px", display: "inline-block" }}>
-              Category
-            </span>
-            : {bountyDetails.categoryName}
-          </Heading>
-        </ItemWrapper>
-        <ItemWrapper>
+        {bountyDetails.categoryName && (
+          <ItemWrapper>
+            <Heading>
+              <span style={{ width: "150px", display: "inline-block" }}>
+                Category
+              </span>
+              : {bountyDetails.categoryName}
+            </Heading>
+          </ItemWrapper>
+        )}
+        {
+          bountyDetails.subCatergoryName && (
+            <ItemWrapper>
           <Heading>
             <span style={{ width: "150px", display: "inline-block" }}>
               SubCategory
@@ -1652,6 +1664,9 @@ const BountyDetails = () => {
             : {bountyDetails.subCatergoryName}
           </Heading>
         </ItemWrapper>
+          )
+        }
+        
         {bountyDetails.topics.length != 0 && (
           <ItemWrapper>
             <Heading>
@@ -1723,9 +1738,10 @@ const BountyDetails = () => {
             >
               <img src={userProviderDetails.profilePicture} alt="profile" />
               <Heading>
-                {userProviderDetails.first_name +
-                  " " +
-                  userProviderDetails.last_name}
+                { userProviderDetails.first_name && userProviderDetails.last_name ? (
+                  userProviderDetails.first_name + " " + userProviderDetails.last_name
+                ) : (userProviderDetails.email)}  
+                
               </Heading>
             </ImageWrapper>
           </div>
