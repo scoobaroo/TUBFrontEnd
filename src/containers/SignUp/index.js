@@ -10,10 +10,16 @@ import withRouter from '../../session/withRouter';
 import {initialState, emailReggie, passwordReggie} from './config';
 import FormContainer from '../../styled/FormContainer';
 const validateField = (value, reggie) => reggie.test(String(value).toLowerCase());
+import { setDoc, doc, Timestamp } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 
 const SignUpFormBase = props => {
   const [state, setState] = React.useState({ ...initialState });
   const {setAccountId} = useAccountId();
+  
 
   const handleChange = (e) => {
     setState((prevState) => ({
@@ -73,11 +79,12 @@ const SignUpFormBase = props => {
       })
   }
 
-  const onCreateUser = () => {
-    props.firebase.createUser(state.email, state.password)
+  const onCreateUser = async () => {
+    props.firebase.createUser(props.firebase.auth, state.email, state.password)
       .then((data) => {
-        const { user: { email, uid } } = data;
+        const { user: { email, uid, name } } = data;
         onSubmitNewUser(email, uid);
+        addtoFirestore(uid,email,name);
         props.navigate('/');
       })
       .catch((err) => {
@@ -90,6 +97,15 @@ const SignUpFormBase = props => {
       .finally(() => {
         // console.log('do action here');
       })
+  }
+
+  const addtoFirestore = async (uid,email,name) => {
+    await setDoc(doc(props.firebase.db, "users",uid), {
+      uid: uid,
+      email,
+      createdAt: Timestamp.fromDate(new Date()),
+      isOnline: true,
+    });
   }
 
   React.useEffect(() => {

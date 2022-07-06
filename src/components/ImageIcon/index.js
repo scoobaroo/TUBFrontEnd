@@ -44,7 +44,7 @@ const ImageIcon = (props) => {
     await axios
       .get(`${appConfig.apiBaseUrl}users/accountId/${state.accountId}`)
       .then((res) => {
-        if (res.data.cob_profilepicture !== "") {
+        if (res.data.cob_profilepicture) {
           const string2 = res.data.cob_profilepicture;
           const string1 = "data:image/png;base64,";
           setImageurl(string1.concat(string2));

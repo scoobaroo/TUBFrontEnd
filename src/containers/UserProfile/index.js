@@ -209,7 +209,7 @@ const Profile = ({
             </Link> */}
           </Heading>
 
-          {edit && (
+          {edit !== false && (
             <Button
               type="submit"
               variant="cta"
@@ -483,7 +483,6 @@ const UserProfileEdit = (props) => {
     const index = bountyDetails.findIndex(
       (item) => item._cob_providerid_value == globalState.accountId
     );
-    debugger;
     if (index > -1) {
       setUserDetailsHashing(true);
     }

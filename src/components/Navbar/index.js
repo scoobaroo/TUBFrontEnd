@@ -478,10 +478,12 @@ const NavBarBase = ({ firebase, navigate }) => {
               </SerachWrapper>
             )}
 
-            <ConnectedButton>
-              <Connection />
-            </ConnectedButton>
+           
             {state.accountId && (
+              <>
+               <ConnectedButton>
+               <Connection />
+             </ConnectedButton>
               <CreateNewBounty>
                 {/* <Button marginEnd={2} fo onPress={handleNewBounty}>
                   Create New Bounty
@@ -496,6 +498,7 @@ const NavBarBase = ({ firebase, navigate }) => {
                   </Menu>
                 </MenuTrigger>
               </CreateNewBounty>
+              </>
             )}
 
             <ActionButton onPress={reSize} isQuiet>

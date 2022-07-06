@@ -66,6 +66,16 @@ const getRequestWork = () => {
   return NewRequestWork ? NewRequestWork : null;
 }
 
+const erc20chains = () => {
+  let erc20chains;
+  let NewERC20Chains
+  if (window.localStorage) {
+    erc20chains = window.localStorage.getItem('erc20chains');
+    NewERC20Chains = JSON.parse(erc20chains);
+  }
+  return NewERC20Chains ? NewERC20Chains : null;
+}
+
 const getCeritficationType = () => {
   let ceritficationType;
   let NewCeritficationType
@@ -88,6 +98,7 @@ const storeInitialState = {
   EducationType: getEducationType(),
   CertificationType: getCeritficationType(),
   RequestWork:getRequestWork(),
+  Erc20Chains:erc20chains()
 };
 
 const AppContextBase = props => {

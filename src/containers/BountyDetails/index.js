@@ -1741,12 +1741,14 @@ const BountyDetails = () => {
                 { userProviderDetails.first_name && userProviderDetails.last_name ? (
                   userProviderDetails.first_name + " " + userProviderDetails.last_name
                 ) : (userProviderDetails.email)}  
-                
+               
               </Heading>
             </ImageWrapper>
+            <div style={{marginLeft:'10px',marginTop:'2px'}}>
+            <Button onClick={()=>navigate('/chat')}>Start chat</Button>
+            </div>
           </div>
         )}
-
         <a
           style={{ textDecoration: "none" }}
           href={`https://${ERC20ChainName}.etherscan.io/address/${bountyDetails.SmartContractAddress}`}

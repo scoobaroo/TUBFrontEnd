@@ -23,6 +23,8 @@ import BountyImWorkedOn from "./containers/BountyImWorkedOn";
 import UserProfile from "./containers/UserProfile";
 import SearchResult from "./containers/SearchResult";
 import "./clientlibs/css/App.css";
+import Chat from "./containers/chat";
+
 
 function Wrapper() {
   const [state] = React.useContext(AppContext);
@@ -48,6 +50,7 @@ function Wrapper() {
           <Route path="/userprofile" element={<UserProfile />} />
           <Route path="/bountyworkedon" element={<BountyImWorkedOn />} />
           <Route path="/search-result" element={<SearchResult />} />
+          <Route path="/chat" element={<Chat />} />
         </Routes>
       </Router>
     </Provider>

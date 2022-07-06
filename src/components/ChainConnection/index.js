@@ -9,6 +9,8 @@ import styled from "styled-components";
 import { AppContext } from "../../context";
 import Network from "../../helper/metamask-network";
 import { JsonRpcBatchProvider } from "@ethersproject/providers";
+import ErrorModal from "../ErrorModal";
+
 
 const ButtonWrapper = styled.div`
   width: 10px;
@@ -23,20 +25,26 @@ const MetaMask = () => {
   console.log("MetaMask", Network);
   const { status, connect, account, chainId, ethereum } = useMetaMask();
   const [network, setNetwork] = React.useState();
+  const [errorModal, setErrorModal] = React.useState(false);
+  const [globalState] = React.useContext(AppContext);
 
-  window.ethereum.on("chainChanged", (chainId) => {
-    console.log("chainChanged", chainId);
-    const network = Network.find(chain => chain.hex === chainId);
-    if (network) {
-      setNetwork(network.name);
-    }
+  window.ethereum?.on("chainChanged", (chainId) => {
+    location.reload();
+   
   });
+
+  const closeErrorModal = () => {
+    setErrorModal(false);
+  }
 
   React.useEffect(() => {
     if (status === "connected") {
-      const network = Network.find(chain => chain.hex === chainId);
+      const network = globalState.Erc20Chains?.find(chain => chain.cob_hexcode === chainId);
       if (network) {
-        setNetwork(network.name);
+        setNetwork(network.cob_name);
+      }else{
+        setNetwork("unsupported");
+        setErrorModal(true);
       }
     }
   }, [status]);
@@ -58,6 +66,7 @@ const MetaMask = () => {
           <span></span>
         </ButtonWrapper>
         {`${network}`}
+        <ErrorModal open={errorModal} action={closeErrorModal} message={"This chain is not supported yet."} />
       </div>
     );
 

@@ -220,7 +220,7 @@ function NewBountyBase(props) {
     let mainString = name;
     let subString;
     const value = _state.RequestWork;
-    value?.filter((item) => {
+    value.filter((item) => {
       subString = item.Label.UserLocalizedLabel.Label;
       if (mainString.includes(`${subString}`)) {
         console.log("testing iddddd",item.Value);
@@ -259,14 +259,14 @@ function NewBountyBase(props) {
       if (!isValid) {
         return;
       }
-      const network = Network.find((chain) => chain.hex === chainId);
+      const network = _state.Erc20Chains.find((chain) => chain.cob_hexcode === chainId);
       if (network) {
-        setNetwork(network.name);
-        setChaninIdHandler(network.name);
+        setNetwork(network.cob_name);
+        setChaninIdHandler(network.cob_name);
       }
       setCreateBountyModal(true);
       if (bountyName === "Create New Designated Bounty") {
-        setChaninIdHandler(network.name);
+        setChaninIdHandler(network.cob_name);
       }
     } else {
       setShowMessage(true);

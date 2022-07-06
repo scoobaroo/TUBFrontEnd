@@ -18,12 +18,13 @@
     apiBaseUrl: "http://localhost:4000/",
     
     firebaseConfig: {
-      apiKey: "AIzaSyDIVIi2WFVoVUh2S9oDAuMfwki-jqfD3SA",
-      authDomain: "unblock-auth-dev.firebaseapp.com",
-      projectId: "unblock-auth-dev",
-      storageBucket: "unblock-auth-dev.appspot.com",
-      messagingSenderId: "46308360656",
-      appId: "1:46308360656:web:6d17f886725fef944ab9d5",
+      apiKey: "AIzaSyCcr9kAj2SaHgQDw7TIUKcxebtP8g70LaY",
+      authDomain: "taskunblock.firebaseapp.com",
+      projectId: "taskunblock",
+      storageBucket: "taskunblock.appspot.com",
+      messagingSenderId: "310172300563",
+      appId: "1:310172300563:web:0b91a912c97eaa4240d6e6",
+      measurementId: "G-C2H6ZQ0QBM"
     },
 
     timeOutDelay: 1800, // in seconds

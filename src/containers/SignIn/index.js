@@ -13,6 +13,12 @@ import FormContainer from "../../styled/FormContainer";
 import useEducationType from "../../hooks/useEducationType";
 import useCertificationType from '../../hooks/useCertificationType'
 import useRequestWork from "../../hooks/useRequestWork";
+import useErc20Chains from "../../hooks/useErc20Chains";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+import { initializeApp } from "firebase/app";
+import { updateDoc, doc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 
 const SignInFormBase = (props) => {
@@ -22,6 +28,8 @@ const SignInFormBase = (props) => {
   const {setEducationType} = useEducationType()
   const {setCertificationType} =  useCertificationType()
   const {setRequestWork} = useRequestWork()
+  const {setErc20Chains} = useErc20Chains()
+  const auth = getAuth();
 
 
   const handleEmailChange = (val) => {
@@ -39,6 +47,10 @@ const SignInFormBase = (props) => {
       password,
     }));
   };
+
+  const signin = (email, password)=> {
+    auth().signInWithEmailAndPassword(email, password);
+  }
 
   const enable = () => setState((state) => ({ ...state, disabled: false }));
   const disable = () => setState((state) => ({ ...state, disabled: true }));
@@ -60,6 +72,7 @@ const SignInFormBase = (props) => {
           setEducationType();
           setCertificationType();
           setRequestWork();
+          setErc20Chains()
           console.log("use this for next api call, blobject =>", result);
         }
       })
@@ -68,13 +81,16 @@ const SignInFormBase = (props) => {
       });
   };
 
-  const handleSignIn = () => {
+ 
+  const handleSignIn = async () => {
+
     props.firebase
-      .signUserIn(state.email, state.password)
+      .signUserIn( auth, state.email, state.password)
       .then((data) => {
         const {
           user: { uid },
         } = data;
+        addtoFirestore(uid);
         setLoggedUserId(uid);
         props.navigate("/");
       })
@@ -86,6 +102,12 @@ const SignInFormBase = (props) => {
         }));
       });
   };
+
+  const addtoFirestore = async (uid) => {
+    await updateDoc(doc(props.firebase.db, "users", uid), {
+      isOnline: true,
+    });
+  }
 
   React.useEffect(() => {
     const emailValidated = validateField(state.email, emailReggie);
@@ -143,6 +165,7 @@ const SignInFormBase = (props) => {
         {` `}
         <Link to="/password-reset">Reset Password</Link>
       </div>
+     
     </FormContainer>
   );
 };

@@ -1,17 +1,20 @@
-import app from 'firebase/app';
-import 'firebase/auth';
+import { initializeApp } from "firebase/app";
+import { getAuth,createUserWithEmailAndPassword, signInWithEmailAndPassword} from "firebase/auth";
 import appConfig from 'webpack-config-loader!../app-config.js';
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 export default class Firebase {
   constructor() {
-    if (!app.apps.length) app.initializeApp(appConfig.firebaseConfig);
-
-    this.auth = app.auth();
+    const app = initializeApp(appConfig.firebaseConfig);
+    this.auth = getAuth(app);
+    this.db = getFirestore(app);
+    this.storage = getStorage(app);
   }
+ 
+  createUser = (auth, em, pw) => createUserWithEmailAndPassword(auth, em, pw);
 
-  createUser = (em, pw) => this.auth.createUserWithEmailAndPassword(em, pw);
-
-  signUserIn = (em, pw) => this.auth.signInWithEmailAndPassword(em, pw);
+  signUserIn = (auth, em, pw) => signInWithEmailAndPassword(auth, em, pw);
 
   passwordReset = em => this.auth.sendPasswordResetEmail(em);
 
