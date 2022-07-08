@@ -34,16 +34,6 @@ const BountyGrid = styled.div`
   }
 `;
 
-const BountyCard = ({ bounty, props }) => {
-  return (
-    <Well key={bounty.cob_bountyid}>
-      <div>{bounty.cob_name}</div>
-      <div>{bounty.cob_description || `No Description`}</div>
-      <Button onClick={() => goToBounty(bounty, props)} >View Bounty</Button>
-    </Well>
-  );
-};
-
 const initialState = {
   allBounties: null,
   loading: true,

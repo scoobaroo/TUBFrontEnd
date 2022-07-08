@@ -468,7 +468,7 @@ const UserProfileEdit = (props) => {
           certifications: res.data.cob_Certification_providerid_Account,
           customerRate: res.data.cob_customerrating,
           providerRate: res.data.cob_providerrating,
-          edit: editable,
+          edit: editable ,
         }));
       })
       .catch((err) => {

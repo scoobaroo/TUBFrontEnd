@@ -1,5 +1,5 @@
 import React from "react";
-import { defaultTheme, Provider } from "@adobe/react-spectrum";
+import { defaultTheme, Provider, Flex } from "@adobe/react-spectrum";
 import {
   BrowserRouter as Router,
   Routes,
@@ -36,23 +36,25 @@ function Wrapper() {
       colorScheme={state.theme}
       scale={state.scale}
     >
-      <Router >
-        <NavBar />
-        <Routes>
-          <Route  exact path="/" />
-          <Route path="/sign-up" element={<SignUp />} />
-          <Route path="/sign-in" element={<SignIn />} />
-          <Route path="/password-reset" element={<PasswordReset />} />
-          <Route path="/bounties" element={<Bounties />} />
-          <Route path="/new-bounty" element={<NewBounty />} />
-          <Route path="/bountydetails" element={<BountyDetails />} />
-          <Route path="/mybounties" element={<MyCreatedBounties />} />
-          <Route path="/userprofile" element={<UserProfile />} />
-          <Route path="/bountyworkedon" element={<BountyImWorkedOn />} />
-          <Route path="/search-result" element={<SearchResult />} />
-          <Route path="/chat" element={<Chat />} />
-        </Routes>
-      </Router>
+      <Flex direction="column" height="100vh">
+        <Router >
+          <NavBar />
+          <Routes>
+            <Route exact path="/" />
+            <Route path="/sign-up" element={<SignUp />} />
+            <Route path="/sign-in" element={<SignIn />} />
+            <Route path="/password-reset" element={<PasswordReset />} />
+            <Route path="/bounties" element={<Bounties />} />
+            <Route path="/new-bounty" element={<NewBounty />} />
+            <Route path="/bountydetails" element={<BountyDetails />} />
+            <Route path="/mybounties" element={<MyCreatedBounties />} />
+            <Route path="/userprofile" element={<UserProfile />} />
+            <Route path="/bountyworkedon" element={<BountyImWorkedOn />} />
+            <Route path="/search-result" element={<SearchResult />} />
+            <Route path="/chat" element={<Chat />} />
+          </Routes>
+        </Router>
+      </Flex>
     </Provider>
   );
 }

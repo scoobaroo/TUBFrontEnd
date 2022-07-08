@@ -114,9 +114,9 @@ function NewBountyBase(props) {
   const [createBountyModal, setCreateBountyModal] = React.useState(false);
   const { status, connect, account, chainId, ethereum } = useMetaMask();
   const [network, setNetwork] = React.useState();
-  const [chainValue, setChainValue] = React.useState();
   const [showMessage, setShowMessage] = React.useState(false);
-  const [createNewBountyError, setCreateNewBountyError] = React.useState("");
+  const [createNewBountyError, setCreateNewBountyError] = React.useState("");  
+  const [globalState] = React.useContext(AppContext);
 
   React.useEffect(() => {
     if (_state.authUser && _state.authUser.uid) {
@@ -216,19 +216,6 @@ function NewBountyBase(props) {
     }
   };
 
-  const setChaninIdHandler = (name) => {
-    let mainString = name;
-    let subString;
-    const value = _state.RequestWork;
-    value.filter((item) => {
-      subString = item.Label.UserLocalizedLabel.Label;
-      if (mainString.includes(`${subString}`)) {
-        console.log("testing iddddd",item.Value);
-        setChainValue(item.Value);
-      }
-    });
-  };
-
   const createNewBounty = async () => {
     setCreateBountyModal(false);
     try {
@@ -259,15 +246,7 @@ function NewBountyBase(props) {
       if (!isValid) {
         return;
       }
-      const network = _state.Erc20Chains.find((chain) => chain.cob_hexcode === chainId);
-      if (network) {
-        setNetwork(network.cob_name);
-        setChaninIdHandler(network.cob_name);
-      }
       setCreateBountyModal(true);
-      if (bountyName === "Create New Designated Bounty") {
-        setChaninIdHandler(network.cob_name);
-      }
     } else {
       setShowMessage(true);
       setShowBountyError(true);
@@ -340,7 +319,8 @@ function NewBountyBase(props) {
     console.log(values);
     const selectedTopicsList = selectedTopics?.map((x) => x.topicId);
     console.log(selectedTopicsList);
-    let bountyObject;
+    let bountyObject;    
+    const ERC20Chain = globalState.Erc20Chains?.find(chain => chain.cob_hexcode === chainId);
     if (bountyName === "Create New Bounty") {
       bountyObject = {
         Name: "default",
@@ -354,7 +334,8 @@ function NewBountyBase(props) {
         BountyAmount: Number(initalAmount),
         SubTopicIds: [],
         CustomerId: id,
-        ERC20Chain: chainValue.toString(),
+        ERC20ChainId: ERC20Chain.cob_erc20chainid,
+        ERC20Chain: '769020000',
       };
     } else if (bountyName === "Create New Designated Bounty") {
       bountyObject = {
@@ -369,7 +350,8 @@ function NewBountyBase(props) {
         BountyAmount: Number(initalAmount),
         SubTopicIds: [],
         CustomerId: id,
-        ERC20Chain: chainValue.toString(),
+        ERC20ChainId: ERC20Chain.cob_erc20chainid,
+        ERC20Chain: '769020000',
       };
     }
     axios

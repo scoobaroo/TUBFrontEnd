@@ -19,15 +19,14 @@ import {
 } from "firebase/firestore";
 import MessageForm from "./components/MessageForm";
 import Message from "./components/Message";
+import { connectStorageEmulator } from "firebase/storage";
 
 const HomeCantainer = styled.div`
     position: relative;
     display: grid;
     grid-template-columns: 1fr 3fr;
+    flex-grow: 1;
     overflow: hidden;
-    height: calc(100vh - 54px);
-    width: 100vw;
-  }
   `;
 
 const UserContainer = styled.div`
@@ -58,7 +57,7 @@ const MessageUser = styled.div`
 `;
 
 const Messages = styled.div`
-  height: calc(100vh - 200px);
+  height: calc(100vh - 195px);
   overflow-y: auto;
   border-bottom: 1px solid var(--color-6);
 `;
@@ -71,20 +70,18 @@ const ChatBase = (props) => {
   const [text, setText] = React.useState("");
   const [img, setImg] = React.useState("");
   const [msgs, setMsgs] = React.useState([]);
-  let user1 = props.firebase.auth.currentUser;
+  const [tempMmsgs, setTempMsgs] = React.useState([]);
+  const [toUserId, setToUserId] = React.useState([]);
+  let loggedUser = props.firebase.auth.currentUser;
+  const id = props.location.state?.id;
 
   React.useEffect(() => {
-    if (user1) {
-      setCurrentUser(user1.uid);
-    }
-  }, [user1]);
-
-  React.useEffect(() => {
-    if (currentUser) {
+    if (loggedUser) {
+      setCurrentUser(loggedUser.uid)
       const usersRef = collection(props.firebase.db, "users");
       // create query object
 
-      const q = query(usersRef, where("uid", "not-in", [currentUser]));
+      const q = query(usersRef, where("uid", "not-in", [loggedUser.uid]));
       // execute query
       let unsub = onSnapshot(q, (querySnapshot) => {
         let users = [];
@@ -95,30 +92,69 @@ const ChatBase = (props) => {
       });
       return () => unsub();
     }
+  }, [loggedUser]);
+
+  React.useEffect(() => {
+    if (id && users.length > 0) selectUser(id)
+  }, [users]);
+
+  React.useEffect(() => {
+    if (tempMmsgs.length > 0 && (tempMmsgs[0].from === selectedUser.uid || tempMmsgs[0].to === selectedUser.uid)) {
+      setMsgs(tempMmsgs);
+    }
+  }, [tempMmsgs]);
+
+  React.useEffect(() => {
+    if (selectedUser) {
+      fetchMessaged();
+    }
+  }, [selectedUser]);
+
+  const fetchMessaged = async () => {
+    const user2 = selectedUser.uid;
+    const id =
+      currentUser > user2 ? `${currentUser + user2}` : `${user2 + currentUser}`;
+    console.log("id", id);
+
+    const msgsRef = collection(props.firebase.db, "messages", id, "chat");
+    const q = query(msgsRef, orderBy("createdAt", "asc"));
+
+    onSnapshot(q, (querySnapshot) => {
+      let newMsg = [];
+      querySnapshot.forEach((doc) => {
+
+        newMsg.push(doc.data());
+        setToUserId(doc.data().to)
+      });
+      setTempMsgs(newMsg);
+    });
     
-  }, [currentUser]);
+    // get last message b/w logged in user and selected user
+    const docSnap = await getDoc(doc(props.firebase.db, "lastMsg", id));
+    // if last message exists and message is from selected user
+    if (docSnap.data() && docSnap.data().from !== loggedUser) {
+      // update last message doc, set unread to false
+      await updateDoc(doc(props.firebase.db, "lastMsg", id), { unread: false });
+    }
+  }
 
   console.log("usererr", users);
 
   const handleSubmit = async (e) => {
-    debugger;
-    e.preventDefault();
 
-    const user2 = chat.uid;
+
+    e.preventDefault();
+    if (!text)
+      return;
+
+    setText("");
+    setImg("");
+    const user2 = chat.uid ? chat.uid : id;
 
     const id =
       currentUser > user2 ? `${currentUser + user2}` : `${user2 + currentUser}`;
 
     let url;
-    if (img) {
-      const imgRef = ref(
-        storage,
-        `images/${new Date().getTime()} - ${img.name}`
-      );
-      const snap = await uploadBytes(imgRef, img);
-      const dlUrl = await getDownloadURL(ref(storage, snap.ref.fullPath));
-      url = dlUrl;
-    }
 
     await addDoc(collection(props.firebase.db, "messages", id, "chat"), {
       text,
@@ -136,41 +172,19 @@ const ChatBase = (props) => {
       media: url || "",
       unread: true,
     });
-
-    setText("");
-    setImg("");
   };
 
   const selectUser = async (user) => {
-    setChat(user);
-    setSelectedUser(user);
-
-    const user2 = user.uid;
-    const id =
-      currentUser > user2 ? `${currentUser + user2}` : `${user2 + currentUser}`;
-
-    const msgsRef = collection(props.firebase.db, "messages", id, "chat");
-    const q = query(msgsRef, orderBy("createdAt", "asc"));
-
-    onSnapshot(q, (querySnapshot) => {
-      let msgs = [];
-      querySnapshot.forEach((doc) => {
-        debugger
-        msgs.push(doc.data());
-      });
-      setMsgs(msgs);
-    });
-
-    // get last message b/w logged in user and selected user
-    const docSnap = await getDoc(doc(props.firebase.db, "lastMsg", id));
-    // if last message exists and message is from selected user
-    if (docSnap.data() && docSnap.data().from !== user1) {
-      // update last message doc, set unread to false
-      await updateDoc(doc(props.firebase.db, "lastMsg", id), { unread: false });
+    let selectedChat = user;
+    if (!user.uid) {
+      selectedChat = users.find(usr => usr.uid === user);
     }
+    setChat(selectedChat);
+    setSelectedUser(selectedChat);
   };
 
   console.log("msgs", msgs);
+  console.log("tosuerId", toUserId)
   return (
     <HomeCantainer>
       <UserContainer>
@@ -179,7 +193,7 @@ const ChatBase = (props) => {
             key={user.uid}
             user={user}
             selectUser={selectUser}
-            user1={currentUser}
+            loggedUser={currentUser}
             chat={chat}
           />
         ))}
@@ -190,14 +204,19 @@ const ChatBase = (props) => {
             <MessageUser>
               <h3>{chat.email}</h3>
             </MessageUser>
-            
+
             <Messages>
               {msgs.length
                 ? msgs.map((msg, i) => (
-                  <Message key={i} msg={msg} user1={currentUser} selected={selectedUser} />   
-                  ))
+
+                  <Message key={i} msg={msg} loggedUser={currentUser} selected={selectedUser} />
+                ))
                 : null}
             </Messages>
+
+
+
+
             <MessageForm
               handleSubmit={handleSubmit}
               text={text}

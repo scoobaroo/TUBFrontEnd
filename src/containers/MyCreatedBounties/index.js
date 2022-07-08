@@ -561,7 +561,7 @@ const BountiesBase = ({ firebase, navigate }) => {
           let imageUrl;
           const string2 = value.profilePicture;
           const string1 = "data:image/png;base64,";
-          imageUrl = string1.concat(string2);
+          imageUrl = string2 ? string1.concat(string2) : "https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true";
           if (value.id === bounty["@odata.etag"]) {
             return (
               <RequestToWork key={index}>

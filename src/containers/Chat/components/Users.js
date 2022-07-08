@@ -72,14 +72,14 @@ strong {
 }
 `;
 
-const Users = ({ user1, user, selectUser, chat }) => {
+const Users = ({ loggedUser, user, selectUser, chat }) => {
   const app = initializeApp(appConfig.development.firebaseConfig);
   const db = getFirestore(app);
   const user2 = user?.uid;
   const [data, setData] = useState("");
 
   useEffect(() => {
-    const id = user1 > user2 ? `${user1 + user2}` : `${user2 + user1}`;
+    const id = loggedUser > user2 ? `${loggedUser + user2}` : `${user2 + loggedUser}`;
     let unsub = onSnapshot(doc(db, "lastMsg", id), (doc) => {
       setData(doc.data());
     });
@@ -92,22 +92,23 @@ const Users = ({ user1, user, selectUser, chat }) => {
         <UserInfo>
           <UserDetails>
             <img src={user.avatar || `https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true`} alt="avatar" className="avatar" />
-            <div  style={{display:'flex', flexDirection:'column', overflow:'hidden'}}>
-            <div style={{display:'flex'}}><h4>{user.email}</h4>
-            
-            {data?.from !== user1 && data?.unread && <h5>New</h5>}</div>
-            {data && (
-          <Ptag>
-            <strong>{data.from === user1 ? "Me:" : null}</strong>
-            {data.text}
-          </Ptag>
-        )}
+            <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ display: 'flex' }}>
+                <h4>{user.email}</h4>
+                {data?.from !== loggedUser && data?.unread && <h5>New</h5>}
+              </div>
+              {data && (
+                <Ptag>
+                  <strong>{data.from === loggedUser ? "Me:" : null}</strong>
+                  {data.text}
+                </Ptag>
+              )}
             </div>
           </UserDetails>
 
           {user.isOnline ? <Online></Online> : <Offline></Offline>}
         </UserInfo>
-       
+
       </UserWrapper>
       {/* <div
         onClick={() => selectUser(user)}

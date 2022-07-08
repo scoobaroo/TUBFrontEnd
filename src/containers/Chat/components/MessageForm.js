@@ -3,23 +3,23 @@ import styled from "styled-components";
 import {AiFillFileAdd} from 'react-icons/ai';
 
 const Messageform = styled.form`
-position: absolute;
-    bottom: 15px;
+    position: absolute;
+    bottom: 5px;
     left: 15px;
     width: calc(100% - 30px);
     background: #252525;
     border-radius: 60px;
     padding: 10px;
-    height: 60px;
     display: flex;
+    flex-direction: row;
     align-items: center;
  div{
-  width: calc(100% - 170px);
+  width: calc(100% - 100px);
   input {
     width: 100%;
     height: 45px;
     padding: 10px;
-    border-radius: 0;
+    border-radius: 20px 0 0  20px;
     outline: none;
     border: none;
   }
@@ -52,16 +52,7 @@ position: absolute;
 const MessageForm = (props) => {
   return (
     <Messageform onSubmit={props.handleSubmit}>
-      <label htmlFor="img">
-        <AiFillFileAdd />
-      </label>
-      <input
-        onChange={(e) => props.setImg(e.target.files[0])}
-        type="file"
-        id="img"
-        accept="image/*"
-        style={{ display: "none" }}
-      />
+
        <div>
        <input
           type="text"

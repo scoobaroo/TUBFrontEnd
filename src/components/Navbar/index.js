@@ -18,7 +18,7 @@ import withRouter from "../../session/withRouter";
 import useUIControls from "../../hooks/useUIControls";
 import useAccountId from "../../hooks/useAccountId";
 import { AppContext } from "../../context";
-import { GiSunrise, GiSunset, GiResize } from "react-icons/gi";
+import { GiSunrise, GiSunset, GiResize , GiChatBubble} from "react-icons/gi";
 import appConfig from "webpack-config-loader!../../app-config.js";
 import {
   AiOutlineLogin,
@@ -198,7 +198,7 @@ const ConnectedButton = styled.button`
   background: none;
   padding: 0 17px;
   margin-right: 10px;
-  line-height: 40px;
+  min-height: 40px;
   border-radius: 30px;
   cursor: pointer;
   @media (max-width: 992px) {
@@ -399,6 +399,10 @@ const NavBarBase = ({ firebase, navigate }) => {
     navigate("/new-bounty", { state: { Bounty: key } });
   };
 
+  const goToChat = () => {    
+    navigate("/chat");
+  }
+
   const handleMyCreatedBounty = () => {
     navigate("/mybounties");
     setOpen(!open);
@@ -500,7 +504,9 @@ const NavBarBase = ({ firebase, navigate }) => {
               </CreateNewBounty>
               </>
             )}
-
+            <ActionButton onPress={goToChat} isQuiet>
+              <GiChatBubble />
+            </ActionButton>
             <ActionButton onPress={reSize} isQuiet>
               <GiResize />
             </ActionButton>

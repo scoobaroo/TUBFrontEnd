@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 const MessageWrapper = styled.div`
 margin-top: 7px;
-padding: 0px 5px;
+padding: 0px 10px;
 text-align: ${(props) => (props.FromUser === props.currentUser ? "right" : "left")};
 align-items: ${(props) => (props.FromUser === props.currentUser ? "flex-end" : "flex-start")};
 display: flex;
@@ -19,7 +19,7 @@ p {
     max-width: 50%;
     text-align: left;
     border-radius: 15px 15px 0 15px;
-    background: ${(props) => (props.FromUser === props.currentUser ? "#d6f9ff" : "#cbcbcb")};
+    background: ${(props) => (props.FromUser === props.currentUser ? "#a7d1f5" : "#edc9e7")};
     color: ${(props) => (props.FromUser === props.currentUser ? "#000" : "#000")};
     border-radius: ${(props) => (props.FromUser === props.currentUser ? "15px 15px 0 15px" : "15px 15px 15px 0")};
 }
@@ -33,29 +33,28 @@ small {
 
 const Message = (props) => {
   const scrollRef = React.useRef();
-
+  console.log('props', props)
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [props.msg]);
   return (
-        <MessageWrapper
-        FromUser={props.msg.from}
-        currentUser={props.user1}
+    (props.msg.from === props.selected.uid || props.msg.to === props.selected.uid) &&
+    (<MessageWrapper
+      FromUser={props.msg.from}
+      currentUser={props.loggedUser}
       ref={scrollRef}
     >
-        
-            <p className={props.msg.from === props.user1 ? "me" : "friend"}>
+
+      <p className={props.msg.from === props.loggedUser ? "me" : "friend"}>
         {props.msg.media ? <img src={props.msg.media} alt={props.msg.text} /> : null}
         {props.msg.text}
       </p>
-        
-      
+
       <small>
         <Moment fromNow>{props.msg.createdAt.toDate()}</Moment>
-        </small>
-    </MessageWrapper>
+      </small>
+    </MessageWrapper>)
 
-    
   );
 };
 
