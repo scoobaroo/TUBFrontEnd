@@ -19,3 +19,8 @@ body {
 .App {
   display: flex;
 }
+#app-wrapper>div {
+  flex: 1 1 auto;
+  position: relative;
+  overflow-y: auto;
+}

@@ -36,7 +36,7 @@ function Wrapper() {
       colorScheme={state.theme}
       scale={state.scale}
     >
-      <Flex direction="column" height="100vh">
+      <Flex id="app-wrapper" direction="column" height="100vh" >
         <Router >
           <NavBar />
           <Routes>
