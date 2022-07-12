@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { compose } from "recompose";
 import { withFirebase } from "../../firebase";
 import withRouter from "../../session/withRouter";
+import withAuthorization from "../../session/withAuthorization";
 import {
   collection,
   query,
@@ -20,13 +21,17 @@ import {
 import MessageForm from "./components/MessageForm";
 import Message from "./components/Message";
 import { connectStorageEmulator } from "firebase/storage";
+import { BiArrowBack } from 'react-icons/bi';
 
 const HomeCantainer = styled.div`
     position: relative;
-    display: grid;
+    display: grid !important;
     grid-template-columns: 1fr 3fr;
     flex-grow: 1;
     overflow: hidden;
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
   `;
 
 const UserContainer = styled.div`
@@ -35,11 +40,23 @@ const UserContainer = styled.div`
   padding: 12px;
   border-right: 2px solid #1e1e1e;
   min-width: 275px;
+  @media (max-width: 768px) {
+    width: 100%;
+    background: none;
+  }
 `;
 
 const MessagaContainer = styled.div`
   position: relative;
   width: 100%;
+
+  ${props => props.open && `
+  @media (max-width: 768px) {
+    position: absolute;
+    background: #252525;
+    height: 100%;
+  }
+`}
   h5 {
     font-size: 20px;
     text-align: center;
@@ -47,6 +64,9 @@ const MessagaContainer = styled.div`
     align-items: center;
     justify-content: center;
     height: 100%;
+    @media (max-width: 768px) {
+      display: none;
+    }
   }
 `;
 
@@ -54,12 +74,30 @@ const MessageUser = styled.div`
   padding: 10px;
   text-align: center;
   background: #252525;
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+  }
+  svg{
+    display: none;
+    margin-right: 10px;
+    font-size: 22px;
+    @media (max-width: 768px) {
+      display: block;
+    }
+  }
 `;
 
 const Messages = styled.div`
   height: calc(100vh - 195px);
   overflow-y: auto;
   border-bottom: 1px solid var(--color-6);
+  @media (max-width: 992px) {
+    height: calc(100vh - 245px);
+  }
+  @media (max-width: 768px) {
+    height: calc(100vh - 235px);
+  }
 `;
 
 const ChatBase = (props) => {
@@ -72,6 +110,8 @@ const ChatBase = (props) => {
   const [msgs, setMsgs] = React.useState([]);
   const [tempMmsgs, setTempMsgs] = React.useState([]);
   const [toUserId, setToUserId] = React.useState([]);
+  const [closeChat, setCloseChat] = React.useState(true);
+  const [opener, setOpener] = React.useState(false);
   let loggedUser = props.firebase.auth.currentUser;
   const id = props.location.state?.id;
 
@@ -128,7 +168,7 @@ const ChatBase = (props) => {
       });
       setTempMsgs(newMsg);
     });
-    
+
     // get last message b/w logged in user and selected user
     const docSnap = await getDoc(doc(props.firebase.db, "lastMsg", id));
     // if last message exists and message is from selected user
@@ -141,7 +181,6 @@ const ChatBase = (props) => {
   console.log("usererr", users);
 
   const handleSubmit = async (e) => {
-
 
     e.preventDefault();
     if (!text)
@@ -183,11 +222,16 @@ const ChatBase = (props) => {
     setSelectedUser(selectedChat);
   };
 
+  const screenHandler = () => {
+    setOpener(true);
+    setCloseChat(true);
+  }
+
   console.log("msgs", msgs);
   console.log("tosuerId", toUserId)
   return (
     <HomeCantainer>
-      <UserContainer>
+      <UserContainer  onClick={screenHandler}>
         {users.map((user) => (
           <Users
             key={user.uid}
@@ -198,10 +242,12 @@ const ChatBase = (props) => {
           />
         ))}
       </UserContainer>
-      <MessagaContainer>
+      {closeChat && (
+        <MessagaContainer open={opener} >
         {chat ? (
           <>
             <MessageUser>
+            <BiArrowBack onClick={()=>setCloseChat(false)}/>
               <h3>{chat.email}</h3>
             </MessageUser>
 
@@ -213,10 +259,6 @@ const ChatBase = (props) => {
                 ))
                 : null}
             </Messages>
-
-
-
-
             <MessageForm
               handleSubmit={handleSubmit}
               text={text}
@@ -228,6 +270,8 @@ const ChatBase = (props) => {
           <h5>Select a user to start conversation</h5>
         )}
       </MessagaContainer>
+      )}
+      
     </HomeCantainer>
   );
 };
@@ -236,4 +280,8 @@ const ChatBase = (props) => {
 
 const Chat = compose(withRouter, withFirebase)(ChatBase);
 
-export default Chat;
+const condition = (authUser) => !!authUser;
+
+export default withAuthorization(condition)(Chat);
+
+

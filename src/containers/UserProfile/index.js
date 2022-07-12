@@ -59,7 +59,7 @@ const ProfileWrapper = styled.div`
 
 const LoadingWrapper = styled.div`
   min-height: 50vh;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -420,6 +420,7 @@ const UserProfileEdit = (props) => {
   React.useEffect(() => {
     const value = globalState.EducationType;
     setEducationType(value?.map((item) => item.Label.UserLocalizedLabel));
+    if (userId) props.navigate("/bountydetails");
   }, []);
 
   React.useEffect(() => {
@@ -468,7 +469,7 @@ const UserProfileEdit = (props) => {
           certifications: res.data.cob_Certification_providerid_Account,
           customerRate: res.data.cob_customerrating,
           providerRate: res.data.cob_providerrating,
-          edit: editable ,
+          edit: editable,
         }));
       })
       .catch((err) => {

@@ -56,7 +56,7 @@ const NoData = styled.div`
 
 const LoadingWrapper = styled.div`
   min-height: 50vh;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   justify-content: center;
   align-items: center;

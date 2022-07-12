@@ -23,4 +23,8 @@ body {
   flex: 1 1 auto;
   position: relative;
   overflow-y: auto;
+  display: block;
+}
+#app-wrapper>div>div {
+  margin-bottom: 10px;
 }

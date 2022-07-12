@@ -32,7 +32,7 @@ import ReactStars from "react-rating-stars-component";
 
 const LoadingWrapper = styled.div`
   min-height: 50vh;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -619,7 +619,7 @@ const BountiesBase = ({ firebase, navigate }) => {
                     ) : (
                       <>
                         <ButtonReleaseWrapper>
-                          <Button
+                          {/* <Button
                             variant="negative"
                             onPress={() => {
                               openReleaseModalHandler(
@@ -637,7 +637,7 @@ const BountiesBase = ({ firebase, navigate }) => {
                                 />
                               )}{" "}
                             Release
-                          </Button>
+                          </Button> */}
                           <Button
                             variant="cta"
                             onPress={() => {

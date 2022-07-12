@@ -18,7 +18,7 @@ import withRouter from "../../session/withRouter";
 import useUIControls from "../../hooks/useUIControls";
 import useAccountId from "../../hooks/useAccountId";
 import { AppContext } from "../../context";
-import { GiSunrise, GiSunset, GiResize , GiChatBubble} from "react-icons/gi";
+import { GiSunrise, GiSunset, GiResize, GiChatBubble } from "react-icons/gi";
 import appConfig from "webpack-config-loader!../../app-config.js";
 import {
   AiOutlineLogin,
@@ -39,6 +39,11 @@ const NavBarWrapper = styled.nav`
 const ThemeButtonContainer = styled.div`
   display: flex;
   align-items: center;
+  button{
+    @media (max-width: 576px) {
+      min-width: 30px;
+    }
+  }
 `;
 const NavMenuWrapper = styled.div`
   display: flex;
@@ -388,7 +393,8 @@ const NavBarBase = ({ firebase, navigate }) => {
   const currentUser = firebase.auth?.currentUser;
   const isLoggedIn = !!currentUser;
   const { theme } = state;
-  const userProfileHandler = () => navigate("/userprofile",{state:{id:null}});
+  const userProfileHandler = () =>
+    navigate("/userprofile", { state: { id: null } });
   const handleSignIn = () => navigate("/sign-in");
   const handleSignOut = () => {
     firebase.signOut();
@@ -399,9 +405,9 @@ const NavBarBase = ({ firebase, navigate }) => {
     navigate("/new-bounty", { state: { Bounty: key } });
   };
 
-  const goToChat = () => {    
+  const goToChat = () => {
     navigate("/chat");
-  }
+  };
 
   const handleMyCreatedBounty = () => {
     navigate("/mybounties");
@@ -472,7 +478,10 @@ const NavBarBase = ({ firebase, navigate }) => {
                   </ComboBox>
                 </SearchFilter>
                 <SearchInput>
-                  <SearchField onSubmit={searchsubmitHandler} onChange={searchCharecterHandler} />
+                  <SearchField
+                    onSubmit={searchsubmitHandler}
+                    onChange={searchCharecterHandler}
+                  />
                 </SearchInput>
                 <SearchButton>
                   <Button onPress={searchsubmitHandler}>
@@ -482,31 +491,32 @@ const NavBarBase = ({ firebase, navigate }) => {
               </SerachWrapper>
             )}
 
-           
             {state.accountId && (
               <>
-               <ConnectedButton>
-               <Connection />
-             </ConnectedButton>
-              <CreateNewBounty>
-                {/* <Button marginEnd={2} fo onPress={handleNewBounty}>
+                <ConnectedButton>
+                  <Connection />
+                </ConnectedButton>
+                <CreateNewBounty>
+                  {/* <Button marginEnd={2} fo onPress={handleNewBounty}>
                   Create New Bounty
                 </Button> */}
-                <MenuTrigger>
-                  <ActionButton>Create Bounty</ActionButton>
-                  <Menu onAction={(key) => handleNewBounty(key)}>
-                    <Item key="Create New Bounty">Create New Bounty</Item>
-                    <Item key="Create New Designated Bounty">
-                      Create New Designated Bounty
-                    </Item>
-                  </Menu>
-                </MenuTrigger>
-              </CreateNewBounty>
+                  <MenuTrigger>
+                    <ActionButton>Create Bounty</ActionButton>
+                    <Menu onAction={(key) => handleNewBounty(key)}>
+                      <Item key="Create New Bounty">Create New Bounty</Item>
+                      <Item key="Create New Designated Bounty">
+                        Create New Designated Bounty
+                      </Item>
+                    </Menu>
+                  </MenuTrigger>
+                </CreateNewBounty>
+
+                <ActionButton onPress={goToChat} isQuiet>
+                  <GiChatBubble />
+                </ActionButton>
               </>
             )}
-            <ActionButton onPress={goToChat} isQuiet>
-              <GiChatBubble />
-            </ActionButton>
+
             <ActionButton onPress={reSize} isQuiet>
               <GiResize />
             </ActionButton>
@@ -555,7 +565,10 @@ const NavBarBase = ({ firebase, navigate }) => {
               </ComboBox>
             </SearchFilter>
             <SearchInput>
-              <SearchField onSubmit={searchsubmitHandler}  onChange={searchCharecterHandler} />
+              <SearchField
+                onSubmit={searchsubmitHandler}
+                onChange={searchCharecterHandler}
+              />
             </SearchInput>
             <SearchButton>
               <Button onPress={searchsubmitHandler}>

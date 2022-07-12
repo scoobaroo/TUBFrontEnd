@@ -21,7 +21,7 @@ import useAccountId from "../../hooks/useAccountId";
 import bountyStatusMap from "../../helper/bounty-status";
 const LoadingWrapper = styled.div`
   min-height: 50vh;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -138,7 +138,7 @@ const BountyCard = ({ bounty }) => {
 };
 
 const BountyList = ({ filter, BountyDetails }) => {
-  return filter.map((bounty) => (
+  return filter?.map((bounty) => (
     <Well key={bounty.cob_bountyid}>
       <div className="bounty-name">{bounty.cob_name}</div>
 
@@ -321,7 +321,7 @@ const BountiesBase = ({ firebase, navigate }) => {
     let condition = false;
     state.bounties?.map((bounty) => {
       topics = bounty.cob_cob_topic_cob_bounty;
-      topics.map((topic) => {
+      topics?.map((topic) => {
         topicId = topic.cob_topicid;
       });
       if (topicId == value) {

@@ -1,5 +1,9 @@
 import { useLocation } from "react-router-dom";
 import appConfig from "webpack-config-loader!../../app-config.js";
+import { compose } from "recompose";
+import { withFirebase } from "../../firebase";
+import withRouter from "../../session/withRouter";
+import withAuthorization from "../../session/withAuthorization";
 import ReactStars from "react-rating-stars-component";
 import { useNavigate } from "react-router-dom";
 import { AiFillStar } from "react-icons/ai";
@@ -208,7 +212,7 @@ const ButtonWrapper = styled.div`
 
 const LoadingWrapper = styled.div`
   min-height: 50vh;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -338,7 +342,7 @@ const Modal = ({
   </ModalWrapper>
 );
 
-const BountyDetails = () => {
+const BountyDetailsPage = () => {
   const instialState = {
     categoryName: "",
     subCatergoryName: "",
@@ -409,7 +413,7 @@ const BountyDetails = () => {
     cob_providerrating: 0,
     cob_customerrating: 0,
     id: "",
-    firebaseUid:""
+    firebaseUid: "",
   };
 
   const location = useLocation();
@@ -494,14 +498,17 @@ const BountyDetails = () => {
   }, [bountyId]);
 
   React.useEffect(() => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);    
-    const ERC20Chain = globalState.Erc20Chains?.find(chain => chain.cob_hexcode === chainId);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const ERC20Chain = globalState.Erc20Chains?.find(
+      (chain) => chain.cob_hexcode === chainId
+    );
     setProvider(provider);
     setRequestToWorkHandler((prevState) => ({
       ...prevState,
       ERC20Chain: "COB_erc20",
-      ERC20ChainId: ERC20Chain.cob_erc20chainid,
+      ERC20ChainId: ERC20Chain?.cob_erc20chainid,
     }));
+    if (!bountyId) navigate("/bounties");
   }, []);
 
   React.useEffect(() => {
@@ -605,7 +612,9 @@ const BountyDetails = () => {
             firebaseUid: res.data.cob_firebaseuid,
           }));
         } else {
-          setImageUrl("https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true");
+          setImageUrl(
+            "https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true"
+          );
           setUserName(res.data.cob_firstname + " " + res.data.cob_lastname);
           setUserDetails((prevState) => ({
             ...prevState,
@@ -626,8 +635,8 @@ const BountyDetails = () => {
   };
 
   const obscureEmail = (email) => {
-    const [name, domain] = email.split('@');
-    return `${name[0]}${new Array(name.length).join('*')}@${domain}`;
+    const [name, domain] = email.split("@");
+    return `${name[0]}${new Array(name.length).join("*")}@${domain}`;
   };
 
   const loadProviderDetails = () => {
@@ -670,7 +679,7 @@ const BountyDetails = () => {
         setLoader(false);
         console.log("provider datataaaa", res);
         let imageUrl;
-       
+
         if (res.data.cob_profilepicture) {
           const string2 = res.data.cob_profilepicture;
           const string1 = "data:image/png;base64,";
@@ -1055,14 +1064,16 @@ const BountyDetails = () => {
   };
 
   const onMessageHandler = (message) => {
-    const ERC20Chain = globalState.Erc20Chains?.find(chain => chain.cob_hexcode === chainId);
+    const ERC20Chain = globalState.Erc20Chains?.find(
+      (chain) => chain.cob_hexcode === chainId
+    );
     setRequestToWorkHandler((prevState) => ({
       ...prevState,
       Message: message,
       BountyId: bountyId,
       ProviderId: globalState.accountId,
-      ERC20Chain: "COB_erc20",      
-      ERC20ChainId: ERC20Chain.cob_erc20chainid,
+      ERC20Chain: "COB_erc20",
+      ERC20ChainId: ERC20Chain?.cob_erc20chainid,
     }));
   };
 
@@ -1083,22 +1094,26 @@ const BountyDetails = () => {
   };
 
   const metaMaskAddresHandler = () => {
-    const ERC20Chain = globalState.Erc20Chains?.find(chain => chain.cob_hexcode === chainId);
+    const ERC20Chain = globalState.Erc20Chains?.find(
+      (chain) => chain.cob_hexcode === chainId
+    );
     setRequestToWorkHandler((prevState) => ({
       ...prevState,
       WalletAddress: account,
       ERC20Chain: "COB_erc20",
-      ERC20ChainId: ERC20Chain.cob_erc20chainid,
+      ERC20ChainId: ERC20Chain?.cob_erc20chainid,
     }));
   };
 
   const addressEditHandler = (e) => {
-    const ERC20Chain = globalState.Erc20Chains?.find(chain => chain.cob_hexcode === chainId);
+    const ERC20Chain = globalState.Erc20Chains?.find(
+      (chain) => chain.cob_hexcode === chainId
+    );
     setRequestToWorkHandler((prevState) => ({
       ...prevState,
       WalletAddress: e,
       ERC20Chain: "COB_erc20",
-      ERC20ChainId: ERC20Chain.cob_erc20chainid,
+      ERC20ChainId: ERC20Chain?.cob_erc20chainid,
     }));
   };
 
@@ -1441,8 +1456,8 @@ const BountyDetails = () => {
   }
 
   const navigateToChat = (id) => {
-    navigate('/chat', {state: { id: id }});
-  }
+    navigate("/chat", { state: { id: id } });
+  };
 
   const ShowSuccessModal =
     showSuccess &&
@@ -1546,7 +1561,9 @@ const BountyDetails = () => {
             />
             <div>
               <div>
-                {reqToWorkPovider.first_name || reqToWorkPovider.last_name && `${reqToWorkPovider.first_name} ${reqToWorkPovider.last_name}`}
+                {reqToWorkPovider.first_name ||
+                  (reqToWorkPovider.last_name &&
+                    `${reqToWorkPovider.first_name} ${reqToWorkPovider.last_name}`)}
               </div>
               <div>{reqToWorkPovider.email}</div>
               <div>{reqToWork.message}</div>
@@ -1639,7 +1656,9 @@ const BountyDetails = () => {
               />
               <div>
                 <div>
-                {reqToWorkPovider.first_name || reqToWorkPovider.last_name && `${reqToWorkPovider.first_name} ${reqToWorkPovider.last_name}`}
+                  {reqToWorkPovider.first_name ||
+                    (reqToWorkPovider.last_name &&
+                      `${reqToWorkPovider.first_name} ${reqToWorkPovider.last_name}`)}
                 </div>
                 <div>{reqToWorkPovider.email}</div>
                 <div>{reqToWorkPovider.message}</div>
@@ -1680,19 +1699,17 @@ const BountyDetails = () => {
             </Heading>
           </ItemWrapper>
         )}
-        {
-          bountyDetails.subCatergoryName && (
-            <ItemWrapper>
-          <Heading>
-            <span style={{ width: "150px", display: "inline-block" }}>
-              SubCategory
-            </span>
-            : {bountyDetails.subCatergoryName}
-          </Heading>
-        </ItemWrapper>
-          )
-        }
-        
+        {bountyDetails.subCatergoryName && (
+          <ItemWrapper>
+            <Heading>
+              <span style={{ width: "150px", display: "inline-block" }}>
+                SubCategory
+              </span>
+              : {bountyDetails.subCatergoryName}
+            </Heading>
+          </ItemWrapper>
+        )}
+
         {bountyDetails.topics.length != 0 && (
           <ItemWrapper>
             <Heading>
@@ -1749,10 +1766,13 @@ const BountyDetails = () => {
             <img src={imageUrl} alt="profile" />
             <Heading>{userName}</Heading>
           </ImageWrapper>
-          <div style={{marginLeft:'10px',marginTop:'2px'}}>
-          {bountyDetails.providerId === globalState.accountId &&
-          <Button onClick={()=>navigateToChat(userDetatils.firebaseUid)}>Start chat</Button>}  
-            </div>
+          <div style={{ marginLeft: "10px", marginTop: "2px" }}>
+            {bountyDetails.providerId === globalState.accountId && (
+              <Button onClick={() => navigateToChat(userDetatils.firebaseUid)}>
+                Start chat
+              </Button>
+            )}
+          </div>
         </div>
         {userProviderDetails.email && (
           <div style={{ display: "flex", margin: "10px" }}>
@@ -1768,15 +1788,21 @@ const BountyDetails = () => {
             >
               <img src={userProviderDetails.profilePicture} alt="profile" />
               <Heading>
-                { userProviderDetails.first_name && userProviderDetails.last_name ? (
-                  userProviderDetails.first_name + " " + userProviderDetails.last_name
-                ) : (userProviderDetails.email)}  
-               
+                {userProviderDetails.first_name && userProviderDetails.last_name
+                  ? userProviderDetails.first_name +
+                    " " +
+                    userProviderDetails.last_name
+                  : userProviderDetails.email}
               </Heading>
             </ImageWrapper>
-            <div style={{marginLeft:'10px',marginTop:'2px'}}>
-          {bountyDetails.customerId === globalState.accountId &&
-          <Button onClick={()=>navigateToChat(providerDetails.firebaseUid)}>Start chat</Button>}  
+            <div style={{ marginLeft: "10px", marginTop: "2px" }}>
+              {bountyDetails.customerId === globalState.accountId && (
+                <Button
+                  onClick={() => navigateToChat(providerDetails.firebaseUid)}
+                >
+                  Start chat
+                </Button>
+              )}
             </div>
           </div>
         )}
@@ -2032,4 +2058,8 @@ const BountyDetails = () => {
   );
 };
 
-export default BountyDetails;
+const BountyDetails = compose(withRouter, withFirebase)(BountyDetailsPage);
+
+const condition = (authUser) => !!authUser;
+
+export default withAuthorization(condition)(BountyDetails);
