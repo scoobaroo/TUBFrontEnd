@@ -4,13 +4,15 @@ import styled from "styled-components";
 import { getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import appConfig from "../../../app-config";
+import { AppContext } from "../../../context";
 
 const UserWrapper = styled.div`
-    margin-bottom: 7px;
-    padding: 10px;
-    cursor: pointer;
-    border-radius: 10px;
-    background: ${(props) => (props.chat.uid === props.user.uid ? "#4e4e4e" : "#333")};
+  margin-bottom: 7px;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 10px;
+  background: ${(props) =>
+    props.chat.uid === props.user.uid ? "#4e4e4e" : "#333"};
 `;
 
 const UserInfo = styled.div`
@@ -54,47 +56,84 @@ const Online = styled.div`
 `;
 
 const Offline = styled.div`
-  background: var(--color-5);
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+background: #cc1414;;
+width: 10px;
+height: 10px;
+border-radius: 50%;
+flex-shrink: 0;
+margin-left: 10px;
 `;
 
 const Ptag = styled.p`
-font-size: 14px;
-white-space: nowrap;
-width: 90%;
-overflow: hidden;
-text-overflow: ellipsis;
-margin-left: 10px;
-strong {
+  font-size: 14px;
+  white-space: nowrap;
+  width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: 10px;
+  strong {
     margin-right: 10px;
-}
+  }
 `;
 
 const Users = ({ loggedUser, user, selectUser, chat }) => {
   const app = initializeApp(appConfig.development.firebaseConfig);
+  const [state, setState] = React.useContext(AppContext);
+  const [imageUrl, setImageUrl] = useState("");
   const db = getFirestore(app);
   const user2 = user?.uid;
   const [data, setData] = useState("");
 
   useEffect(() => {
-    const id = loggedUser > user2 ? `${loggedUser + user2}` : `${user2 + loggedUser}`;
+    const id =
+      loggedUser > user2 ? `${loggedUser + user2}` : `${user2 + loggedUser}`;
     let unsub = onSnapshot(doc(db, "lastMsg", id), (doc) => {
       setData(doc.data());
+      let data = doc.data();
+      setState((prevState) => ({
+        ...prevState,
+        MessageContext: data,
+      }));
     });
+    imageHandler();
     return () => unsub();
   }, []);
+
+  const imageHandler = () => {
+    if (user.profilePicture) {
+      const string2 = user.profilePicture;
+      const string1 = "data:image/png;base64,";
+      setImageUrl(string1.concat(string2));
+    }
+  };
 
   return (
     <>
       <UserWrapper chat={chat} user={user} onClick={() => selectUser(user)}>
         <UserInfo>
           <UserDetails>
-            <img src={user.avatar || `https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true`} alt="avatar" className="avatar" />
-            <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <div style={{ display: 'flex' }}>
-                <h4>{user.email}</h4>
+            <img
+              src={
+                imageUrl
+                  ? imageUrl
+                  : "https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true"
+              }
+              alt="avatar"
+              className="avatar"
+            />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+              }}
+            >
+              <div style={{ display: "flex" }}>
+                <h4>
+                  {user.firstName && user.lastName
+                    ? user.firstName + " " + user.lastName
+                    : user.email}
+                </h4>
                 {data?.from !== loggedUser && data?.unread && <h5>New</h5>}
               </div>
               {data && (
@@ -108,18 +147,8 @@ const Users = ({ loggedUser, user, selectUser, chat }) => {
 
           {user.isOnline ? <Online></Online> : <Offline></Offline>}
         </UserInfo>
-
       </UserWrapper>
-      {/* <div
-        onClick={() => selectUser(user)}
-        className={`sm_container ${chat.name === user.name && "selected_user"}`}
-      >
-        <img
-          src={user.avatar || Img}
-          alt="avatar"
-          className="avatar sm_screen"
-        />
-      </div> */}
+
     </>
   );
 };

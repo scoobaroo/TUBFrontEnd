@@ -30,6 +30,12 @@ import { ethers, getDefaultProvider, utils } from "ethers";
 import abi from "../../abi/Bounty.json";
 import ReactStars from "react-rating-stars-component";
 
+const CustomerBountiesWrapper = styled.div`
+  padding: 16px;
+  .main_heading {
+    margin-bottom: 16px;
+  }
+`;
 const LoadingWrapper = styled.div`
   min-height: 50vh;
   display: flex !important;
@@ -38,8 +44,7 @@ const LoadingWrapper = styled.div`
   align-items: center;
 `;
 
-const BountyGrid = styled.div`
-  border: 1px solid red;
+const BountyGrid = styled.div`;
   display: grid;
   grid-template-columns: repeat(1, 1fr);
   grid-row-gap: 8px;
@@ -689,8 +694,8 @@ const BountiesBase = ({ firebase, navigate }) => {
   }
 
   return (
-    <div>
-      <h2>Customer Bounties</h2>
+    <CustomerBountiesWrapper>
+      <h2 className="main_heading"  >📜 Customer Bounties</h2>
       {State.allBounties && !State.loading && <BountyGrid>{data}</BountyGrid>}
       {State.loading && (
         <LoadingWrapper>
@@ -827,7 +832,7 @@ const BountiesBase = ({ firebase, navigate }) => {
           </ButtonGroup>
         </Dialog>
       </DialogTrigger>
-    </div>
+    </CustomerBountiesWrapper>
   );
 };
 

@@ -9,6 +9,7 @@ import { DialogTrigger, AlertDialog } from "@adobe/react-spectrum";
 import appConfig from "webpack-config-loader!../app-config.js";
 import { useIdleTimer } from "react-idle-timer";
 
+
 const withAuthorization = (condition) => (Component) => {
   const WithAuthorization = (props) => {
     const { setAccountId } = useAccountId();
@@ -29,16 +30,18 @@ const withAuthorization = (condition) => (Component) => {
       };
     }, []);
 
+
+
     const openModal = () => {
       <Modal />;
     };
 
     const onIdle = () => {
-      if(_state.accountId) {
+      if (_state.accountId) {
         setShowModal(true);
-      setAccountId("");
-      props.firebase.signOut();
-      props.navigate("/sign-in");
+        setAccountId("");
+        props.firebase.signOut();
+        props.navigate("/sign-in");
       }
     };
 
@@ -47,7 +50,6 @@ const withAuthorization = (condition) => (Component) => {
       onIdle: onIdle,
     });
 
-  
     return (
       <>
         <Component {...props} />

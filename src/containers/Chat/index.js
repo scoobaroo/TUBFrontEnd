@@ -5,6 +5,7 @@ import { compose } from "recompose";
 import { withFirebase } from "../../firebase";
 import withRouter from "../../session/withRouter";
 import withAuthorization from "../../session/withAuthorization";
+import appConfig from "../../app-config";
 import {
   collection,
   query,
@@ -21,18 +22,20 @@ import {
 import MessageForm from "./components/MessageForm";
 import Message from "./components/Message";
 import { connectStorageEmulator } from "firebase/storage";
-import { BiArrowBack } from 'react-icons/bi';
+import { BiArrowBack } from "react-icons/bi";
+import axios from "axios";
+import { AppContext } from "../../context";
 
 const HomeCantainer = styled.div`
-    position: relative;
-    display: grid !important;
-    grid-template-columns: 1fr 3fr;
-    flex-grow: 1;
-    overflow: hidden;
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-    }
-  `;
+  position: relative;
+  display: grid !important;
+  grid-template-columns: 1fr 3fr;
+  flex-grow: 1;
+  overflow: hidden;
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
 
 const UserContainer = styled.div`
   background: #252525;
@@ -50,7 +53,9 @@ const MessagaContainer = styled.div`
   position: relative;
   width: 100%;
 
-  ${props => props.open && `
+  ${(props) =>
+    props.open &&
+    `
   @media (max-width: 768px) {
     position: absolute;
     background: #252525;
@@ -78,7 +83,7 @@ const MessageUser = styled.div`
     display: flex;
     align-items: center;
   }
-  svg{
+  svg {
     display: none;
     margin-right: 10px;
     font-size: 22px;
@@ -111,13 +116,15 @@ const ChatBase = (props) => {
   const [tempMmsgs, setTempMsgs] = React.useState([]);
   const [toUserId, setToUserId] = React.useState([]);
   const [closeChat, setCloseChat] = React.useState(true);
+  const [newUsers, setNewUsers] = React.useState([]);
   const [opener, setOpener] = React.useState(false);
+  const [state, setState] = React.useContext(AppContext);
   let loggedUser = props.firebase.auth.currentUser;
   const id = props.location.state?.id;
 
   React.useEffect(() => {
     if (loggedUser) {
-      setCurrentUser(loggedUser.uid)
+      setCurrentUser(loggedUser.uid);
       const usersRef = collection(props.firebase.db, "users");
       // create query object
 
@@ -134,12 +141,21 @@ const ChatBase = (props) => {
     }
   }, [loggedUser]);
 
-  React.useEffect(() => {
-    if (id && users.length > 0) selectUser(id)
-  }, [users]);
+  console.log("users", users);
 
   React.useEffect(() => {
-    if (tempMmsgs.length > 0 && (tempMmsgs[0].from === selectedUser.uid || tempMmsgs[0].to === selectedUser.uid)) {
+    if (id && users.length > 0) selectUser(id);
+    console.log("users", users);
+  }, [users]);
+
+  console.log("newUsers", newUsers);
+
+  React.useEffect(() => {
+    if (
+      tempMmsgs.length > 0 &&
+      (tempMmsgs[0].from === selectedUser.uid ||
+        tempMmsgs[0].to === selectedUser.uid)
+    ) {
       setMsgs(tempMmsgs);
     }
   }, [tempMmsgs]);
@@ -162,9 +178,8 @@ const ChatBase = (props) => {
     onSnapshot(q, (querySnapshot) => {
       let newMsg = [];
       querySnapshot.forEach((doc) => {
-
         newMsg.push(doc.data());
-        setToUserId(doc.data().to)
+        setToUserId(doc.data().to);
       });
       setTempMsgs(newMsg);
     });
@@ -176,15 +191,13 @@ const ChatBase = (props) => {
       // update last message doc, set unread to false
       await updateDoc(doc(props.firebase.db, "lastMsg", id), { unread: false });
     }
-  }
+  };
 
   console.log("usererr", users);
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
-    if (!text)
-      return;
+    if (!text) return;
 
     setText("");
     setImg("");
@@ -203,6 +216,7 @@ const ChatBase = (props) => {
       media: url || "",
     });
 
+
     await setDoc(doc(props.firebase.db, "lastMsg", id), {
       text,
       from: currentUser,
@@ -210,13 +224,26 @@ const ChatBase = (props) => {
       createdAt: Timestamp.fromDate(new Date()),
       media: url || "",
       unread: true,
+      name: chat.email,
     });
-  };
+    
+    let Id = user2;
+    await setDoc(doc(props.firebase.db, "notifications",  Id), {
+      text,
+      from: currentUser,
+      fromUserName: loggedUser.email,
+      to: user2,
+      createdAt: Timestamp.fromDate(new Date()),
+      media: url || "",
+      unread: true,
+      name: chat.email,
+    });
+    };
 
   const selectUser = async (user) => {
     let selectedChat = user;
     if (!user.uid) {
-      selectedChat = users.find(usr => usr.uid === user);
+      selectedChat = users.find((usr) => usr.uid === user);
     }
     setChat(selectedChat);
     setSelectedUser(selectedChat);
@@ -225,16 +252,16 @@ const ChatBase = (props) => {
   const screenHandler = () => {
     setOpener(true);
     setCloseChat(true);
-  }
+  };
 
   console.log("msgs", msgs);
-  console.log("tosuerId", toUserId)
+  console.log("tosuerId", toUserId);
   return (
     <HomeCantainer>
-      <UserContainer  onClick={screenHandler}>
+      <UserContainer onClick={screenHandler}>
         {users.map((user) => (
           <Users
-            key={user.uid}
+            key={user.cob_firebaseuid}
             user={user}
             selectUser={selectUser}
             loggedUser={currentUser}
@@ -243,45 +270,44 @@ const ChatBase = (props) => {
         ))}
       </UserContainer>
       {closeChat && (
-        <MessagaContainer open={opener} >
-        {chat ? (
-          <>
-            <MessageUser>
-            <BiArrowBack onClick={()=>setCloseChat(false)}/>
-              <h3>{chat.email}</h3>
-            </MessageUser>
+        <MessagaContainer open={opener}>
+          {chat ? (
+            <>
+              <MessageUser>
+                <BiArrowBack onClick={() => setCloseChat(false)} />
+                <h3>{chat.email}</h3>
+              </MessageUser>
 
-            <Messages>
-              {msgs.length
-                ? msgs.map((msg, i) => (
-
-                  <Message key={i} msg={msg} loggedUser={currentUser} selected={selectedUser} />
-                ))
-                : null}
-            </Messages>
-            <MessageForm
-              handleSubmit={handleSubmit}
-              text={text}
-              setText={setText}
-              setImg={setImg}
-            />
-          </>
-        ) : (
-          <h5>Select a user to start conversation</h5>
-        )}
-      </MessagaContainer>
+              <Messages>
+                {msgs.length
+                  ? msgs.map((msg, i) => (
+                      <Message
+                        key={i}
+                        msg={msg}
+                        loggedUser={currentUser}
+                        selected={selectedUser}
+                      />
+                    ))
+                  : null}
+              </Messages>
+              <MessageForm
+                handleSubmit={handleSubmit}
+                text={text}
+                setText={setText}
+                setImg={setImg}
+              />
+            </>
+          ) : (
+            <h5>Select a user to start conversation</h5>
+          )}
+        </MessagaContainer>
       )}
-      
     </HomeCantainer>
   );
 };
-
-
 
 const Chat = compose(withRouter, withFirebase)(ChatBase);
 
 const condition = (authUser) => !!authUser;
 
 export default withAuthorization(condition)(Chat);
-
-

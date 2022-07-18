@@ -35,7 +35,6 @@ const NewLoading = styled.div`
 `;
 
 const BountyGrid = styled.div`
-  border: 1px solid red;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-column-gap: 8px;
@@ -107,9 +106,11 @@ const NoData = styled.div`
   font-weight: bold;
   color: #8a7e7e;
 `;
-
+const AllBountiesWrapper = styled.div`
+padding: 16px;
+`;
 const FilterItemWrapper = styled.div`
-  margin: 20px;
+  margin: 0 10px 20px 0;
   @media (max-width: 1200px) {
     width: 31%;
     margin: 5px 10px;
@@ -118,7 +119,8 @@ const FilterItemWrapper = styled.div`
     width: 47%;
   }
   @media (max-width: 576px) {
-    width: 94%;
+    width:100%;
+    margin:0 0 10px 0;
   }
   & > div {
     @media (max-width: 1200px) {
@@ -386,7 +388,8 @@ const BountiesBase = ({ firebase, navigate }) => {
   }
 
   return (
-    <div>
+    <AllBountiesWrapper>
+       <h2>📜 All Bounties</h2>
       <FilterGrid>
         <FilterItemWrapper>
           <SearchField label="Search" />
@@ -454,7 +457,7 @@ const BountiesBase = ({ firebase, navigate }) => {
           )}
         </BountyGrid>
       ) : null}
-    </div>
+    </AllBountiesWrapper>
   );
 };
 

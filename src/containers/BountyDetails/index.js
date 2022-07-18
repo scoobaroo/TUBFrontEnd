@@ -51,11 +51,15 @@ const BountyWrapper = styled.div`
   grid-template-columns: repeat(1, 1fr);
   grid-row-gap: 16px;
   margin: 16px;
+  .main_heading{
+    margin-bottom: 16px;
+  }
 `;
 
 const BountyDeteilsWrapper = styled.div`
-  border: 1px #4f4a4a solid;
-  border-radius: 5px;
+    background: rgb(200 200 200 / 2%);
+    border: 1px solid rgb(239 239 239 / 5%);
+    border-radius: 5px;
   padding: 16px;
   & img {
     width: 35px;
@@ -111,6 +115,11 @@ const ImageWrapper = styled.div`
 
 const ItemWrapper = styled.div`
   margin: 10px;
+  display: flex;
+  align-items: end;
+  button{
+    margin-left: 10px;
+  }
 `;
 
 const ItemWrapperRating = styled.div`
@@ -314,9 +323,10 @@ const Modal = ({
           </Form>
         </Content>
         <ButtonGroup>
-          <Button variant="secondary" onPress={closeModal}>
+            <Button variant="secondary" onPress={closeModal}>
             Cancel
           </Button>
+          
           <Button variant="cta" onPress={register}>
             Save
           </Button>
@@ -357,7 +367,7 @@ const BountyDetailsPage = () => {
     providerId: "",
     rating: [],
     reqToWork: [],
-    ERC20Chain: "",
+    ERC20ChainId: "",
     attachmentCount: 0,
   };
   const intialMessage = {
@@ -480,6 +490,7 @@ const BountyDetailsPage = () => {
   const [reviewconditon, setReviewconditon] = React.useState(true);
   const [ERC20ChainName, setErc20chaninName] = React.useState("");
   const [chainValue, setChainValue] = React.useState();
+  const [blockexplorerbaseurl, setBlockexplorerbaseurl] = React.useState("");
 
   // get BlobService = notice `?` is pulled out of sasToken - if created in Azure portal
   const blobService = new BlobServiceClient(
@@ -546,7 +557,6 @@ const BountyDetailsPage = () => {
         image: false,
         requestWork: false,
         acceptBounty: false,
-        release: false,
         completeBounty: false,
         status: false,
         metamask: true,
@@ -564,28 +574,18 @@ const BountyDetailsPage = () => {
     }
   }, [bountyDetails.reqToWork]);
 
-  const setChaninIdHandler = (name) => {
-    let mainString = name;
-    let subString;
-    const value = globalState.RequestWork;
-    value?.filter((item) => {
-      subString = item.Label.UserLocalizedLabel.Label;
 
-      if (mainString.includes(`${subString}`)) {
-        setChainValue(item.Value);
-      }
-      if (item.Value == bountyDetails.ERC20Chain) {
-        setErc20chaninName(item.Label.UserLocalizedLabel.Label);
-      }
-    });
-  };
 
   const setErc20chaninNameValue = () => {
-    const network = Network.find((chain) => chain.hex === chainId);
-    if (network) {
-      setChaninIdHandler(network.name);
-    }
-  };
+    const value = globalState.Erc20Chains;
+    value?.filter((item) => {
+      if (item.cob_erc20chainid == bountyDetails.ERC20ChainId) {
+        setErc20chaninName(item.cob_name);
+        setChainValue(item.cob_erc20chainid);
+        setBlockexplorerbaseurl(item.cob_blockexplorerbaseurl)
+      }
+    })
+  }
 
   const loadProfileDetails = () => {
     console.log("accontId", bountyDetails.customerId);
@@ -729,7 +729,7 @@ const BountyDetailsPage = () => {
           loading: false,
           rating: response.data?.Ratings,
           reqToWork: response.data?.RequestToWorks,
-          ERC20Chain: response.data?.ERC20Chain,
+          ERC20ChainId: response.data?.ERC20ChainId,
           attachmentCount: response.data?.AttachmentCount,
         }));
         status = response.data?.BountyStatus;
@@ -774,7 +774,7 @@ const BountyDetailsPage = () => {
   };
 
   const getBounty = async () => {
-    if (bountyDetails.ERC20Chain !== chainValue) {
+    if (bountyDetails.ERC20ChainId !== chainValue) {
       setShowError(true);
       setMessage((prevState) => ({
         ...prevState,
@@ -783,7 +783,6 @@ const BountyDetailsPage = () => {
         image: false,
         requestWork: false,
         acceptBounty: false,
-        release: false,
         completeBounty: false,
         status: true,
         metamask: false,
@@ -815,7 +814,7 @@ const BountyDetailsPage = () => {
 
   const getStatus = async () => {
     try {
-      if (bountyDetails.ERC20Chain !== chainValue) {
+      if (bountyDetails.ERC20ChainId !== chainValue) {
         setShowError(true);
         setMessage((prevState) => ({
           ...prevState,
@@ -824,7 +823,6 @@ const BountyDetailsPage = () => {
           image: false,
           requestWork: false,
           acceptBounty: false,
-          release: false,
           completeBounty: false,
           status: true,
           metamask: false,
@@ -841,7 +839,6 @@ const BountyDetailsPage = () => {
         image: false,
         requestWork: false,
         acceptBounty: false,
-        release: false,
         completeBounty: false,
         status: false,
         metamask: false,
@@ -865,7 +862,7 @@ const BountyDetailsPage = () => {
 
   const cancelHandler = async () => {
     try {
-      if (bountyDetails.ERC20Chain !== chainValue) {
+      if (bountyDetails.ERC20ChainId !== chainValue) {
         setShowModal(false);
         setShowError(true);
         setMessage((prevState) => ({
@@ -875,7 +872,6 @@ const BountyDetailsPage = () => {
           image: false,
           requestWork: false,
           acceptBounty: false,
-          release: false,
           completeBounty: false,
           status: true,
           metamask: false,
@@ -892,7 +888,6 @@ const BountyDetailsPage = () => {
         image: false,
         requestWork: false,
         acceptBounty: false,
-        release: false,
         completeBounty: false,
         status: false,
         metamask: false,
@@ -906,7 +901,6 @@ const BountyDetailsPage = () => {
         image: false,
         requestWork: false,
         acceptBounty: false,
-        release: false,
         completeBounty: false,
         status: false,
         metamask: false,
@@ -925,7 +919,6 @@ const BountyDetailsPage = () => {
         image: false,
         requestWork: false,
         acceptBounty: false,
-        release: false,
         completeBounty: false,
         status: false,
         metamask: false,
@@ -939,7 +932,6 @@ const BountyDetailsPage = () => {
         image: false,
         requestWork: false,
         acceptBounty: false,
-        release: false,
         completeBounty: false,
         status: false,
         metamask: false,
@@ -975,7 +967,6 @@ const BountyDetailsPage = () => {
       cancel: false,
       image: true,
       acceptBounty: false,
-      release: false,
       completeBounty: false,
       status: false,
       metamask: false,
@@ -1038,7 +1029,6 @@ const BountyDetailsPage = () => {
           image: false,
           requestWork: true,
           acceptBounty: false,
-          release: false,
           completeBounty: false,
           status: false,
           metamask: false,
@@ -1055,7 +1045,6 @@ const BountyDetailsPage = () => {
           image: false,
           requestWork: true,
           acceptBounty: false,
-          release: false,
           status: false,
           completeBounty: false,
           metamask: false,
@@ -1245,7 +1234,6 @@ const BountyDetailsPage = () => {
             image: false,
             requestWork: false,
             acceptBounty: true,
-            release: false,
             completeBounty: false,
             status: false,
             metamask: false,
@@ -1307,7 +1295,6 @@ const BountyDetailsPage = () => {
           image: false,
           requestWork: false,
           acceptBounty: false,
-          release: false,
           completeBounty: true,
           status: false,
           metamask: false,
@@ -1349,61 +1336,6 @@ const BountyDetailsPage = () => {
     setContractAddress(cob_smartcontractaddress);
   };
 
-  const bountyReleaseCallHandler = async (requestToWorkId) => {
-    await axios
-      .patch(`${appConfig.apiBaseUrl}requestToWorks/${rwrkId}/release`)
-      .then((response) => {
-        if (response.status === 200) {
-          setShowSuccess(true);
-          setMessage((prevState) => ({
-            ...prevState,
-            cancel: false,
-            getBounty: false,
-            image: false,
-            requestWork: false,
-            acceptBounty: false,
-            completeBounty: false,
-            release: true,
-            status: false,
-            metamask: false,
-          }));
-          setRequestReleaseLoader(false);
-          loadBountyDetails();
-          console.log("response", response);
-        }
-      })
-      .catch((error) => {
-        setRequestReleaseLoader(false);
-        console.log("error", error);
-      });
-  };
-
-  const openReleaseModalHandler = (req_workId, cob_smartcontractaddress) => {
-    setRwrkId(req_workId);
-    setContractAddress(cob_smartcontractaddress);
-    setShowReleseModal(true);
-  };
-
-  const bountyReleaseHandler = async () => {
-    setRequestReleaseLoader(true);
-    setShowReleseModal(false);
-    let contract = new ethers.Contract(
-      contractAddress,
-      abi,
-      provider.getSigner()
-    );
-    console.log("contract", contract);
-    try {
-      const value = await contract.release();
-      console.log("value", value);
-      if (value) {
-        bountyReleaseCallHandler(rwrkId);
-      }
-    } catch (error) {
-      console.log("error", error);
-      setRequestReleaseLoader(false);
-    }
-  };
 
   const markasCompleteHandler = async () => {
     setShowmarkascompleteModal(false);
@@ -1421,7 +1353,6 @@ const BountyDetailsPage = () => {
             requestWork: false,
             acceptBounty: false,
             completeBounty: true,
-            release: false,
             status: false,
             metamask: false,
           }));
@@ -1489,14 +1420,8 @@ const BountyDetailsPage = () => {
         action={() => setShowSuccess(false)}
         open={showSuccess}
       />
-    ) : message.release ? (
-      <SuccessModal
-        title={"Success"}
-        message={"Bounty released successfully"}
-        action={() => setShowSuccess(false)}
-        open={showSuccess}
-      />
-    ) : message.completeBounty ? (
+    ) 
+    : message.completeBounty ? (
       <SuccessModal
         title={"Success"}
         message={"Bounty completed successfully"}
@@ -1594,22 +1519,6 @@ const BountyDetailsPage = () => {
             ) : (
               <>
                 <ButtonReleaseWrapper>
-                  <Button
-                    variant="negative"
-                    onPress={() => {
-                      openReleaseModalHandler(
-                        reqToWork.requestToWorkId,
-                        bountyDetails.SmartContractAddress
-                      );
-                    }}
-                  >
-                    {" "}
-                    {reqToWork.requestToWorkId === rwrkId &&
-                      requestReleaseLoader && (
-                        <ProgressCircle aria-label="Loading…" isIndeterminate />
-                      )}{" "}
-                    Release
-                  </Button>
                   {reqToWork.status === "Completed" &&
                     bountyDetails.bountyStatus === "In Progress" && (
                       <Button
@@ -1687,7 +1596,7 @@ const BountyDetailsPage = () => {
 
   return (
     <BountyWrapper>
-      <h2>#Bounty Details</h2>
+      <h2 className="main_heading"> 📜 Bounty Details</h2>
       <BountyDeteilsWrapper>
         {bountyDetails.categoryName && (
           <ItemWrapper>
@@ -1808,7 +1717,7 @@ const BountyDetailsPage = () => {
         )}
         <a
           style={{ textDecoration: "none" }}
-          href={`https://${ERC20ChainName}.etherscan.io/address/${bountyDetails.SmartContractAddress}`}
+          href={`${blockexplorerbaseurl}/address/${bountyDetails.SmartContractAddress}`}
           target="_blank"
         >
           <Button variant="negative">View on blockchain explorer</Button>
@@ -1830,6 +1739,7 @@ const BountyDetailsPage = () => {
                 value={requestToWorkHandler.WalletAddress}
                 addressEditHandler={addressEditHandler}
                 type={requestToWorkHandler.ERC20Chain}
+                providerId={bountyDetails.providerId}
               />
             </>
           )}
@@ -1846,8 +1756,6 @@ const BountyDetailsPage = () => {
                   Amount to Increase
                 </TextField>
                 <Button
-                  marginTop={30}
-                  marginStart={12}
                   onPress={() => increaseBounty(parseInt(amount))}
                   variant="cta"
                 >
@@ -1857,7 +1765,7 @@ const BountyDetailsPage = () => {
             )}
 
             <ButtonWrapper>
-              {bountyDetails.bountyStatus !== "Completed" && (
+              {bountyDetails.providerId === " " && (
                 <Button onPress={() => setShowModal(true)} variant="negative">
                   Cancel
                 </Button>
@@ -1896,7 +1804,7 @@ const BountyDetailsPage = () => {
       </BountyDeteilsWrapper>
 
       <div>
-        <h2>#Related Files</h2>
+        <h2> 📜 Related Files</h2>
         <FileWrapper>
           {showurl
             ? ImageBloburls.map((blob, index) => (
@@ -1962,29 +1870,7 @@ const BountyDetailsPage = () => {
 
       {ShowErrorModal}
 
-      <DialogTrigger isOpen={showReleseModal}>
-        <></>
-        <Dialog>
-          <Heading>Release bounty</Heading>
-          <Divider />
-          <Content>
-            <Text>Do you want to release the bounty?</Text>
-          </Content>
-          <ButtonGroup>
-            <Button
-              variant="secondary"
-              onPress={() => {
-                setShowReleseModal(false);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button variant="cta" onPress={bountyReleaseHandler}>
-              Confirm
-            </Button>
-          </ButtonGroup>
-        </Dialog>
-      </DialogTrigger>
+     
       <DialogTrigger isOpen={showcompleteModal}>
         <></>
         <Dialog>

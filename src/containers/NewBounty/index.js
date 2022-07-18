@@ -16,6 +16,7 @@ import {
   Content,
   ButtonGroup,
 } from "@adobe/react-spectrum";
+import JoditEditor from "jodit-react";
 import { FcFullTrash } from "react-icons/fc";
 import axios from "axios";
 import styled from "styled-components";
@@ -26,17 +27,12 @@ import { AppContext } from "../../context";
 import { compose } from "recompose";
 import withRouter from "../../session/withRouter";
 import { ethers, getDefaultProvider, utils } from "ethers";
-
-import { fs } from "fs";
-
 import abi from "../../abi/Bounty.json";
 import bytecode from "../../abi/Bytecode.json";
 import ABI from "../../abi/BountyABI.json";
 import BountyBytecode from "../../abi/BountyBytecode.json";
-import { call } from "file-loader";
-import { Navigate } from "react-router-dom";
 import { useMetaMask } from "metamask-react";
-import Network from "../../helper/metamask-network";
+import ErrorModal from "../../components/ErrorModal";
 
 const LoadingWrapper = styled.div`
   min-height: 50vh;
@@ -80,6 +76,38 @@ const TopicsWrapper = styled.div`
   }
 `;
 
+const FormContainer = styled.div`
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap:30px;
+background: rgb(200 200 200 / 2%);
+    border: 1px solid rgb(239 239 239 / 5%);
+    padding: 16px;
+    border-radius: 5px;
+    margin-top: 17px;
+    @media (max-width: 768px) {
+grid-template-columns: 1fr;
+    }
+}
+textarea{
+  height:158px !important;
+}
+`;
+const ButtonWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+  button {
+    margin-top: 21px;
+    @media (max-width: 768px) {
+      margin-top: 10px;
+      margin-left: auto;
+    }
+  }
+`;
 const initialState = {
   categories: null,
   loading: true,
@@ -95,7 +123,7 @@ function NewBountyBase(props) {
   const [categoryId, setCategoryId] = React.useState();
   const [subCategoryId, setSubCategoryId] = React.useState();
   const [topics, setTopics] = React.useState([]);
-  const [selectedTopics, setSelectedTopics] = React.useState([]);
+  const [selectedCatogories, setSelectedCatogories] = React.useState([]);
   const [description, setDescription] = React.useState("");
   const [requirements, setRequirements] = React.useState("");
   const [authUserId, setAuthUserId] = React.useState(null);
@@ -103,7 +131,7 @@ function NewBountyBase(props) {
   const [bountyAmount, setBountyAmount] = React.useState();
   const [contract, setContract] = React.useState();
   const [amount, setAmount] = React.useState();
-  const [initalAmount, setInitialAmount] = React.useState('');
+  const [initalAmount, setInitialAmount] = React.useState("");
   const [provider, setProvider] = React.useState();
   const [smartContractAddress, setSmartContractAddress] = React.useState();
   const [showError, setShowError] = React.useState(false);
@@ -115,14 +143,27 @@ function NewBountyBase(props) {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
   const [network, setNetwork] = React.useState();
   const [showMessage, setShowMessage] = React.useState(false);
-  const [createNewBountyError, setCreateNewBountyError] = React.useState("");  
+  const [createNewBountyError, setCreateNewBountyError] = React.useState("");
   const [globalState] = React.useContext(AppContext);
+  const editor = React.useRef(null);
+  const [content, setContent] = React.useState("");
+  const [placeholder, setPlaceholder] = React.useState();
+  const [textEditor, setTextEditor] = React.useState(false);
 
   React.useEffect(() => {
     if (_state.authUser && _state.authUser.uid) {
       setAuthUserId(_state.authUser.uid);
     }
   }, [_state.authUser]);
+
+  const config = React.useMemo(() => {
+    return {
+      readonly: false,
+      placeholder: placeholder || "Start typings...",
+      height: 440,
+      background: "#fff",
+    };
+  }, [placeholder]);
 
   React.useEffect(() => {
     if (
@@ -148,8 +189,8 @@ function NewBountyBase(props) {
       );
       setTopics(results.topics);
     }
-    if (selectedTopics && selectedTopics.length) {
-      setSelectedTopics([]);
+    if (selectedCatogories && selectedCatogories.length) {
+      setSelectedCatogories([]);
     }
   }, [subCategoryId]);
 
@@ -164,7 +205,8 @@ function NewBountyBase(props) {
 
   React.useEffect(() => {
     let isSubsribed = true;
-    if (selectedTopics && selectedTopics.length) setSelectedTopics([]);
+    if (selectedCatogories && selectedCatogories.length)
+      setSelectedCatogories([]);
     if (topics?.length) setTopics([]);
     if (state.categories && isSubsribed) {
       const [selected] = state.categories.filter(
@@ -212,7 +254,7 @@ function NewBountyBase(props) {
         .catch((error) => {
           console.log("there was an error:", error);
         })
-        .finally(() => {});
+        .finally(() => { });
     }
   };
 
@@ -302,56 +344,60 @@ function NewBountyBase(props) {
     return result;
   };
 
-  const handleTopicChange = (topicId) => {
-    const filtered = topics.filter((x) => x.topicId === topicId);
-    const merged = [...selectedTopics, ...filtered];
-    const cleanTopics = sanitizeByKey(merged, "topicId");
-    setSelectedTopics(cleanTopics);
+  const handleTopicChange = (categoryId) => {
+    const filtered = state.categories.filter(
+      (x) => x.categoryId === categoryId
+    );
+    if (selectedCatogories.length < 5) {
+      const merged = [...selectedCatogories, ...filtered];
+      const cleanTopics = sanitizeByKey(merged, "categoryId");
+      setSelectedCatogories(cleanTopics);
+    }
   };
 
-  const handleDeleteTopic = (topicId) => {
-    const filtered = selectedTopics.filter((x) => x.topicId !== topicId);
-    setSelectedTopics(filtered);
+  const handleDeleteTopic = (categoryId) => {
+    const filtered = selectedCatogories.filter(
+      (x) => x.categoryId !== categoryId
+    );
+    setSelectedCatogories(filtered);
   };
 
   const handleSubmitNewBounty = (values) => {
+    console.log(content);
     const id = window.localStorage.getItem("accountId");
     console.log(values);
-    const selectedTopicsList = selectedTopics?.map((x) => x.topicId);
-    console.log(selectedTopicsList);
-    let bountyObject;    
-    const ERC20Chain = globalState.Erc20Chains?.find(chain => chain.cob_hexcode === chainId);
+    const selectedCatogoriesList = selectedCatogories?.map((x) => x.categoryId);
+    let bountyObject;
+    const ERC20Chain = globalState.Erc20Chains?.find(
+      (chain) => chain.cob_hexcode === chainId
+    );
     if (bountyName === "Create New Bounty") {
       bountyObject = {
         Name: "default",
-        CategoryIds: [categoryId],
-        SubCategoryIds: [subCategoryId],
+        CategoryIds: selectedCatogoriesList,
         Description: discription,
         Requirements: [requirements],
-        TopicIds: [...new Set(selectedTopicsList)],
         AccountId: accountId,
         SmartContractAddress: values.contractAddress,
         BountyAmount: Number(initalAmount),
-        SubTopicIds: [],
         CustomerId: id,
         ERC20ChainId: ERC20Chain.cob_erc20chainid,
-        ERC20Chain: '769020000',
+        ERC20Chain: "769020000",
+        RichText: content,
       };
     } else if (bountyName === "Create New Designated Bounty") {
       bountyObject = {
         Name: "designated",
         CategoryIds: [categoryId],
-        SubCategoryIds: [subCategoryId],
         Description: discription,
         Requirements: [requirements],
-        TopicIds: [...new Set(selectedTopicsList)],
         AccountId: accountId,
         SmartContractAddress: values.contractAddress,
         BountyAmount: Number(initalAmount),
-        SubTopicIds: [],
         CustomerId: id,
         ERC20ChainId: ERC20Chain.cob_erc20chainid,
-        ERC20Chain: '769020000',
+        ERC20Chain: "769020000",
+        RichText: content,
       };
     }
     axios
@@ -389,6 +435,16 @@ function NewBountyBase(props) {
     }
   };
 
+  const setTectEditorContent = (e) => {
+    // let value = e.replace(/(<([^>]+)>)/gi, "");
+    if (e.length > 1048576) {
+      setTextEditor(true);
+      return;
+    } else {
+      setContent(e);
+    }
+  };
+
   return (
     <BountyFormWrapper>
       {state.loading && (
@@ -401,134 +457,146 @@ function NewBountyBase(props) {
       )}
       {state.categories && (
         <>
-          <div>
-            <h1>📜 {bountyName}</h1>
-          </div>
-          <ComboBox
-            placeholder="Select Category"
-            items={state.categories}
-            onSelectionChange={setCategoryId}
-          >
-            {(item) => <Item key={item.categoryId}>{item.categoryName}</Item>}
-          </ComboBox>
-          {!!state.selected && state.selected.subCategories.length > 0 && (
-            <ComboBox
-              placeholder="Select Sub Category"
-              items={state?.selected.subCategories}
-              onSelectionChange={setSubCategoryId}
-            >
-              {(item) => (
-                <Item key={item.subCategoryId}>{item.subCategoryName}</Item>
-              )}
-            </ComboBox>
-          )}
-          {!!topics?.length && (
-            <ComboBox
-              items={topics}
-              placeholder="Select Topic(s)"
-              onSelectionChange={handleTopicChange}
-            >
-              {(item) => <Item key={item.topicId}>{item.topicName}</Item>}
-            </ComboBox>
-          )}
-          {!!selectedTopics && !!selectedTopics.length && (
-            <TopicsWrapper>
-              {selectedTopics?.map((item, idx) => (
-                <div key={idx}>
-                  <Button onPress={() => handleDeleteTopic(item.topicId)}>
-                    <span>{item.topicName}</span>
-                    {` `}
-                    <FcFullTrash />
-                  </Button>
-                </div>
-              ))}
-            </TopicsWrapper>
-          )}
-          {state.selected && (
-            <FormWrapper>
-              <TextField
-                value={discription}
-                onChange={setDiscription}
-                width="auto"
-                label="Description"
-              />
-              <TextArea
-                onChange={setRequirements}
-                width="auto"
-                label="Requirements"
-              />
-              {/* <Button variant="cta">Create</Button>           */}
-              <TextField
-                validationState={isValid ? "valid" : "invalid"}
-                label="Bounty Amount"
-                value={initalAmount}
-                onChange={initialAmountOnChange}
-              />
-              <Button onPress={() => modalConfirmHandler()} variant="primary">
-                Create Bounty
-              </Button>
-            </FormWrapper>
-          )}
-          <DialogTrigger isOpen={showError}>
-            <></>
-            <AlertDialog
-              title="Failed"
-              variant="error"
-              primaryActionLabel="OK"
-              onPrimaryAction={() => setShowError(false)}
-            >
-              Failed saving the bounty. Please try again later.
-            </AlertDialog>
-          </DialogTrigger>
-          <DialogTrigger isOpen={showBountyError}>
-            <></>
-            <AlertDialog
-              title="Failed"
-              variant="error"
-              primaryActionLabel="OK"
-              onPrimaryAction={() => setShowBountyError(false)}
-            >
-              {showMessage
-                ? "please connect to the network"
-                : `${createNewBountyError}`}
-            </AlertDialog>
-          </DialogTrigger>
-          <DialogTrigger isOpen={showSuccess}>
-            <></>
-            <AlertDialog
-              title="Bounty Saved"
-              variant="information"
-              primaryActionLabel="OK"
-              onPrimaryAction={() => setShowSuccess(false)}
-            >
-              Bounty saved successfully.
-            </AlertDialog>
-          </DialogTrigger>
+          <h2>📜 {bountyName}</h2>
 
-          <DialogTrigger isOpen={createBountyModal}>
-            <></>
-            <Dialog>
-              <Heading>create bounty</Heading>
-              <Divider />
-              <Content>
-                {" "}
-                You are attempting to create a bounty on {network} network.
-                Proceed?
-              </Content>
-              <ButtonGroup>
-                <Button variant="secondary" onPress={modalCancleHandler}>
-                  Cancel
-                </Button>
-                <Button
-                  variant="cta"
-                  onPress={async () => await createNewBounty()}
-                  autoFocus
+          <FormContainer>
+            <div>
+              <ComboBox
+                label="Select Category"
+                items={state.categories}
+                onSelectionChange={handleTopicChange}
+                width="100%"
+                marginBottom={10}
+              >
+                {(item) => (
+                  <Item key={item.categoryId}>{item.categoryName}</Item>
+                )}
+              </ComboBox>
+              <TopicsWrapper>
+                {selectedCatogories?.map((item, idx) => (
+                  <div key={idx}>
+                    <Button onPress={() => handleDeleteTopic(item.categoryId)}>
+                      <span>{item.categoryName}</span>
+                      {` `}
+                      <FcFullTrash />
+                    </Button>
+                  </div>
+                ))}
+              </TopicsWrapper>
+              {selectedCatogories.length > 0 && (
+                <FormWrapper>
+                  <TextArea
+                    value={discription}
+                    onChange={setDiscription}
+                    width="auto"
+                    label="Description"
+                    marginBottom={10}
+                  />
+                  <TextArea
+                    onChange={setRequirements}
+                    width="auto"
+                    label="Requirements"
+                    marginBottom={10}
+                  />
+                </FormWrapper>
+              )}
+            </div>
+
+            <div>
+              {selectedCatogories.length > 0 && (
+                <FormWrapper>
+                  <JoditEditor
+                    maxLength={5}
+                    ref={editor}
+                    value={content}
+                    config={config}
+                    tabIndex={1} // tabIndex of textarea
+                    onChange={(newContent) => setTectEditorContent(newContent)}
+                  />
+                  {/* <Button variant="cta">Create</Button>           */}
+
+                  <ButtonWrapper>
+                    <TextField
+                      validationState={isValid ? "valid" : "invalid"}
+                      label="Bounty Amount"
+                      value={initalAmount}
+                      onChange={initialAmountOnChange}
+                    />
+                    <Button
+                      onPress={() => modalConfirmHandler()}
+                      variant="primary"
+                    >
+                      Create Bounty
+                    </Button>
+                  </ButtonWrapper>
+                </FormWrapper>
+              )}
+              <DialogTrigger isOpen={showError}>
+                <></>
+                <AlertDialog
+                  title="Failed"
+                  variant="error"
+                  primaryActionLabel="OK"
+                  onPrimaryAction={() => setShowError(false)}
                 >
-                  Confirm
-                </Button>
-              </ButtonGroup>
-            </Dialog>
-          </DialogTrigger>
+                  Failed saving the bounty. Please try again later.
+                </AlertDialog>
+              </DialogTrigger>
+              <DialogTrigger isOpen={showBountyError}>
+                <></>
+                <AlertDialog
+                  title="Failed"
+                  variant="error"
+                  primaryActionLabel="OK"
+                  onPrimaryAction={() => setShowBountyError(false)}
+                >
+                  {showMessage
+                    ? "please connect to the network"
+                    : `${createNewBountyError}`}
+                </AlertDialog>
+              </DialogTrigger>
+              <DialogTrigger isOpen={showSuccess}>
+                <></>
+                <AlertDialog
+                  title="Bounty Saved"
+                  variant="information"
+                  primaryActionLabel="OK"
+                  onPrimaryAction={() => setShowSuccess(false)}
+                >
+                  Bounty saved successfully.
+                </AlertDialog>
+              </DialogTrigger>
+
+              <DialogTrigger isOpen={createBountyModal}>
+                <></>
+                <Dialog>
+                  <Heading>create bounty</Heading>
+                  <Divider />
+                  <Content>
+                    {" "}
+                    You are attempting to create a bounty on {network} network.
+                    Proceed?
+                  </Content>
+                  <ButtonGroup>
+                    <Button variant="secondary" onPress={modalCancleHandler}>
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="cta"
+                      onPress={async () => await createNewBounty()}
+                      autoFocus
+                    >
+                      Confirm
+                    </Button>
+                  </ButtonGroup>
+                </Dialog>
+              </DialogTrigger>
+            </div>
+          </FormContainer>
+          {textEditor && (
+            <ErrorModal open={textEditor} message={'maximum length exceeded'} action={() => setTextEditor(false)} />
+
+          )}
         </>
       )}
     </BountyFormWrapper>

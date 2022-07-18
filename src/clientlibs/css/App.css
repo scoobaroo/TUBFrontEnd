@@ -28,3 +28,6 @@ body {
 #app-wrapper>div>div {
   margin-bottom: 10px;
 }
+.jodit-status-bar>div:last-child {
+  display: none;
+}

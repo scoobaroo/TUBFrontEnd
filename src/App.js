@@ -25,7 +25,6 @@ import SearchResult from "./containers/SearchResult";
 import "./clientlibs/css/App.css";
 import Chat from "./containers/chat";
 
-
 function Wrapper() {
   const [state] = React.useContext(AppContext);
 
@@ -36,8 +35,8 @@ function Wrapper() {
       colorScheme={state.theme}
       scale={state.scale}
     >
-      <Flex id="app-wrapper" direction="column" height="100vh" >
-        <Router >
+      <Flex id="app-wrapper" direction="column" height="100vh">
+        <Router>
           <NavBar />
           <Routes>
             <Route exact path="/" />

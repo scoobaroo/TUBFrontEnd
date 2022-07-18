@@ -10,11 +10,9 @@ import withRouter from '../../session/withRouter';
 import {initialState, emailReggie, passwordReggie} from './config';
 import FormContainer from '../../styled/FormContainer';
 const validateField = (value, reggie) => reggie.test(String(value).toLowerCase());
+import { getAuth, sendSignInLinkToEmail } from "firebase/auth";
 import { setDoc, doc, Timestamp } from "firebase/firestore";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+
 
 const SignUpFormBase = props => {
   const [state, setState] = React.useState({ ...initialState });
@@ -80,6 +78,19 @@ const SignUpFormBase = props => {
   }
 
   const onCreateUser = async () => {
+    sendSignInLinkToEmail(props.firebase.auth, email, actionCodeSettings)
+    // .then(() => {
+    //   // The link was successfully sent. Inform the user.
+    //   // Save the email locally so you don't need to ask the user for it again
+    //   // if they open the link on the same device.
+    //   window.localStorage.setItem('emailForSignIn', email);
+    //   // ...
+    // })
+    // .catch((error) => {
+    //   const errorCode = error.code;
+    //   const errorMessage = error.message;
+    //   // ...
+    // });
     props.firebase.createUser(props.firebase.auth, state.email, state.password)
       .then((data) => {
         const { user: { email, uid, name } } = data;
@@ -98,6 +109,18 @@ const SignUpFormBase = props => {
         // console.log('do action here');
       })
   }
+
+  // const actionCodeSettings = {
+  //   // URL you want to redirect back to. The domain (www.example.com) for this
+  //   // URL must be in the authorized domains list in the Firebase Console.
+  //   url: 'http://localhost:9000/sign-in',
+  //   // This must be true.
+  //   handleCodeInApp: true,
+  //   dynamicLinkDomain: 'http://localhost:9000/sign-in'
+  // };
+
+  
+ 
 
   const addtoFirestore = async (uid,email,name) => {
     await setDoc(doc(props.firebase.db, "users",uid), {

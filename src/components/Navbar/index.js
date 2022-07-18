@@ -1,6 +1,7 @@
 import React from "react";
 import { Pivot as Hamburger } from "hamburger-react";
 import styled from "styled-components";
+import ReactDOM from "react-dom";
 import {
   ActionButton,
   Switch,
@@ -20,6 +21,8 @@ import useAccountId from "../../hooks/useAccountId";
 import { AppContext } from "../../context";
 import { GiSunrise, GiSunset, GiResize, GiChatBubble } from "react-icons/gi";
 import appConfig from "webpack-config-loader!../../app-config.js";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   AiOutlineLogin,
   AiOutlineLogout,
@@ -29,6 +32,8 @@ import { FaUserAlt } from "react-icons/fa";
 import axios from "axios";
 import ImageIcon from "../ImageIcon";
 import Connection from "../ChainConnection/index";
+import { updateDoc, doc, Timestamp, onSnapshot } from "firebase/firestore";
+import { RecaptchaVerifier } from "firebase/auth";
 
 const NavBarWrapper = styled.nav`
   box-shadow: 0px 1px 8px 1px rgba(0, 0, 0, 0.2);
@@ -39,7 +44,7 @@ const NavBarWrapper = styled.nav`
 const ThemeButtonContainer = styled.div`
   display: flex;
   align-items: center;
-  button{
+  button {
     @media (max-width: 576px) {
       min-width: 30px;
     }
@@ -385,6 +390,7 @@ const NonAuthedNav = ({ navigate }) => {
 
 const NavBarBase = ({ firebase, navigate }) => {
   const [state] = React.useContext(AppContext);
+  const [accountId, setAccountid] = React.useState(null);
   const [open, setOpen] = React.useState(false);
   const { toggleTheme, reSize } = useUIControls();
   const [searchValue, setSearchValue] = React.useState("Bounty");
@@ -393,10 +399,61 @@ const NavBarBase = ({ firebase, navigate }) => {
   const currentUser = firebase.auth?.currentUser;
   const isLoggedIn = !!currentUser;
   const { theme } = state;
+
+  React.useEffect(() => {
+    if (currentUser) {
+      let unsub = onSnapshot(
+        doc(firebase.db, "notifications", currentUser.uid),
+        (doc) => {
+          let data = doc.data();
+          let messageTime = timeConvereter(data.createdAt);
+          let currentTime = currentTimeConverter();
+          if (messageTime == currentTime) {
+            notify(data.name, data.text);
+          }
+        }
+      );
+      return () => unsub();
+    }
+  }, [currentUser]);
+
+  const notify = (email, text) =>
+    toast(`${email} has sent you a message: ${text}`, {
+      theme: "dark",
+      type: "info",
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+    
+  const timeConvereter = (time) => {
+    let newDate = new Date(time.seconds * 1000);
+    let Hours = newDate.getHours();
+    let Minutes = newDate.getMinutes();
+    const HourComplete = Hours + ":" + Minutes;
+    let formatedTime = HourComplete;
+    console.log(formatedTime);
+    return formatedTime;
+  };
+  const currentTimeConverter = () => {
+    let newDate = new Date();
+    let Hours = newDate.getHours();
+    let Minutes = newDate.getMinutes();
+    const HourComplete = Hours + ":" + Minutes;
+    let formatedTime = HourComplete;
+    console.log("current time ", formatedTime);
+    return formatedTime;
+  };
   const userProfileHandler = () =>
     navigate("/userprofile", { state: { id: null } });
   const handleSignIn = () => navigate("/sign-in");
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await updateDoc(doc(firebase.db, "users", currentUser.uid), {
+      isOnline: false,
+    });
     firebase.signOut();
     setAccountId("");
   };
@@ -578,6 +635,10 @@ const NavBarBase = ({ firebase, navigate }) => {
           </SerachWrapperMobile>
         )}
       </NavBarWrapper>
+      {ReactDOM.createPortal(
+        <ToastContainer />,
+        document.getElementById("toast-container")
+      )}
     </>
   );
 };
