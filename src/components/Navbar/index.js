@@ -511,7 +511,7 @@ const NavBarBase = ({ firebase, navigate }) => {
               <HamburgerButton open={open} setOpen={setOpen} />
             </HamburgerWrapper>
             <div>
-              {currentUser ? (
+              {state.accountId ? (
                 <AuthedNav
                   navigate={navigate}
                   firebase={firebase}

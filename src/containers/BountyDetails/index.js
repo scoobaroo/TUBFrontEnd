@@ -87,6 +87,13 @@ const RequestToWork = styled.div`
     margin-bottom: 10px;
   }
 `;
+
+const TextEditorWrapper = styled.div`
+padding:10px;
+border: 1px solid #4e4848;
+border-radius: 5px;
+`;
+
 const RequestToWorkIn = styled.div`
   display: inline-flex;
   cursor: pointer;
@@ -352,6 +359,8 @@ const Modal = ({
   </ModalWrapper>
 );
 
+
+
 const BountyDetailsPage = () => {
   const instialState = {
     categoryName: "",
@@ -369,6 +378,7 @@ const BountyDetailsPage = () => {
     reqToWork: [],
     ERC20ChainId: "",
     attachmentCount: 0,
+    RichText:''
   };
   const intialMessage = {
     cancel: false,
@@ -491,6 +501,8 @@ const BountyDetailsPage = () => {
   const [ERC20ChainName, setErc20chaninName] = React.useState("");
   const [chainValue, setChainValue] = React.useState();
   const [blockexplorerbaseurl, setBlockexplorerbaseurl] = React.useState("");
+  const [htmlData, setHtmlData] = React.useState()
+
 
   // get BlobService = notice `?` is pulled out of sasToken - if created in Azure portal
   const blobService = new BlobServiceClient(
@@ -732,6 +744,7 @@ const BountyDetailsPage = () => {
           ERC20ChainId: response.data?.ERC20ChainId,
           attachmentCount: response.data?.AttachmentCount,
         }));
+        setHtmlData(response.data?.RichText);
         status = response.data?.BountyStatus;
         custemerId = response.data?.CustomerId?.Id;
         providerId = response.data?.ProviderId?.Id;
@@ -1619,22 +1632,7 @@ const BountyDetailsPage = () => {
           </ItemWrapper>
         )}
 
-        {bountyDetails.topics.length != 0 && (
-          <ItemWrapper>
-            <Heading>
-              <span style={{ width: "150px", display: "inline-block" }}>
-                Topics
-              </span>
-              :{" "}
-              {bountyDetails.topics?.map(
-                (topic, key) =>
-                  `${topic.topicName}${
-                    key !== bountyDetails.topics.length - 1 ? "," : ""
-                  } `
-              )}
-            </Heading>
-          </ItemWrapper>
-        )}
+        
 
         <ItemWrapper>
           <Heading>
@@ -1660,6 +1658,11 @@ const BountyDetailsPage = () => {
             : {ERC20ChainName}
           </Heading>
         </ItemWrapper>
+        <TextEditorWrapper>
+          <Heading>
+             <div  dangerouslySetInnerHTML={{ __html: htmlData }} />
+          </Heading>
+        </TextEditorWrapper>
 
         <div
           onClick={() => ProfileViewer()}

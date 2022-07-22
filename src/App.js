@@ -24,6 +24,7 @@ import UserProfile from "./containers/UserProfile";
 import SearchResult from "./containers/SearchResult";
 import "./clientlibs/css/App.css";
 import Chat from "./containers/chat";
+import OtpVerification from "./containers/SignUp/components/OtpVerification";
 
 function Wrapper() {
   const [state] = React.useContext(AppContext);
@@ -51,6 +52,7 @@ function Wrapper() {
             <Route path="/bountyworkedon" element={<BountyImWorkedOn />} />
             <Route path="/search-result" element={<SearchResult />} />
             <Route path="/chat" element={<Chat />} />
+            <Route path="/otp-verification" element={<OtpVerification />} />
           </Routes>
         </Router>
       </Flex>

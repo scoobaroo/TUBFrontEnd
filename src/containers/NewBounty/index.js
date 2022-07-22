@@ -254,7 +254,7 @@ function NewBountyBase(props) {
         .catch((error) => {
           console.log("there was an error:", error);
         })
-        .finally(() => { });
+        .finally(() => {});
     }
   };
 

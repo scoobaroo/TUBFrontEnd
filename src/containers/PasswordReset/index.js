@@ -10,7 +10,19 @@ import { AppContext } from '../../context';
 
 import FormContainer from '../../styled/FormContainer';
 import 'react-toastify/dist/ReactToastify.css';
+import styled from "styled-components";
 
+const ResetWrapper = styled.div`
+  margin: 16px auto;
+  max-width: 450px;
+ flex:none !important;
+  background: rgb(200 200 200 / 2%);
+  border: 1px solid rgb(239 239 239 / 5%);
+  border-radius: 5px;
+padding: 25px;
+min-width: 320px;
+
+`;
 const validateField = (value, reggie) => reggie.test(String(value).toLowerCase());
 
 const ForgotPasswordForm = ({ firebase, navigate }) => {
@@ -64,6 +76,7 @@ const ForgotPasswordForm = ({ firebase, navigate }) => {
   }
 
   return (
+    <ResetWrapper>
     <FormContainer>
       <div>
         <h2>Reset Password</h2>
@@ -95,6 +108,7 @@ const ForgotPasswordForm = ({ firebase, navigate }) => {
         draggable
         pauseOnHover />
     </FormContainer>
+    </ResetWrapper>
   )
 }
 
